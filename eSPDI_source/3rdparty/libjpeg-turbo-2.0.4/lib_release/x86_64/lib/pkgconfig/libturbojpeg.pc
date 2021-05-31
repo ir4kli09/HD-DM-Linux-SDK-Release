@@ -1,0 +1,10 @@
+prefix=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/x86_64
+exec_prefix=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/x86_64
+libdir=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/x86_64/lib
+includedir=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/x86_64/include
+
+Name: libturbojpeg
+Description: A SIMD-accelerated JPEG codec that provides the TurboJPEG API
+Version: 2.0.4
+Libs: -L${libdir} -lturbojpeg
+Cflags: -I${includedir}

@@ -1,0 +1,10 @@
+prefix=/home/eys3d/Workspace/EtronSDK_Linux/etronsdk_linux/EtronSDK_Linux2/eSPDI_source/3rdparty/libjpeg-turbo-2.0.4
+exec_prefix=/home/eys3d/Workspace/EtronSDK_Linux/etronsdk_linux/EtronSDK_Linux2/eSPDI_source/3rdparty/libjpeg-turbo-2.0.4
+libdir=/home/eys3d/Workspace/EtronSDK_Linux/etronsdk_linux/EtronSDK_Linux2/eSPDI_source/3rdparty/libjpeg-turbo-2.0.4/lib
+includedir=/home/eys3d/Workspace/EtronSDK_Linux/etronsdk_linux/EtronSDK_Linux2/eSPDI_source/3rdparty/libjpeg-turbo-2.0.4/include
+
+Name: libjpeg
+Description: A SIMD-accelerated JPEG codec that provides the libjpeg API
+Version: 2.0.4
+Libs: -L${libdir} -ljpeg
+Cflags: -I${includedir}

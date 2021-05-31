@@ -1,0 +1,10 @@
+prefix=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/armhf_32
+exec_prefix=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/armhf_32
+libdir=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/armhf_32/lib
+includedir=/home/ethan/workspace/opensource_build/libjpeg-turbo-2.0.4/lib_release/armhf_32/include
+
+Name: libjpeg
+Description: A SIMD-accelerated JPEG codec that provides the libjpeg API
+Version: 2.0.4
+Libs: -L${libdir} -ljpeg
+Cflags: -I${includedir}

@@ -1,0 +1,19 @@
+mkdir build
+cd ./build
+
+x64
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=./release/x86_64 ..
+
+
+ARM 32
+cmake -DSOFTFP=ON  -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=./release/ARMHF_32  ..
+cmake -DSOFTFP=ON  -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm.toolchain.cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=./release/ARMEL_32  ..
+
+
+ARM 64
+cmake -DSOFTFP=ON  -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.toolchain.cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=./release/ARM_64  ..
+
+
+make -j7 # runs 7 jobs in parallel
+
+make install

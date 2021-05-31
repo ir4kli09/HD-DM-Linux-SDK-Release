@@ -1,0 +1,16 @@
+build libjpeg-turbo:
+
+for x86:
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX="../lib_release/x86_64" ..
+make
+make install
+
+for ARMHF-32:
+mkdir build
+cd build
+cmake -DCMAKE_CXX_COMPILER="arm-linux-gnueabihf-g++" -DCMAKE_C_COMPILER="arm-linux-gnueabihf-gcc" -DCMAKE_INSTALL_PREFIX="../lib_release/armhf_32" ..
+make
+make install
+

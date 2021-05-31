@@ -1,0 +1,9 @@
+./configure --prefix=`pwd`/../../../eSPDI/alsa-release/arm/64-bits
+or 
+./configure --prefix=`pwd`/../../../eSPDI/alsa-release/arm/32-bits --host=arm-unknown-linux-gnueabi --target=arm-unknown-linux-gnueabi CC=/usr/bin/arm-linux-gnueabi-gcc
+or
+./configure --prefix=`pwd`/../../../eSPDI/alsa-release/x86/64-bits
+or
+./configure --prefix=`pwd`/../../../eSPDI/alsa-release/x86/32-bits
+
+make clean;make;make install

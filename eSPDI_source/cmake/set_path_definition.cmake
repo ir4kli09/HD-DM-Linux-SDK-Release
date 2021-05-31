@@ -1,0 +1,20 @@
+include(${CMAKE_CURRENT_LIST_DIR}/setup_eys3d_root.cmake)
+
+set(FISHEYE_DIR "${ESPDI_SOURCE_PATH}/libeysov/")
+set(FILTER_DIR "${ESPDI_SOURCE_PATH}/DepthFilter/")
+set(COMPUTER_DIR "${ESPDI_SOURCE_PATH}/computer/")
+set(POST_PROCESS_DIR "${ESPDI_SOURCE_PATH}/post_process/")
+set(WATCHDOG_DIR "${ESPDI_SOURCE_PATH}/watchdog_lib")
+
+set(EIGEN_DIR "${ESPDI_SOURCE_PATH}/3rdparty/eigen_3.3.9")
+set(TURBOJPEG_SOURCE_DIR "${ESPDI_SOURCE_PATH}/3rdparty/libjpeg-turbo-2.0.4/")
+set(OPENCL_SOURCE_DIR "${ESPDI_SOURCE_PATH}/3rdparty/opencl/")
+set(ALSA_SOURCE_DIR "${ESPDI_SOURCE_PATH}/3rdparty/alsa-lib_1.1.6/")
+set(OPENCV_SOURCE_DIR "${ESPDI_SOURCE_PATH}/3rdparty/opencv_4.5.0")
+set(FFMPEG_SOURCE_DIR "${ESPDI_SOURCE_PATH}/3rdparty/FFmpeg3.0/FFmpeg")
+
+set(OPENCL_INSTALL_PATH "$ENV{EYS3D_ROOT}/eSPDI/OpenCL/${ARCH}/")
+set(TURBOJPEG_INSTALL_PATH "${ESPDI_SOURCE_PATH}/3rdparty/out/${ARCH}/turbojpeg/")
+set(ALSA_INSTALL_PATH "${ESPDI_SOURCE_PATH}/3rdparty/out/${ARCH}/alsa/")
+set(OPENCV_INSTALL_PATH "${ESPDI_SOURCE_PATH}/3rdparty/out/${ARCH}/opencv/")
+set(FFMPEG_INSTALL_PATH "${ESPDI_SOURCE_PATH}/3rdparty/out/${ARCH}/ffmpeg/")
