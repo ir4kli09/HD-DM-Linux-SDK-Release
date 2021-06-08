@@ -14,16 +14,16 @@ There are two ways to compile the program:
 ![l-1](https://user-images.githubusercontent.com/13328289/120995299-dae02f80-c7b7-11eb-9ee5-f498787dcdd7.png)
 
 -  1.3  Choose "./DMPreview/DMPreview.pro".  
-![l-2](https://user-images.githubusercontent.com/13328289/120995336-e5022e00-c7b7-11eb-9a66-cb441a7be4e4.png)
+![l-1](https://user-images.githubusercontent.com/13328289/121131954-184dc700-c863-11eb-8618-b80328e8a9c3.png)
 
 - 1.4 Click "Configure Project".  
-![l-4](https://user-images.githubusercontent.com/13328289/120995378-ed5a6900-c7b7-11eb-9a8c-ac3fdd1deb6b.png)
+![ll-2](https://user-images.githubusercontent.com/13328289/121132040-35829580-c863-11eb-8b66-257928c0b8d9.png)
 
 -  1.5 Select  Build/Clean All & Build/Rebuild All
-![l-6](https://user-images.githubusercontent.com/13328289/120995539-124edc00-c7b8-11eb-9b54-3876490f6375.png)
+![ll-3](https://user-images.githubusercontent.com/13328289/121132177-619e1680-c863-11eb-95fc-4f46e755fc34.png)
 
 -  1.6 Select Build/Run to launch program
-![l-7](https://user-images.githubusercontent.com/13328289/120996352-d2d4bf80-c7b8-11eb-95a7-2ed7debe9af9.png)
+![ll-4](https://user-images.githubusercontent.com/13328289/121132224-74b0e680-c863-11eb-8ea9-593a7797fefa.png)
 
 
 ###### (2) Using QMake
@@ -34,14 +34,27 @@ cd DMPreview
 qmake
 make
 ```
-  ![ll-2](https://user-images.githubusercontent.com/13328289/120999313-8f2f8500-c7bb-11eb-82fc-daf44acf87f3.png)
+![ll-5](https://user-images.githubusercontent.com/13328289/121132390-a629b200-c863-11eb-99ec-90e7af4e185c.png)
+Compiled successfully.  
+![ll-6](https://user-images.githubusercontent.com/13328289/121132428-b2ae0a80-c863-11eb-8c5a-ee0d00881bac.png)
+Generate binary "DMPreview" under DMPreview folder.  
+![ll-7](https://user-images.githubusercontent.com/13328289/121132451-b93c8200-c863-11eb-9f19-68254695ff1a.png)
+Copy DMPreview to /bin folder  
+```sh 
+cp DMPreview ../bin
+```
+![ll-9](https://user-images.githubusercontent.com/13328289/121132538-da04d780-c863-11eb-94c1-cc186f7f470c.png)
+Check /bin folder  
+![ll-8](https://user-images.githubusercontent.com/13328289/121132561-df622200-c863-11eb-8c43-69c42bd4d412.png)
     
+```sh     
+cd bin
+#  Rename:
+mv DMPreview DMPreview_X86  
+```
+![ll-10](https://user-images.githubusercontent.com/13328289/121132706-0f112a00-c864-11eb-8a13-9daacf686e2e.png)
 ```sh   
 #  Run:  
-cd bin
-sudo sh run_DMPreview.sh  
+sh run_DMPreview_X86.sh  
 ```
-![ll-3](https://user-images.githubusercontent.com/13328289/120999631-edf4fe80-c7bb-11eb-88ca-1a31418287e0.png)
-![ll-4](https://user-images.githubusercontent.com/13328289/120999644-f0efef00-c7bb-11eb-81a5-5fa57874439e.png)
-
-
+![ll-11](https://user-images.githubusercontent.com/13328289/121132712-11738400-c864-11eb-836a-3bd190e336bd.png)
