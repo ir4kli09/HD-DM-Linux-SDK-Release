@@ -2,11 +2,11 @@
 #define CPREVIEWDIALOG_H
 #include <QDialog>
 #include <QLabel>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 
 class CImageDataModel;
 class CPreviewDialog : public QDialog,
-                       public CEtronUIView
+                       public CEYSDUIView
 {
 Q_OBJECT
 public:

@@ -29,7 +29,7 @@ protected:
                                                        unsigned short nColorWidth,
                                                        unsigned short nColorHeight,
                                                        eSPCtrl_RectLogData rectifyLogData,
-                                                       EtronDIImageType::Value depthImageType,
+                                                       EYSDImageType::Value depthImageType,
                                                        int nZNear, int nZFar,
                                                        bool bUsePlyFilter = false,
                                                        std::vector<float> imgFloatBufOut = {});

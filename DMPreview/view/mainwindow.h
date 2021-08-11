@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <vector>
 #include <unordered_map>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 
 namespace Ui {
 class MainWindow;
@@ -12,7 +12,7 @@ class MainWindow;
 
 class CVideoDeviceDialog;
 class MainWindow : public QMainWindow,
-                   public CEtronUIView
+                   public CEYSDUIView
 {
     Q_OBJECT
 

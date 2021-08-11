@@ -24,9 +24,9 @@ CDepthMergeWrapper::~CDepthMergeWrapper()
 
 }
 
-void CDepthMergeWrapper::SetSDKHandle( void *pHandleEtronDI, PDEVSELINFO pDevSelInfo )
+void CDepthMergeWrapper::SetSDKHandle( void *pHandleEYSD, PDEVSELINFO pDevSelInfo )
 {
-    m_pHandleEtronDI = pHandleEtronDI;
+    m_pHandleEYSD = pHandleEYSD;
     m_pDevSelInfo    = pDevSelInfo;
 }
 
@@ -60,7 +60,7 @@ int CDepthMergeWrapper::DoFusion(unsigned char** pDepthBufList, float *pDepthMer
     int nDWidth, int nDHeight, float fFocus, float * pBaseline, float * pWRNear, float * pWRFar,
     float * pWRFusion, int nMergeNum, bool bdepth2Byte11bit)
 {
-    return EtronDI_DepthMerge( m_pHandleEtronDI, m_pDevSelInfo, pDepthBufList, pDepthMerge, pDepthMergeFlag, nDWidth, nDHeight, fFocus, pBaseline,
+    return APC_DepthMerge( m_pHandleEYSD, m_pDevSelInfo, pDepthBufList, pDepthMerge, pDepthMergeFlag, nDWidth, nDHeight, fFocus, pBaseline,
                                 pWRNear, pWRFar, pWRFusion, nMergeNum );
     //auto fusionFunc = depthMergeMBLbase;
     //switch (m_fusionMethod)
@@ -96,7 +96,7 @@ CDepthFusionHelper::CDepthFusionHelper(size_t depthCount, int width, int height,
     }
 
 #ifndef ESPDI_EG
-    //EtronDI_CreateSwPostProc(11, &m_swPostProcHandle);
+    //APC_CreateSwPostProc(11, &m_swPostProcHandle);
 #endif
 
     m_threadStart = true;
@@ -110,7 +110,7 @@ CDepthFusionHelper::~CDepthFusionHelper()
     delete m_checkDepthReadyThread;
 
 #ifndef ESPDI_EG
-    //EtronDI_ReleaseSwPostProc(&m_swPostProcHandle);
+    //APC_ReleaseSwPostProc(&m_swPostProcHandle);
 #endif
 }
 
@@ -254,7 +254,7 @@ void CDepthFusionHelper::CheckDepthReadyThreadFn(CDepthFusionHelper* pThis)
                     //if (pThis->m_postProcEnabled &&
                     //    pThis->GetColorData(fusionDepthSn, postProcColorBuf))
                     //{
-                    //    EtronDI_DoSwPostProc(pThis->m_swPostProcHandle, &postProcColorBuf[0], false,
+                    //    APC_DoSwPostProc(pThis->m_swPostProcHandle, &postProcColorBuf[0], false,
                     //        &outDepth[0], &postProcTempBuf[0], pThis->m_width, pThis->m_height);
                     //    memcpy(&outDepth[0], &postProcTempBuf[0], postProcTempBuf.size());
                     //}
@@ -284,9 +284,9 @@ void CDepthFusionHelper::CheckDepthReadyThreadFn(CDepthFusionHelper* pThis)
     }
 }
 
-void CDepthFusionHelper::SetSDKHandle( void *pHandleEtronDI, PDEVSELINFO pDevSelInfo )
+void CDepthFusionHelper::SetSDKHandle( void *pHandleEYSD, PDEVSELINFO pDevSelInfo )
 {
-    m_dmWrapper.SetSDKHandle( pHandleEtronDI, pDevSelInfo );
+    m_dmWrapper.SetSDKHandle( pHandleEYSD, pDevSelInfo );
 }
 
 CDepthFusionHelper::DataItem::DataItem(int serialNumber, unsigned char* depthBuf, size_t depthSize)

@@ -1,5 +1,5 @@
 #include "CVideoDeviceModel_8040_8054.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceController.h"
 #include "CThreadWorkerManage.h"
 #include "eSPDI.h"
@@ -28,7 +28,7 @@ bool CVideoDeviceModel_8040_8054::IsDepthDataTypeSupport(DEPTH_DATA_TYPE type)
 int CVideoDeviceModel_8040_8054::GetRectifyLogData(int nDevIndex, int nRectifyLogIndex, eSPCtrl_RectLogData *pRectifyLogData, STREAM_TYPE depthType)
 {
     int ret = CVideoDeviceModel::GetRectifyLogData(nDevIndex, nRectifyLogIndex, pRectifyLogData, depthType);
-    if (ETronDI_OK == ret &&
+    if (APC_OK == ret &&
         0 == nDevIndex){
         if (2176 == pRectifyLogData->OutImgWidth &&
             1920 == pRectifyLogData->OutImgHeight){
@@ -60,12 +60,12 @@ int CVideoDeviceModel_8040_8054::InitDeviceInformation()
 {
     SetPlumAR0330(false);
     CVideoDeviceModel_Kolor::InitDeviceInformation();
-    if(ETronDI_OK == SetPlumAR0330(true)){
+    if(APC_OK == SetPlumAR0330(true)){
         m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[0]));
         SetPlumAR0330(false);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 bool CVideoDeviceModel_8040_8054::IsStreamAvailable()
@@ -110,15 +110,15 @@ int CVideoDeviceModel_8040_8054::PrepareOpenDevice()
 
     bool bKolorStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR);
     if(bKolorStream){
-        std::vector<ETRONDI_STREAM_INFO> streamInfo = GetStreamInfoList(STREAM_KOLOR);
+        std::vector<APC_STREAM_INFO> streamInfo = GetStreamInfoList(STREAM_KOLOR);
         int index = m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_KOLOR);
         m_imageData[STREAM_KOLOR].nWidth = streamInfo[index].nWidth;
         m_imageData[STREAM_KOLOR].nHeight  = streamInfo[index].nHeight;
         m_imageData[STREAM_KOLOR].bMJPG = streamInfo[index].bFormatMJPG;
         m_imageData[STREAM_KOLOR].depthDataType = GetDepthDataType();
         m_imageData[STREAM_KOLOR].imageDataType = m_imageData[STREAM_KOLOR].bMJPG ?
-                                                  EtronDIImageType::COLOR_MJPG :
-                                                  EtronDIImageType::COLOR_YUY2;
+                                                  EYSDImageType::COLOR_MJPG :
+                                                  EYSDImageType::COLOR_YUY2;
 
         unsigned short nBytePerPixel = 2;
         unsigned int nBufferSize = m_imageData[STREAM_KOLOR].nWidth * m_imageData[STREAM_KOLOR].nHeight * nBytePerPixel;
@@ -127,12 +127,12 @@ int CVideoDeviceModel_8040_8054::PrepareOpenDevice()
         }
         memset(&m_imageData[STREAM_KOLOR].imageBuffer[0], 0, sizeof(nBufferSize));
 
-        EtronDI_SetDepthDataType(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        APC_SetDepthDataType(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                  m_deviceSelInfo[1],
                                  GetKolorDepthDataTypeValue());
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8040_8054::OpenDevice()
@@ -157,7 +157,7 @@ int CVideoDeviceModel_8040_8054::OpenDevice()
             bIsMJEPG = false;
         }
 
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[0],
                                              nWidth, nHeight, bIsMJEPG,
                                              0, 0,
@@ -165,7 +165,7 @@ int CVideoDeviceModel_8040_8054::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
 
         if(bColorStream){
@@ -180,7 +180,7 @@ int CVideoDeviceModel_8040_8054::OpenDevice()
     if(bKolorStream)
     {
         int nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_KOLOR);
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[1],
                                              m_imageData[STREAM_KOLOR].nWidth, m_imageData[STREAM_KOLOR].nHeight, m_imageData[STREAM_KOLOR].bMJPG,
                                              0, 0,
@@ -188,12 +188,12 @@ int CVideoDeviceModel_8040_8054::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
         m_pVideoDeviceController->GetPreviewOptions()->SetStreamFPS(STREAM_KOLOR, nFPS);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8040_8054::StartStreamingTask()
@@ -227,7 +227,7 @@ int CVideoDeviceModel_8040_8054::StartStreamingTask()
         CreateStreamTask(STREAM_KOLOR);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8040_8054::GetPointCloudInfo(eSPCtrl_RectLogData *pRectifyLogData, PointCloudInfo &pointCloudInfo,
@@ -237,7 +237,7 @@ int CVideoDeviceModel_8040_8054::GetPointCloudInfo(eSPCtrl_RectLogData *pRectify
                                                    colorImageData, depthImageData);
 
     bool IsKolorStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR);
-    if(ETronDI_OK == ret && IsKolorStream){
+    if(APC_OK == ret && IsKolorStream){
         eSPCtrl_RectLogData rectifyLogDataSlave;
         GetRectifyLogData(1, m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH),
                           &rectifyLogDataSlave);
@@ -257,18 +257,18 @@ int CVideoDeviceModel_8040_8054::CloseDevice()
     bool bDepthStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_DEPTH);
     bool bKolorStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR);
 
-    int ret = ETronDI_NoDevice;
+    int ret = APC_NoDevice;
     if(bColorStream || bDepthStream){
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[0])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
     }
 
     if(bKolorStream){
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[1])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
     }
 
@@ -284,7 +284,7 @@ int CVideoDeviceModel_8040_8054::ClosePreviewView()
         m_pVideoDeviceController->GetControlView()->ClosePreviewView(STREAM_KOLOR);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8040_8054::GetImage(STREAM_TYPE type)
@@ -299,7 +299,7 @@ int CVideoDeviceModel_8040_8054::GetImage(STREAM_TYPE type)
             ret = GetKolorImage();
             break;
         default:
-            return ETronDI_NotSupport;
+            return APC_NotSupport;
     }
 
     return ret;
@@ -319,14 +319,14 @@ int CVideoDeviceModel_8040_8054::GetColorImage()
     unsigned long int nImageSize = 0;
     int nSerial = EOF;
 
-    int ret = EtronDI_GetColorImage(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    int ret = APC_GetColorImage(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                     m_deviceSelInfo[0],
                                     &buffer[0],
                                     &nImageSize,
                                     &nSerial,
                                     nDepthDataType);
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     if(bColorStream && bDepthStream){
         unsigned short nHalfWidth = m_colorWithDepthImageData.nWidth / 2;
@@ -338,7 +338,7 @@ int CVideoDeviceModel_8040_8054::GetColorImage()
         }
 
         m_colorMutex.lock();
-        if (ETronDI_OK == EtronDI_RotateImg90(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if (APC_OK == APC_RotateImg90(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                               m_deviceSelInfo[0],
                                               m_imageData[STREAM_COLOR].imageDataType,
                                               nHalfWidth, m_colorWithDepthImageData.nHeight,
@@ -350,7 +350,7 @@ int CVideoDeviceModel_8040_8054::GetColorImage()
         m_colorMutex.unlock();
 
         _depthMutex.lock();
-        if (ETronDI_OK == EtronDI_RotateImg90(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if (APC_OK == APC_RotateImg90(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                               m_deviceSelInfo[0],
                                               m_imageData[STREAM_DEPTH].imageDataType,
                                               nHalfWidth, m_colorWithDepthImageData.nHeight,
@@ -361,18 +361,18 @@ int CVideoDeviceModel_8040_8054::GetColorImage()
         }
         _depthMutex.unlock();
 
-        return ETronDI_OK;
+        return APC_OK;
     }else if (bColorStream){
         return ProcessImage(STREAM_COLOR, nImageSize, nSerial);
     }else{
-        if (ETronDI_OK == EtronDI_RotateImg90(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if (APC_OK == APC_RotateImg90(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                               m_deviceSelInfo[0],
                                               m_imageData[STREAM_DEPTH].imageDataType,
                                               m_imageData[STREAM_DEPTH].nHeight, m_imageData[STREAM_DEPTH].nWidth,
                                               &m_rotateBuffer[0],
                                               &m_mirroBuffer[0],
                                               nImageSize, true)){
-            if (ETronDI_OK == EtronDI_ImgMirro(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+            if (APC_OK == APC_ImgMirro(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_deviceSelInfo[0],
                                                m_imageData[STREAM_DEPTH].imageDataType,
                                                m_imageData[STREAM_DEPTH].nWidth, m_imageData[STREAM_DEPTH].nHeight,
@@ -385,7 +385,7 @@ int CVideoDeviceModel_8040_8054::GetColorImage()
         }
 
 
-        return ETronDI_NullPtr;
+        return APC_NullPtr;
     }
 }
 
@@ -393,14 +393,14 @@ int CVideoDeviceModel_8040_8054::GetKolorImage()
 {
     unsigned long int nImageSize = 0;
     int nSerial = EOF;
-    int ret = EtronDI_GetColorImage(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    int ret = APC_GetColorImage(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                     m_deviceSelInfo[1],
                                     &m_imageData[STREAM_KOLOR].imageBuffer[0],
                                     &nImageSize,
                                     &nSerial,
                                     m_imageData[STREAM_KOLOR].depthDataType);
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     return ProcessImage(STREAM_KOLOR, nImageSize, nSerial);
 }
@@ -409,12 +409,12 @@ int CVideoDeviceModel_8040_8054::FirstSuccessGetImageCallback(STREAM_TYPE type)
 {
     CVideoDeviceModel::FirstSuccessGetImageCallback(type);
 
-    if(STREAM_DEPTH == type) return ETronDI_NotSupport;
+    if(STREAM_DEPTH == type) return APC_NotSupport;
 
     CTaskInfo *pInfo = CTaskInfoManager::GetInstance()->RequestTaskInfo(CTaskInfo::VIDEO_FRAME_SYNC, (CVideoDeviceModel *)this);
     CThreadWorkerManage::GetInstance()->AddTask(pInfo);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8040_8054::FrameSync()
@@ -425,10 +425,10 @@ int CVideoDeviceModel_8040_8054::FrameSync()
     }else{
         colorStreamType = STREAM_COLOR;
     }
-    ETRONDI_STREAM_INFO colorStreamInfo = GetStreamInfoList(colorStreamType)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(colorStreamType)];
-    ETRONDI_STREAM_INFO depthStreamInfo = GetStreamInfoList(STREAM_DEPTH)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH)];
+    APC_STREAM_INFO colorStreamInfo = GetStreamInfoList(colorStreamType)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(colorStreamType)];
+    APC_STREAM_INFO depthStreamInfo = GetStreamInfoList(STREAM_DEPTH)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH)];
 
-    return RegisterSettings::Framesync(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    return RegisterSettings::Framesync(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                        m_deviceSelInfo[0],
                                        m_deviceSelInfo[1],
                                        depthStreamInfo.nWidth, depthStreamInfo.nHeight,
@@ -446,7 +446,7 @@ int CVideoDeviceModel_8040_8054::UpdateFrameGrabberData(STREAM_TYPE streamType)
             return CVideoDeviceModel_ColorWithDepth::UpdateFrameGrabberData(streamType);
         case STREAM_KOLOR:
             return CVideoDeviceModel_Kolor::UpdateFrameGrabberData(streamType);
-        default: return ETronDI_NotSupport;
+        default: return APC_NotSupport;
     }
 }
 

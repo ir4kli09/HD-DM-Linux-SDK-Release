@@ -2,7 +2,7 @@
 #include "utImageProcessingUtility.h"
 #include <string.h>
 #include "CVideoDeviceController.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CThreadWorkerManage.h"
 #include <math.h>
 
@@ -12,7 +12,7 @@ m_nHeight(0),
 m_nDataSize(0),
 m_nSerialNumber(0),
 m_nSpecificX(0), m_nSpecificY(0),
-m_imageType(EtronDIImageType::IMAGE_UNKNOWN),
+m_imageType(EYSDImageType::IMAGE_UNKNOWN),
 m_pVideoDeviceController(pVideoDeviceController),
 m_pUserData(nullptr),
 m_streamType(streamType),
@@ -42,7 +42,7 @@ CImageDataModel::~CImageDataModel()
     if (m_pDataTransformTask) CThreadWorkerManage::GetInstance()->RemoveTask(m_pDataTransformTask);
 }
 
-bool CImageDataModel::SetImageInfo(EtronDIImageType::Value imageType,
+bool CImageDataModel::SetImageInfo(EYSDImageType::Value imageType,
                                    int nWidth, int nHeight)
 {
     if (m_imageType == imageType &&
@@ -66,15 +66,15 @@ bool CImageDataModel::SetImageInfo(EtronDIImageType::Value imageType,
 int CImageDataModel::GetRawDataBytePerPixel()
 {
     switch (m_imageType){
-        case EtronDIImageType::COLOR_YUY2:
-        case EtronDIImageType::COLOR_MJPG:
-        case EtronDIImageType::DEPTH_8BITS_0x80:
-        case EtronDIImageType::DEPTH_11BITS:
-        case EtronDIImageType::DEPTH_14BITS:
+        case EYSDImageType::COLOR_YUY2:
+        case EYSDImageType::COLOR_MJPG:
+        case EYSDImageType::DEPTH_8BITS_0x80:
+        case EYSDImageType::DEPTH_11BITS:
+        case EYSDImageType::DEPTH_14BITS:
             return 2;
-        case EtronDIImageType::DEPTH_8BITS:
+        case EYSDImageType::DEPTH_8BITS:
             return 1;
-        case EtronDIImageType::COLOR_RGB24:
+        case EYSDImageType::COLOR_RGB24:
             return 3;
         default:
             return 0;
@@ -108,13 +108,13 @@ int CImageDataModel::SetRawData(BYTE *pData, int nDataSize, int nSerialNumber)
     m_nSerialNumber = nSerialNumber;
 
     m_fpsCalculator.clock();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CImageDataModel::SetUserData(void *pUserData)
 {
     m_pUserData = pUserData;
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -134,17 +134,17 @@ int CImageDataModel_Color::TransformRawToRGB()
 
     if (CVideoDeviceModel::STREAMING == m_pVideoDeviceController->GetVideoDeviceModel()->GetState()){
 		//+[Thermal device]
-		if(GetImageType() == EtronDIImageType::COLOR_RGB24) {
+		if(GetImageType() == EYSDImageType::COLOR_RGB24) {
 			if (m_streamType == CVideoDeviceModel::STREAM_THERMAL) {
                                 
                                  memcpy( &m_rgbData[0],&m_rawData[0], m_rawData.size());
-                                 ret = ETronDI_OK;
+                                 ret = APC_OK;
         	        } else {
-        	             ret = ETronDI_NotSupport;
+        	             ret = APC_NotSupport;
         	        }
 		} else {
 		//-[Thermal device]
-                    ret = EtronDI_ColorFormat_to_RGB24(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+                    ret = APC_ColorFormat_to_RGB24(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                            m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                            &m_rgbData[0], &m_rawData[0],
                                            m_rawData.size(),
@@ -152,7 +152,7 @@ int CImageDataModel_Color::TransformRawToRGB()
                                            GetImageType());
 		}
     }else {
-        ret = ETronDI_NotSupport;
+        ret = APC_NotSupport;
     }
 
     return ret;
@@ -195,7 +195,7 @@ m_PostProcessHandle(nullptr)
 
     m_lastUpdateDepthTime = QTime::currentTime().addMSecs(-2 * UPDATE_DEPTH_VALUE_MS);
 
-    EtronDI_EnableGPUAcceleration(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    APC_EnableGPUAcceleration(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                   m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                   true);
 }
@@ -215,20 +215,20 @@ CImageDataModel_Depth::~CImageDataModel_Depth()
     }
 
     if (m_PostProcessHandle) {
-        EtronDI_ReleasePostProcess(m_PostProcessHandle);
+        APC_ReleasePostProcess(m_PostProcessHandle);
     }
 }
 
-bool CImageDataModel_Depth::SetImageInfo(EtronDIImageType::Value imageType, 
+bool CImageDataModel_Depth::SetImageInfo(EYSDImageType::Value imageType, 
                                          int nWidth, int nHeight){
     
     if (nWidth != m_nWidth || nHeight != m_nHeight){
         if (m_PostProcessHandle){
-            EtronDI_ReleasePostProcess(m_PostProcessHandle);
+            APC_ReleasePostProcess(m_PostProcessHandle);
             m_PostProcessHandle = nullptr;
         }
 
-        EtronDI_InitPostProcess(&m_PostProcessHandle, nWidth, nHeight, imageType);
+        APC_InitPostProcess(&m_PostProcessHandle, nWidth, nHeight, imageType);
     }
 
     return CImageDataModel::SetImageInfo(imageType, nWidth, nHeight);
@@ -238,14 +238,14 @@ int CImageDataModel_Depth::SetRawData(BYTE *pData, int nDataSize, int nSerialNum
 {
     m_dataMutex.lock();
     DepthFilter(pData);
-    // EtronDI_PostProcess(m_PostProcessHandle, pData);
+    // APC_PostProcess(m_PostProcessHandle, pData);
     m_dataMutex.unlock();
 
     int ret = CImageDataModel::SetRawData(pData, nDataSize, nSerialNumber);
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     UpdateDepth();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 void CImageDataModel_Depth::DepthFilter(BYTE *pData)
@@ -254,15 +254,15 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
     if (!pDepthFilterOptions || !pDepthFilterOptions->IsDepthFilter()) return;
 
     switch(GetImageType()){
-        case EtronDIImageType::DEPTH_8BITS:
+        case EYSDImageType::DEPTH_8BITS:
             pDepthFilterOptions->SetType(1);
             pDepthFilterOptions->SetBytesPerPixel(1);
             break;
-        case EtronDIImageType::DEPTH_11BITS:
+        case EYSDImageType::DEPTH_11BITS:
             pDepthFilterOptions->SetType(2);
             pDepthFilterOptions->SetBytesPerPixel(2);
             break;
-        case EtronDIImageType::DEPTH_14BITS:
+        case EYSDImageType::DEPTH_14BITS:
             pDepthFilterOptions->SetType(3);
             pDepthFilterOptions->SetBytesPerPixel(2);
             break;
@@ -279,7 +279,7 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
         new_width = 0;
         new_height = 0;
         sub_disparity = NULL;	// sub_disparity Initialize;
-        EtronDI_SubSample( CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        APC_SubSample( CEYSDDeviceManager::GetInstance()->GetEYSD(),
                            m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                            &sub_disparity,
                            pData,
@@ -291,7 +291,7 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
     }
 
     if (pDepthFilterOptions->IsEdgePreServingFilter())
-        EtronDI_EdgePreServingFilter(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        APC_EdgePreServingFilter(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                  m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                  sub_disparity,
                                  pDepthFilterOptions->GetType(),
@@ -301,7 +301,7 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
                                  pDepthFilterOptions->GetLumda());
 
     if (pDepthFilterOptions->IsHoleFill())
-        EtronDI_HoleFill(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        APC_HoleFill(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                          m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                          sub_disparity,
                          pDepthFilterOptions->GetBytesPerPixel(),
@@ -312,7 +312,7 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
 
 
     if (pDepthFilterOptions->IsTempleFilter())
-        EtronDI_TemporalFilter(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        APC_TemporalFilter(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                sub_disparity,
                                pDepthFilterOptions->GetBytesPerPixel(),
@@ -321,7 +321,7 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
                                pDepthFilterOptions->GetHistory());
 
     if (bIsSubSample)
-        EtronDI_ApplyFilters(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        APC_ApplyFilters(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                              m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                              pData,
                              sub_disparity,
@@ -332,17 +332,17 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
 
     if (pDepthFilterOptions->IsFlyingDepthCancellation())
     {
-        if (GetImageType() == EtronDIImageType::DEPTH_8BITS)
-            EtronDI_FlyingDepthCancellation_D8(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if (GetImageType() == EYSDImageType::DEPTH_8BITS)
+            APC_FlyingDepthCancellation_D8(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                                pData,
                                                m_nWidth, m_nHeight);
-        else if (GetImageType() == EtronDIImageType::DEPTH_11BITS)
-            EtronDI_FlyingDepthCancellation_D11(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        else if (GetImageType() == EYSDImageType::DEPTH_11BITS)
+            APC_FlyingDepthCancellation_D11(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                 m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                                 pData,
                                                 m_nWidth, m_nHeight);
-        else if (GetImageType() == EtronDIImageType::DEPTH_14BITS)
+        else if (GetImageType() == EYSDImageType::DEPTH_14BITS)
         {
             CVideoDeviceModel::ZDTableInfo *pZDTableINfo = m_pVideoDeviceController->GetVideoDeviceModel()->GetZDTableInfo();
             if ( !pZDTableINfo ) return;
@@ -372,18 +372,18 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
             }
             WORD* pZ14Depth = ( WORD* )pData;
 
-            EtronDI_TableToData(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+            APC_TableToData(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                 m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                 m_nWidth, m_nHeight,
                                 m_vecTableZ14ToD11.size() * sizeof( WORD ),
                                 m_vecTableZ14ToD11.data(),
                                 pZ14Depth,
                                 m_vecZ14ToD11.data() );
-            EtronDI_FlyingDepthCancellation_D11(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+            APC_FlyingDepthCancellation_D11(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                 m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                                 ( BYTE* )m_vecZ14ToD11.data(),
                                                 m_nWidth, m_nHeight);
-            EtronDI_TableToData(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+            APC_TableToData(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                 m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                 m_nWidth, m_nHeight,
                                 2048 * sizeof( WORD ),
@@ -446,12 +446,12 @@ int CImageDataModel_Depth::TransformRawToRGB()
             pColorPalette = &m_colorPalette[COLOR_PALETTE_GRAY][0];
             break;
         default:
-            if (EtronDIImageType::DEPTH_8BITS == GetImageType()){
+            if (EYSDImageType::DEPTH_8BITS == GetImageType()){
                 utImageProcessingUtility::convert_yuv_to_rgb_buffer( &m_rawData[0], &m_rgbData[0], GetWidth(), GetHeight());
             }else{
                 utImageProcessingUtility::convert_yuv_to_rgb_buffer( &m_rawData[0], &m_rgbData[0], GetWidth() * 2, GetHeight());
             }
-            return ETronDI_OK;
+            return APC_OK;
     }
 
     int nZNear, nZFar;
@@ -478,7 +478,7 @@ int CImageDataModel_Depth::TransformRawToRGB()
     }else{
         CVideoDeviceModel::ZDTableInfo *pZDTableINfo = m_pVideoDeviceController->GetVideoDeviceModel()->GetZDTableInfo();
         switch (GetImageType()){
-            case EtronDIImageType::DEPTH_8BITS:
+            case EYSDImageType::DEPTH_8BITS:
                 utImageProcessingUtility::UpdateD8bitsDisplayImage_DIB24(pColorPalette,
                                                                          &m_rawData[0], &m_rgbData[0],
                                                                          GetWidth(), GetHeight(),
@@ -486,23 +486,23 @@ int CImageDataModel_Depth::TransformRawToRGB()
                                                                          pZDTableINfo->nTableSize
                                                                          );
                 break;
-            case EtronDIImageType::DEPTH_11BITS:
+            case EYSDImageType::DEPTH_11BITS:
                 utImageProcessingUtility::UpdateD11DisplayImage_DIB24(pColorPalette,
                                                                       &m_rawData[0], &m_rgbData[0],
                                                                       GetWidth(), GetHeight(),
                                                                       pZDTableINfo->ZDTable);
                 break;
-            case EtronDIImageType::DEPTH_14BITS:
+            case EYSDImageType::DEPTH_14BITS:
                 utImageProcessingUtility::UpdateZ14DisplayImage_DIB24(pColorPalette,
                                                                       &m_rawData[0], &m_rgbData[0],
                                                                       GetWidth(), GetHeight());
                 break;
             default:
-                return ETronDI_NotSupport;
+                return APC_NotSupport;
         }
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 QString CImageDataModel_Depth::GetImgaeDataInfo()
@@ -588,7 +588,7 @@ unsigned short CImageDataModel_Depth::GetDepth(int nX, int nY)
 unsigned short CImageDataModel_Depth::GetZValue(int nDepth)
 {
     CVideoDeviceModel::ZDTableInfo *pZDTableInfo = m_pVideoDeviceController->GetVideoDeviceModel()->GetZDTableInfo();
-    EtronDIImageType::Value imageType = m_pVideoDeviceController->GetVideoDeviceModel()->GetDepthImageType();
+    EYSDImageType::Value imageType = m_pVideoDeviceController->GetVideoDeviceModel()->GetDepthImageType();
     if (CVideoDeviceModel::STREAMING != m_pVideoDeviceController->GetVideoDeviceModel()->GetState()){
         return 0;
     }
@@ -598,23 +598,23 @@ unsigned short CImageDataModel_Depth::GetZValue(int nDepth)
         if (!nDepth) return 0;
 
         switch (imageType){
-            case EtronDIImageType::DEPTH_8BITS_0x80:
-            case EtronDIImageType::DEPTH_8BITS:
+            case EYSDImageType::DEPTH_8BITS_0x80:
+            case EYSDImageType::DEPTH_8BITS:
                 return (WORD)(m_dblCamFocus * m_dblBaselineDist / nDepth);
-            case EtronDIImageType::DEPTH_11BITS:
+            case EYSDImageType::DEPTH_11BITS:
                 return (WORD)(8.0 * m_dblCamFocus * m_dblBaselineDist / nDepth);
-            case EtronDIImageType::DEPTH_14BITS:
+            case EYSDImageType::DEPTH_14BITS:
                 return nDepth;
             default:
                 return 0;
         }
     } else {
 
-        if (EtronDIImageType::DEPTH_14BITS == imageType){
+        if (EYSDImageType::DEPTH_14BITS == imageType){
             return nDepth;
         }
 
-        WORD zdIndex = (EtronDIImageType::DEPTH_8BITS == imageType) ?
+        WORD zdIndex = (EYSDImageType::DEPTH_8BITS == imageType) ?
                         nDepth << 3 :
                         nDepth;
 

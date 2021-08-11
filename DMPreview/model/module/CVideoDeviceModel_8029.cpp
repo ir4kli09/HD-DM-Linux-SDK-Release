@@ -1,6 +1,6 @@
 #include "CVideoDeviceModel_8029.h"
 #include "eSPDI.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceController.h"
 
 CVideoDeviceModel_8029::CVideoDeviceModel_8029(DEVSELINFO *pDeviceSelfInfo):
@@ -13,21 +13,21 @@ CVideoDeviceModel(pDeviceSelfInfo)
 int CVideoDeviceModel_8029::InitUsbType()
 {
     m_usbPortType = USB_PORT_TYPE_3_0;
-    std::vector<ETRONDI_STREAM_INFO> pColorStreamInfo = GetStreamInfoList(STREAM_COLOR);
-    for(ETRONDI_STREAM_INFO streamInfo : pColorStreamInfo){
+    std::vector<APC_STREAM_INFO> pColorStreamInfo = GetStreamInfoList(STREAM_COLOR);
+    for(APC_STREAM_INFO streamInfo : pColorStreamInfo){
         if(streamInfo.bFormatMJPG){
             m_usbPortType = USB_PORT_TYPE_2_0;
             break;
         }
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8029::SetIRValue(unsigned short nValue)
 {
     if(STATE::STREAMING == GetState()){
-        int ret = EtronDI_SetFWRegister(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        int ret = APC_SetFWRegister(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                         m_deviceSelInfo[0],
                                         0x81, nValue,
                                         FG_Address_1Byte | FG_Value_1Byte);
@@ -35,7 +35,7 @@ int CVideoDeviceModel_8029::SetIRValue(unsigned short nValue)
         return ret;
     }else{
         m_nIRValue = nValue;
-        return ETronDI_OK;
+        return APC_OK;
     }
 }
 
@@ -43,9 +43,9 @@ int CVideoDeviceModel_8029::UpdateIR()
 {
     m_nIRMax = 16;
     m_nIRMin = 0;
-    int ret = ETronDI_OK;
+    int ret = APC_OK;
     if(STATE::STREAMING == GetState()){
-        RETRY_ETRON_API(ret, EtronDI_GetFWRegister(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        RETRY_APC_API(ret, APC_GetFWRegister(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                    m_deviceSelInfo[0],
                                                    0x81, &m_nIRValue,
                                                    FG_Address_1Byte | FG_Value_1Byte));
@@ -58,12 +58,12 @@ int CVideoDeviceModel_8029::AdjustRegister()
     int ret;
     unsigned short nF05B = 0;
     nF05B = 0xF0;
-    RETRY_ETRON_API(ret, EtronDI_SetHWRegister(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_SetHWRegister(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_deviceSelInfo[0],
                                                0xF05B, nF05B,
                                                FG_Address_2Byte | FG_Value_1Byte));
     nF05B = 0xF3;
-    RETRY_ETRON_API(ret, EtronDI_SetHWRegister(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_SetHWRegister(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_deviceSelInfo[0],
                                                0xF05B, nF05B,
                                                FG_Address_2Byte | FG_Value_1Byte));
@@ -73,7 +73,7 @@ int CVideoDeviceModel_8029::AdjustRegister()
 
 int CVideoDeviceModel_8029::ConfigDepthFilter()
 {
-    if (!m_pVideoDeviceController) return ETronDI_OK;
+    if (!m_pVideoDeviceController) return APC_OK;
 
     DepthFilterOptions *pDepthFilterOptions = m_pVideoDeviceController->GetDepthFilterOptions();
 
@@ -83,7 +83,7 @@ int CVideoDeviceModel_8029::ConfigDepthFilter()
     pDepthFilterOptions->EnableFlyingDepthCancellation(true);
     pDepthFilterOptions->SetFlyingDepthCancellationLock(true);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8029::OpenDevice()
@@ -123,12 +123,12 @@ std::vector<CloudPoint> CVideoDeviceModel_8029::GeneratePointCloud(std::vector<u
                                                                    unsigned short nColorWidth,
                                                                    unsigned short nColorHeight,
                                                                    eSPCtrl_RectLogData rectifyLogData,
-                                                                   EtronDIImageType::Value depthImageType,
+                                                                   EYSDImageType::Value depthImageType,
                                                                    int nZNear, int nZFar,
                                                                    bool bUsePlyFilter,
                                                                    std::vector<float> imgFloatBufOut)
 {
-    EtronDI_FlyingDepthCancellation_D8(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    APC_FlyingDepthCancellation_D8(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                     m_deviceSelInfo[0],
                                     &depthData[0],
                                     nDepthWidth, nDepthHeight);
@@ -147,7 +147,7 @@ std::vector<CloudPoint> CVideoDeviceModel_8029::GeneratePointCloud(std::vector<u
                                                      imgFloatBufOut);
     }else{
         std::vector<CloudPoint> cloudPoints;
-        PlyWriter::etronFrameTo3D_8029(nDepthWidth, nDepthHeight,
+        PlyWriter::EYSDFrameTo3D_8029(nDepthWidth, nDepthHeight,
                                        depthData,
                                        nColorWidth, nColorHeight,
                                        colorData,
@@ -167,7 +167,7 @@ int CVideoDeviceModel_8029::FrameGrabberDataTransform(std::vector<unsigned char>
                                                       std::vector<unsigned char>& bufColor, int &widthColor, int &heightColor,
                                                       int &serialNumber)
 {
-    return EtronDI_FlyingDepthCancellation_D8(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    return APC_FlyingDepthCancellation_D8(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                               m_deviceSelInfo[0],
                                               &bufDepth[0],
                                               widthDepth, heightDepth);

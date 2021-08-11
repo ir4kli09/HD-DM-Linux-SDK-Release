@@ -402,7 +402,7 @@ int v4l2::GetFrame(int fd)
     //if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1)
     {
        perror("GetFrame VIDIOC_DQBUF Failed...");
-       printf("VIDIOC_DQBUF(%s) :  ETronDI_GET_IMAGE_FAIL, errno:%d\n", strerror(errno), errno);
+       printf("VIDIOC_DQBUF(%s) :  EYSD_GET_IMAGE_FAIL, errno:%d\n", strerror(errno), errno);
        return ret;
     }
     else

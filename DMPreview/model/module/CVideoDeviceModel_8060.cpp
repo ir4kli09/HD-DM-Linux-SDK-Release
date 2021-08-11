@@ -1,5 +1,5 @@
 #include "CVideoDeviceModel_8060.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceController.h"
 
 CVideoDeviceModel_8060::CVideoDeviceModel_8060(DEVSELINFO *pDeviceSelfInfo):
@@ -13,13 +13,13 @@ int CVideoDeviceModel_8060::InitDeviceSelInfo()
 {
     CVideoDeviceModel_Kolor::InitDeviceSelInfo();
 
-    if(m_deviceSelInfo.empty()) return ETronDI_NullPtr;
+    if(m_deviceSelInfo.empty()) return APC_NullPtr;
 
     DEVSELINFO *pDevSelfInfo = new DEVSELINFO;
     pDevSelfInfo->index = m_deviceSelInfo[0]->index + 2;
     m_deviceSelInfo.push_back(std::move(pDevSelfInfo));
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8060::InitDeviceInformation()
@@ -27,7 +27,7 @@ int CVideoDeviceModel_8060::InitDeviceInformation()
     CVideoDeviceModel_Kolor::InitDeviceInformation();
 
     m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[2]));
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 bool CVideoDeviceModel_8060::IsStreamSupport(STREAM_TYPE type)
@@ -62,19 +62,19 @@ int CVideoDeviceModel_8060::GetIRRange(unsigned short &nMin, unsigned short &nMa
 int CVideoDeviceModel_8060::AdjustZDTableIndex(int &nIndex)
 {
     nIndex = 0;
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8060::InitStreamInfoList()
 {
     m_streamInfo[STREAM_TRACK].resize(MAX_STREAM_INFO_COUNT, {0, 0, false});
     int ret;
-    RETRY_ETRON_API(ret, EtronDI_GetDeviceResolutionList(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_GetDeviceResolutionList(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                          m_deviceSelInfo[2],
                                                          MAX_STREAM_INFO_COUNT, &m_streamInfo[STREAM_TRACK][0],
                                                          MAX_STREAM_INFO_COUNT, nullptr));
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     auto it = m_streamInfo[STREAM_TRACK].begin();
     for ( ; it != m_streamInfo[STREAM_TRACK].end() ; ++it){
@@ -92,7 +92,7 @@ int CVideoDeviceModel_8060::AddCameraPropertyModels()
 {
     CVideoDeviceModel_Kolor::AddCameraPropertyModels();
     m_cameraPropertyModel.push_back(new CCameraPropertyModel("Track", this, m_deviceSelInfo[2]));
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8060::Reset()
@@ -118,9 +118,9 @@ int CVideoDeviceModel_8060::PrepareOpenDevice()
 {
     bool bTrackStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_TRACK);
     if(bTrackStream){
-        EtronDI_SetDepthDataType(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        APC_SetDepthDataType(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                  m_deviceSelInfo[2],
-                                 ETronDI_DEPTH_DATA_11_BITS);
+                                 APC_DEPTH_DATA_11_BITS);
     }
 
     CVideoDeviceModel_Kolor::PrepareOpenDevice();
@@ -128,15 +128,15 @@ int CVideoDeviceModel_8060::PrepareOpenDevice()
     auto PrepareImageData = [&](STREAM_TYPE type){
         bool bStreamEnable = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(type);
         if(bStreamEnable){
-            std::vector<ETRONDI_STREAM_INFO> streamInfo = GetStreamInfoList(type);
+            std::vector<APC_STREAM_INFO> streamInfo = GetStreamInfoList(type);
             int index = m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(type);
             m_imageData[type].nWidth = streamInfo[index].nWidth;
             m_imageData[type].nHeight  = streamInfo[index].nHeight;
             m_imageData[type].bMJPG = streamInfo[index].bFormatMJPG;
             m_imageData[type].depthDataType = GetDepthDataType();
             m_imageData[type].imageDataType = m_imageData[STREAM_KOLOR].bMJPG ?
-                                                      EtronDIImageType::COLOR_MJPG :
-                                                      EtronDIImageType::COLOR_YUY2;
+                                                      EYSDImageType::COLOR_MJPG :
+                                                      EYSDImageType::COLOR_YUY2;
 
             unsigned short nBytePerPixel = 2;
             unsigned int nBufferSize = m_imageData[type].nWidth * m_imageData[STREAM_KOLOR].nHeight * nBytePerPixel;
@@ -150,20 +150,20 @@ int CVideoDeviceModel_8060::PrepareOpenDevice()
     PrepareImageData(STREAM_KOLOR);
     PrepareImageData(STREAM_TRACK);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8060::OpenDevice()
 {
-    if (ETronDI_OK != CVideoDeviceModel_Kolor::OpenDevice()){
-        return ETronDI_OPEN_DEVICE_FAIL;
+    if (APC_OK != CVideoDeviceModel_Kolor::OpenDevice()){
+        return APC_OPEN_DEVICE_FAIL;
     }
 
     bool bKolorStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR);
     if(bKolorStream)
     {
         int nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_KOLOR);
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[1],
                                              m_imageData[STREAM_KOLOR].nWidth, m_imageData[STREAM_KOLOR].nHeight, m_imageData[STREAM_KOLOR].bMJPG,
                                              0, 0,
@@ -171,7 +171,7 @@ int CVideoDeviceModel_8060::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
         m_pVideoDeviceController->GetPreviewOptions()->SetStreamFPS(STREAM_KOLOR, nFPS);
     }
@@ -180,7 +180,7 @@ int CVideoDeviceModel_8060::OpenDevice()
     if(bTrackStream)
     {
         int nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_TRACK);
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[2],
                                              m_imageData[STREAM_TRACK].nWidth, m_imageData[STREAM_TRACK].nHeight, m_imageData[STREAM_TRACK].bMJPG,
                                              0, 0,
@@ -188,13 +188,13 @@ int CVideoDeviceModel_8060::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
 
         m_pVideoDeviceController->GetPreviewOptions()->SetStreamFPS(STREAM_TRACK, nFPS);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8060::StartStreamingTask()
@@ -211,7 +211,7 @@ int CVideoDeviceModel_8060::StartStreamingTask()
         CreateStreamTask(STREAM_TRACK);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8060::CloseDevice()
@@ -220,17 +220,17 @@ int CVideoDeviceModel_8060::CloseDevice()
 
     bool bKolorStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR);
     if(bKolorStream){
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[1])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
     }
 
     bool bTrackStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_TRACK);
     if(bTrackStream){
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[2])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
     }
 
@@ -251,7 +251,7 @@ int CVideoDeviceModel_8060::ClosePreviewView()
         m_pVideoDeviceController->GetControlView()->ClosePreviewView(STREAM_TRACK);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8060::GetImage(STREAM_TYPE type)
@@ -277,14 +277,14 @@ int CVideoDeviceModel_8060::GetColorImage(STREAM_TYPE type)
 
     unsigned long int nImageSize = 0;
     int nSerial = EOF;
-    int ret = EtronDI_GetColorImage(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    int ret = APC_GetColorImage(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                     deviceSelInfo,
                                     &m_imageData[type].imageBuffer[0],
                                     &nImageSize,
                                     &nSerial,
                                     0);
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     return ProcessImage(type, nImageSize, nSerial);
 }

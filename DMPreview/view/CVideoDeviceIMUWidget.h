@@ -2,7 +2,7 @@
 #define CVIDEODEVICEIMUWIDGET_H
 
 #include <QWidget>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 #include "CIMUDataViewerWidget.h"
 
 namespace Ui {
@@ -11,7 +11,7 @@ class CVideoDeviceIMUWidget;
 
 class CIMUDataController;
 class CVideoDeviceIMUWidget : public QWidget,
-                              public CEtronUIView
+                              public CEYSDUIView
 {
     Q_OBJECT
 public:    

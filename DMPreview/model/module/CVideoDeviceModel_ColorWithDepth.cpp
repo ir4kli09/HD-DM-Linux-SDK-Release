@@ -31,7 +31,7 @@ int CVideoDeviceModel_ColorWithDepth::InitColorStreamMask()
         }
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 
@@ -41,8 +41,8 @@ int CVideoDeviceModel_ColorWithDepth::GetDepthIndexFromCombineStream(int nStream
 
     if (0 == (m_colorStreamMask[nStreamIndex] & COLOR_STEAM_MASK_DEPTH)) return EOF;
 
-    std::vector<ETRONDI_STREAM_INFO> colorStreamInfoList = GetStreamInfoList(STREAM_COLOR);
-    std::vector<ETRONDI_STREAM_INFO> depthStreamInfoList = GetStreamInfoList(STREAM_DEPTH);
+    std::vector<APC_STREAM_INFO> colorStreamInfoList = GetStreamInfoList(STREAM_COLOR);
+    std::vector<APC_STREAM_INFO> depthStreamInfoList = GetStreamInfoList(STREAM_DEPTH);
 
     int nMatchWidth = colorStreamInfoList[nStreamIndex].nWidth;
     if (m_colorStreamMask[nStreamIndex] & COLOR_STEAM_MASK_COLOR){
@@ -70,8 +70,8 @@ int CVideoDeviceModel_ColorWithDepth::GetColorIndexFromCombineStream(int nStream
 
 int CVideoDeviceModel_ColorWithDepth::GetCombineStreamIndexFromDepth(int nDepthIndex)
 {
-    std::vector<ETRONDI_STREAM_INFO> colorStreamInfoList = GetStreamInfoList(STREAM_COLOR);
-    std::vector<ETRONDI_STREAM_INFO> depthStreamInfoList = GetStreamInfoList(STREAM_DEPTH);
+    std::vector<APC_STREAM_INFO> colorStreamInfoList = GetStreamInfoList(STREAM_COLOR);
+    std::vector<APC_STREAM_INFO> depthStreamInfoList = GetStreamInfoList(STREAM_DEPTH);
     for (size_t i = 0 ; i < colorStreamInfoList.size() ; ++i){
         if (depthStreamInfoList[nDepthIndex].nWidth == colorStreamInfoList[i].nWidth &&
             depthStreamInfoList[nDepthIndex].nHeight == colorStreamInfoList[i].nHeight){
@@ -87,12 +87,12 @@ int CVideoDeviceModel_ColorWithDepth::TransformDepthDataType(int nDepthDataType,
 
     if (!m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR)){
         switch (nDepthDataType){
-            case ETronDI_DEPTH_DATA_11_BITS:
-            case ETronDI_DEPTH_DATA_11_BITS_RAW:
-                return ETronDI_DEPTH_DATA_11_BITS_COMBINED_RECTIFY;
-            case ETronDI_DEPTH_DATA_14_BITS:
-            case ETronDI_DEPTH_DATA_14_BITS_RAW:
-                return  ETronDI_DEPTH_DATA_14_BITS_COMBINED_RECTIFY;
+            case APC_DEPTH_DATA_11_BITS:
+            case APC_DEPTH_DATA_11_BITS_RAW:
+                return APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY;
+            case APC_DEPTH_DATA_14_BITS:
+            case APC_DEPTH_DATA_14_BITS_RAW:
+                return  APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY;
         }
     }
 
@@ -141,6 +141,6 @@ int CVideoDeviceModel_ColorWithDepth::UpdateFrameGrabberData(STREAM_TYPE streamT
         CVideoDeviceModel::UpdateFrameGrabberData(STREAM_DEPTH);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 
 }

@@ -1,6 +1,8 @@
 #include "CIMUDataViewerWidget.h"
 #include "OpenGLShaderCore.h"
 #include <math.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <QTime>
 #include "IMU/IMU_Filter/IMUFilter.h"
 #include "IMU/IMU_Filter/IMUFilter_AHRS.h"

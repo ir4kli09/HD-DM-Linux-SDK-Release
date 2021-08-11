@@ -50,7 +50,7 @@ public:
     int SetCameraPropertyValue(CAMERA_PROPERTY type, int nValue);
     int SetCameraPropertySupport(CAMERA_PROPERTY type, bool bSupport){
         m_cameraPropertyItems[type].bSupport = bSupport;
-        return ETronDI_OK;
+        return APC_OK;
     }
 
     float GetManuelExposureTimeMs();

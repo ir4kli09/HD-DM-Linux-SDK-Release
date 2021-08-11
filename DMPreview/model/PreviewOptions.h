@@ -112,7 +112,7 @@ private:
     int nIRLevel = 3;
     bool bIRExtend = false;
 
-    int nDepthDataType = ETronDI_DEPTH_DATA_11_BITS;
+    int nDepthDataType = APC_DEPTH_DATA_11_BITS;
     bool bRectify = true;
 
     bool bModeConfig = false;

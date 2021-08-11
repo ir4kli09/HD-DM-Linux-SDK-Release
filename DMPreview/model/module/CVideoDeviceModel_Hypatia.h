@@ -9,7 +9,7 @@ public:
 
     virtual bool IRExtendSupport(){ return false; }
     virtual bool IsIRExtended(){ return false; }
-    virtual int ExtendIR(bool bEnable){ return ETronDI_NotSupport; }
+    virtual int ExtendIR(bool bEnable){ return APC_NotSupport; }
 
     friend class CVideoDeviceModelFactory;
 protected:

@@ -62,7 +62,7 @@ void CVideoDeviceAudoWidget::DoAudioRecord()
     m_bIsRecording = true;
     m_sFilePath = "";
     char input[] = "FrogEye2-Track";
-    rec = EtronDI_getUACNAME(input, deviceName);
+    rec = APC_getUACNAME(input, deviceName);
     if (rec != 0) {
         m_sMessage = "Device Not Ready";
         UpdateUI();

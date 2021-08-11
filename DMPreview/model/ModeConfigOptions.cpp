@@ -10,6 +10,24 @@ m_nCurrentIndex(EOF)
     }
 
     if(!m_modeConfigs.empty()){
-        m_nCurrentIndex = 0;
+        if(nPID == APC_PID_SANDRA && usbType == USB_PORT_TYPE_3_0){
+            int specifyDefaultMode = 5;
+            for (int loop = 0 ; loop < allConfigs.size(); loop ++)
+            {
+                if (allConfigs[loop].iMode == 5)
+                {
+                    m_nCurrentIndex = loop;
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+        }
+        else
+        {
+            m_nCurrentIndex = 0;
+        }
     }
 }

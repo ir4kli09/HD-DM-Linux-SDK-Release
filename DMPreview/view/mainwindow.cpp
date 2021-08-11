@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceModel.h"
 #include "CVideoDeviceDialog.h"
 #include "utDisplayMetrics.h"
@@ -13,15 +13,15 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bAutoPreview(false)
 {
     ui->setupUi(this);
-    if (ETronDI_OK != CEtronDeviceManager::GetInstance()->UpdateDevice() ||
-        CEtronDeviceManager::GetInstance()->GetDeviceModels().empty()){
-        QMessageBox::critical(NULL, "Error", "EtronDI Init Failed.", QMessageBox::Yes , QMessageBox::Yes);
+    if (APC_OK != CEYSDDeviceManager::GetInstance()->UpdateDevice() ||
+        CEYSDDeviceManager::GetInstance()->GetDeviceModels().empty()){
+        QMessageBox::critical(NULL, "Error", "EYSD Init Failed.", QMessageBox::Yes , QMessageBox::Yes);
         exit(0);
     }
 
     UpdateListState();
 
-    if (1 == CEtronDeviceManager::GetInstance()->GetDeviceModels().size()){
+    if (1 == CEYSDDeviceManager::GetInstance()->GetDeviceModels().size()){
         m_bAutoPreview = true;
         ui->open_dialog_button->click();
         m_bAutoPreview = false;
@@ -48,11 +48,11 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::UpdateListState()
 {
-    std::vector<CVideoDeviceModel *> models = CEtronDeviceManager::GetInstance()->GetDeviceModels();
+    std::vector<CVideoDeviceModel *> models = CEYSDDeviceManager::GetInstance()->GetDeviceModels();
     if(models.size() != (size_t)ui->device_comboBox->count()) {
         ui->device_comboBox->clear();
         for (size_t index = 0 ; index < models.size() ; ++index){
-            ui->device_comboBox->addItem("Etron Video Device");
+            ui->device_comboBox->addItem("EYSD Video Device");
         }
         ui->device_comboBox->setCurrentIndex(0);
     }
@@ -89,17 +89,17 @@ void MainWindow::UpdateLogEnable()
 void MainWindow::on_open_dialog_button_clicked()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    CEtronDeviceManager::GetInstance()->EnableSDKLog(m_bIsLogEnabled);
+    CEYSDDeviceManager::GetInstance()->EnableSDKLog(m_bIsLogEnabled);
     QApplication::restoreOverrideCursor();
 
-    CVideoDeviceModel *pModel = CEtronDeviceManager::GetInstance()->GetDeviceModels()[ui->device_comboBox->currentIndex()];
+    CVideoDeviceModel *pModel = CEYSDDeviceManager::GetInstance()->GetDeviceModels()[ui->device_comboBox->currentIndex()];
     if(CVideoDeviceModel::CLOSED == pModel->GetState()){
         m_dialogMap[pModel] = new CVideoDeviceDialog(pModel, this);
     }
     QString sDevName;
     sDevName.sprintf("%s", pModel->GetDeviceInformation()[0].deviceInfomation.strDevName);
     QString title = "DMPreview ";
-    title += ETRONDI_VERSION;
+    title += APC_VERSION;
     m_dialogMap[pModel]->setWindowTitle(title + " (" + sDevName + ") ");
     m_dialogMap[pModel]->show();
     m_dialogMap[pModel]->activateWindow();

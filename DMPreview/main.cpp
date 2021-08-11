@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     MainWindow mainWindow;
     //mainWindow.setWindowIcon(QIcon(":/image/eys3d.png"));
     QString title = "DMPreview ";
-    title += ETRONDI_VERSION;
+    title += APC_VERSION;
     mainWindow.setWindowTitle(title);
     mainWindow.show();
 

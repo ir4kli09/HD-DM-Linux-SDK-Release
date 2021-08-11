@@ -1,6 +1,6 @@
 #include "CCameraPropertyModel.h"
 #include "CVideoDeviceModel.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "eSPDI.h"
 #include <math.h>
 
@@ -22,7 +22,7 @@ CCameraPropertyModel::~CCameraPropertyModel()
 int CCameraPropertyModel::Init()
 {
     InitCameraProperty();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CCameraPropertyModel::Update()
@@ -31,13 +31,13 @@ int CCameraPropertyModel::Update()
         UpdateCameraProperty((CAMERA_PROPERTY)i);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CCameraPropertyModel::Reset()
 {
     Init();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CCameraPropertyModel::InitCameraProperty()
@@ -53,17 +53,17 @@ int CCameraPropertyModel::InitCameraProperty()
 
         item.bValid = false;
 
-        void *pEtron = CEtronDeviceManager::GetInstance()->GetEtronDI();
+        void *pEYSDI = CEYSDDeviceManager::GetInstance()->GetEYSD();
         int ret;
         if (bIsCTProperty){
-            RETRY_ETRON_API(ret, EtronDI_GetCTRangeAndStep(pEtron, m_pDeviceSelfInfo, nID,
+            RETRY_APC_API(ret, APC_GetCTRangeAndStep(pEYSDI, m_pDeviceSelfInfo, nID,
                                                            &item.nMax, &item.nMin, &item.nStep, &item.nDefault, &item.nFlags));
         }else{
-            RETRY_ETRON_API(ret, EtronDI_GetPURangeAndStep(pEtron, m_pDeviceSelfInfo, nID,
+            RETRY_APC_API(ret, APC_GetPURangeAndStep(pEYSDI, m_pDeviceSelfInfo, nID,
                                                            &item.nMax, &item.nMin, &item.nStep, &item.nDefault, &item.nFlags));
         }
 
-        if (ETronDI_OK != ret) continue;
+        if (APC_OK != ret) continue;
 
         if(EXPOSURE_TIME == (CAMERA_PROPERTY)i){
             item.nMax = log2(item.nMax / 10000.0);
@@ -81,10 +81,10 @@ int CCameraPropertyModel::InitCameraProperty()
     }
 
     for (int i = 0 ; i < CAMERA_PROPERTY_COUNT ; ++i){
-        if(m_cameraPropertyItems[i].bSupport && !m_cameraPropertyItems[i].bValid) return ETronDI_Init_Fail;
+        if(m_cameraPropertyItems[i].bSupport && !m_cameraPropertyItems[i].bValid) return APC_Init_Fail;
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 
 }
 
@@ -94,18 +94,18 @@ int CCameraPropertyModel::UpdateCameraProperty(CAMERA_PROPERTY type)
     bool bIsCTProperty;
     GetCameraPropertyFlag(type, nID, bIsCTProperty);
 
-    void *pEtron = CEtronDeviceManager::GetInstance()->GetEtronDI();
+    void *pEYSDI = CEYSDDeviceManager::GetInstance()->GetEYSD();
     int ret;
     long int nValue;
     if (bIsCTProperty){
-        RETRY_ETRON_API(ret, EtronDI_GetCTPropVal(pEtron, m_pDeviceSelfInfo, nID,
+        RETRY_APC_API(ret, APC_GetCTPropVal(pEYSDI, m_pDeviceSelfInfo, nID,
                                                   &nValue));
     }else{
-        RETRY_ETRON_API(ret, EtronDI_GetPUPropVal(pEtron, m_pDeviceSelfInfo, nID,
+        RETRY_APC_API(ret, APC_GetPUPropVal(pEYSDI, m_pDeviceSelfInfo, nID,
                                                   &nValue));
     }
 
-    if(ETronDI_OK == ret){
+    if(APC_OK == ret){
         m_cameraPropertyItems[type].nValue = nValue;
         DataToInfo(type, m_cameraPropertyItems[type].nValue);
     }
@@ -115,7 +115,7 @@ int CCameraPropertyModel::UpdateCameraProperty(CAMERA_PROPERTY type)
 
 int CCameraPropertyModel::SetDefaultCameraProperty()
 {
-    int ret = ETronDI_OK;
+    int ret = APC_OK;
 
     for (int i = 0 ; i < CAMERA_PROPERTY_COUNT ; ++i){
         bool bNeedRestoreAutoState = false;
@@ -148,7 +148,7 @@ int CCameraPropertyModel::SetDefaultCameraProperty()
 int CCameraPropertyModel::SetCameraPropertyValue(CAMERA_PROPERTY type, int nValue)
 {
     if (!m_cameraPropertyItems[type].bSupport || !m_cameraPropertyItems[type].bValid){
-        return ETronDI_NotSupport;
+        return APC_NotSupport;
     }
 
     int nID;
@@ -156,13 +156,13 @@ int CCameraPropertyModel::SetCameraPropertyValue(CAMERA_PROPERTY type, int nValu
     GetCameraPropertyFlag(type, nID, bIsCTProperty);
     InfoToData(type, nValue);
 
-    void *pEtron = CEtronDeviceManager::GetInstance()->GetEtronDI();
+    void *pEYSDI = CEYSDDeviceManager::GetInstance()->GetEYSD();
 
     int ret;
     if (bIsCTProperty){
-        RETRY_ETRON_API(ret, EtronDI_SetCTPropVal(pEtron, m_pDeviceSelfInfo, nID, nValue));
+        RETRY_APC_API(ret, APC_SetCTPropVal(pEYSDI, m_pDeviceSelfInfo, nID, nValue));
     }else{
-        RETRY_ETRON_API(ret, EtronDI_SetPUPropVal(pEtron, m_pDeviceSelfInfo, nID, nValue));
+        RETRY_APC_API(ret, APC_SetPUPropVal(pEYSDI, m_pDeviceSelfInfo, nID, nValue));
     }
 
     if (AUTO_EXPOSURE == type){
@@ -248,7 +248,7 @@ float CCameraPropertyModel::GetManuelExposureTimeMs()
 {
     float fExposureTimeMs = 0.0f;
     int ret;
-    RETRY_ETRON_API(ret, EtronDI_GetExposureTime(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_GetExposureTime(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                  m_pDeviceSelfInfo,
                                                  SENSOR_BOTH,
                                                  &fExposureTimeMs));
@@ -259,7 +259,7 @@ float CCameraPropertyModel::GetManuelExposureTimeMs()
 void CCameraPropertyModel::SetManuelExposureTimeMs(float fMs)
 {
     int ret;
-    RETRY_ETRON_API(ret, EtronDI_SetExposureTime(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_SetExposureTime(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                  m_pDeviceSelfInfo,
                                                  SENSOR_BOTH,
                                                  fMs));
@@ -270,7 +270,7 @@ float CCameraPropertyModel::GetManuelGlobalGain()
 {
     float fGlobalGain = 0.0f;
     int ret;
-    RETRY_ETRON_API(ret, EtronDI_GetGlobalGain(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_GetGlobalGain(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_pDeviceSelfInfo,
                                                SENSOR_BOTH,
                                                &fGlobalGain));
@@ -281,7 +281,7 @@ float CCameraPropertyModel::GetManuelGlobalGain()
 void CCameraPropertyModel::SetManuelGlobalGain(float fGlobalGain)
 {
     int ret;
-    RETRY_ETRON_API(ret, EtronDI_SetGlobalGain(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_SetGlobalGain(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_pDeviceSelfInfo,
                                                SENSOR_BOTH,
                                                fGlobalGain));

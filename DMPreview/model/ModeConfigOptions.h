@@ -14,9 +14,9 @@ public:
     std::vector<ModeConfig::MODE_CONFIG> GetModes(){ return m_modeConfigs; }
 
     int SelectCurrentIndex(size_t nIndex){
-        if(nIndex >= m_modeConfigs.size() ) return ETronDI_NullPtr;
+        if(nIndex >= m_modeConfigs.size() ) return APC_NullPtr;
         m_nCurrentIndex = nIndex;
-        return ETronDI_OK;
+        return APC_OK;
     }
     int GetCurrentIndex(){ return m_nCurrentIndex; }
     ModeConfig::MODE_CONFIG GetCurrentModeInfo()

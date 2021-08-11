@@ -12,7 +12,7 @@
 #include "CPreviewDialog.h"
 #include "CImageDataModel.h"
 #include "utDisplayMetrics.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceDepthFilterWidget.h"
 #include "CFrameSyncManager.h"
 
@@ -241,7 +241,7 @@ void CVideoDeviceDialog::RelocateDialogPosition()
 
 }
 
-int CVideoDeviceDialog::ImageCallback(EtronDIImageType::Value imageType,
+int CVideoDeviceDialog::ImageCallback(EYSDImageType::Value imageType,
                                       CVideoDeviceModel::STREAM_TYPE streamType,
                                       BYTE *pImageBuffer, int nImageSize,
                                       int nWidth, int nHeight, int nSerialNumber,
@@ -262,7 +262,7 @@ int CVideoDeviceDialog::ImageCallback(EtronDIImageType::Value imageType,
         m_pPreviewDialog[streamType]->GetImageDataModel()->SetRawData(pImageBuffer, nImageSize, nSerialNumber);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceDialog::PointCloudCallback(std::vector<float> &cloudPoints, std::vector<BYTE> &colors)
@@ -280,7 +280,7 @@ int CVideoDeviceDialog::PointCloudCallback(std::vector<float> &cloudPoints, std:
 
     m_pPointCloudViewerDialog->GetPointCloudViewer().updateData(cloudPoints, colors);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 CImageDataModel *CVideoDeviceDialog::GetPreviewImageData(CVideoDeviceModel::STREAM_TYPE type)
@@ -408,7 +408,7 @@ void CVideoDeviceDialog::on_pushButton_rectify_read_clicked()
         ret = m_pVideoDeviceController->GetRectifyLogData(nIndex, &rectLogData);
     }
 
-    if (ETronDI_OK != ret) {
+    if (APC_OK != ret) {
         QMessageBox::information(NULL, "Error", "Read Rectify Log Fail !!", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }

@@ -9,7 +9,7 @@ echo "4. NVIDIA TX2"
 echo "=================="
 echo 
 
-read -p "Please select CPU type (enter "1" or "2") : " project
+read -p "Please select CPU type (enter: 1(x86_64), 2(armhf_32), 3(TI), 4(NVIDIA TX2/NVIDIA Nano)) : " project
 
 case $project in
         [1]* ) 

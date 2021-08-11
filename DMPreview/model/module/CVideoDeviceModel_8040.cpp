@@ -1,7 +1,7 @@
 #include "CVideoDeviceModel_8040.h"
 #include "CVideoDeviceController.h"
 #include "eSPDI.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CIMUModel.h"
 #include <cmath>
 
@@ -30,7 +30,7 @@ int CVideoDeviceModel_8040::Reset()
 int CVideoDeviceModel_8040::GetIRRange(unsigned short &nMin, unsigned short &nMax)
 {
     int ret = CVideoDeviceModel_8040_8054::GetIRRange(nMin, nMax);
-    if(ETronDI_OK == ret){
+    if(APC_OK == ret){
         nMax = 4;
     }
     return ret;
@@ -39,7 +39,7 @@ int CVideoDeviceModel_8040::GetIRRange(unsigned short &nMin, unsigned short &nMa
 int CVideoDeviceModel_8040::AdjustZDTableIndex(int &nIndex)
 {
     if(m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_DEPTH)){
-        ETRONDI_STREAM_INFO depthStreamInfo = GetStreamInfoList(STREAM_DEPTH)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH)];
+        APC_STREAM_INFO depthStreamInfo = GetStreamInfoList(STREAM_DEPTH)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH)];
         if (912 == depthStreamInfo.nWidth || 912 == depthStreamInfo.nHeight ||
             456 == depthStreamInfo.nWidth || 456 == depthStreamInfo.nHeight){
             nIndex = 1;
@@ -48,7 +48,7 @@ int CVideoDeviceModel_8040::AdjustZDTableIndex(int &nIndex)
         return CVideoDeviceModel_8040_8054::AdjustZDTableIndex(nIndex);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8040::GetRectifyLogData(int nDevIndex, int nRectifyLogIndex, eSPCtrl_RectLogData *pRectifyLogData, STREAM_TYPE depthType)
@@ -58,14 +58,14 @@ int CVideoDeviceModel_8040::GetRectifyLogData(int nDevIndex, int nRectifyLogInde
     }else if (1 == nDevIndex &&
               m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR)){
 
-        ETRONDI_STREAM_INFO kolorStreamInfo = GetStreamInfoList(STREAM_KOLOR)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_KOLOR)];
+        APC_STREAM_INFO kolorStreamInfo = GetStreamInfoList(STREAM_KOLOR)[m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_KOLOR)];
         if(2560 == kolorStreamInfo.nWidth && 1216 == kolorStreamInfo.nHeight) nRectifyLogIndex = 0;
         if(1920 == kolorStreamInfo.nWidth && 912 == kolorStreamInfo.nHeight) nRectifyLogIndex = 0;
         if(3840 == kolorStreamInfo.nWidth && 1824 == kolorStreamInfo.nHeight) nRectifyLogIndex = 0;
     }
 
     int ret = CVideoDeviceModel_8040_8054::GetRectifyLogData(nDevIndex, nRectifyLogIndex, pRectifyLogData, depthType);
-    if(ETronDI_OK == ret && !m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR)){
+    if(APC_OK == ret && !m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR)){
         pRectifyLogData->ReProjectMat[11] = (pRectifyLogData->OutImgHeight / 2) / tan(72/2 * 3.14159265359f / 180);
     }
 
@@ -94,7 +94,7 @@ std::vector<CloudPoint> CVideoDeviceModel_8040::GeneratePointCloud(std::vector<u
                                                                    unsigned short nColorWidth,
                                                                    unsigned short nColorHeight,
                                                                    eSPCtrl_RectLogData rectifyLogData,
-                                                                   EtronDIImageType::Value depthImageType,
+                                                                   EYSDImageType::Value depthImageType,
                                                                    int nZNear, int nZFar,
                                                                    bool bUsePlyFilter,
                                                                    std::vector<float> imgFloatBufOut)
@@ -103,11 +103,11 @@ std::vector<CloudPoint> CVideoDeviceModel_8040::GeneratePointCloud(std::vector<u
     if (m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR)){
         eSPCtrl_RectLogData rectifyLogDataSlave;
         int nDepthIndex = m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH);
-        if(ETronDI_OK != GetRectifyLogData(1, nDepthIndex, &rectifyLogDataSlave)){
+        if(APC_OK != GetRectifyLogData(1, nDepthIndex, &rectifyLogDataSlave)){
             return cloudPoints;
         }
 
-        PlyWriter::etronFrameTo3DCylinder(nDepthWidth, nDepthHeight,
+        PlyWriter::EYSDFrameTo3DCylinder(nDepthWidth, nDepthHeight,
                                           depthData,
                                           nColorWidth, nColorHeight,
                                           colorData,
@@ -119,7 +119,7 @@ std::vector<CloudPoint> CVideoDeviceModel_8040::GeneratePointCloud(std::vector<u
                                           nZNear, nZFar,
                                           true, 1.0f);
     }else{
-        PlyWriter::etronFrameTo3DCylinder(nDepthWidth, nDepthHeight,
+        PlyWriter::EYSDFrameTo3DCylinder(nDepthWidth, nDepthHeight,
                                           depthData,
                                           nColorWidth, nColorHeight,
                                           colorData,

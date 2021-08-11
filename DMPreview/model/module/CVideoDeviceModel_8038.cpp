@@ -1,7 +1,7 @@
 #include "CVideoDeviceModel_8038.h"
 #include <QThread>
 #include "RegisterSettings.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceController.h"
 #include "eSPDI.h"
 #include "DepthFusionHelper.h"
@@ -24,13 +24,13 @@ int CVideoDeviceModel_8038::InitDeviceSelInfo()
 {
     CVideoDeviceModel::InitDeviceSelInfo();
 
-    if(m_deviceSelInfo.empty()) return ETronDI_NullPtr;
+    if(m_deviceSelInfo.empty()) return APC_NullPtr;
 
     DEVSELINFO *pDevSelfInfo = new DEVSELINFO;
     pDevSelfInfo->index = m_deviceSelInfo[0]->index + 1;
     m_deviceSelInfo.push_back(std::move(pDevSelfInfo));
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8038::InitDeviceInformation()
@@ -39,7 +39,7 @@ int CVideoDeviceModel_8038::InitDeviceInformation()
 
     m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[1]));
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 void CVideoDeviceModel_8038::SetVideoDeviceController(CVideoDeviceController *pVideoDeviceController)
@@ -84,7 +84,7 @@ eSPCtrl_RectLogData &CVideoDeviceModel_8038::GetRectifyLogData(STREAM_TYPE depth
 
 int CVideoDeviceModel_8038::UpdateZDTable()
 {
-    if (!m_pVideoDeviceController) return ETronDI_NullPtr;
+    if (!m_pVideoDeviceController) return APC_NullPtr;
 
     m_zdTableInfo.nZNear = EX8038_MIN_DEPTH_RANGE;
 
@@ -92,15 +92,15 @@ int CVideoDeviceModel_8038::UpdateZDTable()
     m_pVideoDeviceController->GetPreviewOptions()->GetZRange(nZNear, nZFar);
     m_pVideoDeviceController->GetPreviewOptions()->SetZRange(m_zdTableInfo.nZNear, nZFar);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8038::AdjustRegister()
 {
     QThread::sleep(1);
-    RegisterSettings::DM_Quality_Register_Setting_For6cm(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RegisterSettings::DM_Quality_Register_Setting_For6cm(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                              m_deviceSelInfo[0]);
-    RegisterSettings::DM_Quality_Register_Setting_For15cm(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RegisterSettings::DM_Quality_Register_Setting_For15cm(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                              m_deviceSelInfo[1]);
     return CVideoDeviceModel_ColorWithDepth::AdjustRegister();
 }
@@ -115,7 +115,7 @@ int CVideoDeviceModel_8038::PreparePointCloudInfo()
 int CVideoDeviceModel_8038::PrepareOpenDevice()
 {
     int ret;
-    RETRY_ETRON_API(ret, EtronDI_SetControlCounterMode(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_SetControlCounterMode(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                        m_deviceSelInfo[0],
                                                        0x0));
 
@@ -151,7 +151,7 @@ int CVideoDeviceModel_8038::PrepareOpenDevice()
                                                           m_imageData[STREAM_DEPTH_FUSION].nWidth, m_imageData[STREAM_DEPTH_FUSION].nHeight,
                                                           800.0 , baselineDist, 1,
                                                           CVideoDeviceModel_8038::DepthFusionCallbackFn, this);
-            m_pDepthFusionHelper->SetSDKHandle(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+            m_pDepthFusionHelper->SetSDKHandle(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_deviceSelInfo[0]);
         }
     }
@@ -171,7 +171,7 @@ int CVideoDeviceModel_8038::OpenDevice()
             nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_DEPTH);
         }
 
-        if(ETronDI_OK != EtronDI_OpenDeviceMBL(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDeviceMBL(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_deviceSelInfo[0],
                                                m_imageData[STREAM_COLOR].nWidth, m_imageData[STREAM_COLOR].nHeight,
                                                m_imageData[STREAM_COLOR].bMJPG,
@@ -180,7 +180,7 @@ int CVideoDeviceModel_8038::OpenDevice()
                                                true, nullptr,
                                                &nFPS,
                                                IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
 
         if(bColorStream){
@@ -190,7 +190,7 @@ int CVideoDeviceModel_8038::OpenDevice()
             m_pVideoDeviceController->GetPreviewOptions()->SetStreamFPS(STREAM_DEPTH, nFPS);
         }
     }
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8038::StartStreamingTask()
@@ -218,11 +218,11 @@ int CVideoDeviceModel_8038::CloseDevice()
     bool bDepthStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_DEPTH);
 
     if(bColorStream || bDepthStream){
-        return EtronDI_CloseDeviceMBL(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        return APC_CloseDeviceMBL(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                       m_deviceSelInfo[0]);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8038::ClosePreviewView()
@@ -237,7 +237,7 @@ int CVideoDeviceModel_8038::ClosePreviewView()
         m_pVideoDeviceController->GetControlView()->ClosePreviewView(STREAM_DEPTH_FUSION);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_8038::StopStreamingTask()
@@ -263,7 +263,7 @@ int CVideoDeviceModel_8038::GetImage(STREAM_TYPE type)
             ret = GetMultiBaselineDepthImage(type);
             break;
         default:
-            return ETronDI_NotSupport;
+            return APC_NotSupport;
     }
 
     return ret;
@@ -283,14 +283,14 @@ int CVideoDeviceModel_8038::GetColorImage()
     unsigned long int nImageSize = 0;
     int nSerial = EOF;
 
-    int ret = EtronDI_Get_Color_30_mm_depth(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    int ret = APC_Get_Color_30_mm_depth(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                             m_deviceSelInfo[0],
                                             &buffer[0],
                                             &nImageSize,
                                             &nSerial,
                                             nDepthDataType);
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     if(bColorStream && bDepthStream){
         unsigned short nHalfWidth = m_colorWithDepthImageData.nWidth / 2;
@@ -311,7 +311,7 @@ int CVideoDeviceModel_8038::GetColorImage()
         ProcessImage(STREAM_COLOR, nImageSize / 2, nSerial);        
         ProcessImage(STREAM_DEPTH_30mm, nImageSize / 2, nSerial);
 
-        return ETronDI_OK;
+        return APC_OK;
     }else if (bColorStream){
         return ProcessImage(STREAM_COLOR, nImageSize, nSerial);
     }else{
@@ -327,7 +327,7 @@ int CVideoDeviceModel_8038::GetMultiBaselineDepthImage(STREAM_TYPE type)
 
     switch (type){
         case STREAM_DEPTH_60mm:
-            ret = EtronDI_Get_60_mm_depth(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+            ret = APC_Get_60_mm_depth(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                           m_deviceSelInfo[0],
                                           &m_imageData[type].imageBuffer[0],
                                           &nImageSize,
@@ -335,17 +335,17 @@ int CVideoDeviceModel_8038::GetMultiBaselineDepthImage(STREAM_TYPE type)
                                           m_imageData[type].depthDataType);
             break;
         case STREAM_DEPTH_150mm:
-            ret = EtronDI_Get_150_mm_depth(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+            ret = APC_Get_150_mm_depth(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                            m_deviceSelInfo[0],
                                            &m_imageData[type].imageBuffer[0],
                                            &nImageSize,
                                            &nSerial,
                                            m_imageData[type].depthDataType);
             break;
-        default: return ETronDI_NotSupport;
+        default: return APC_NotSupport;
     }
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     if(m_pDepthFusionHelper){
         switch (type){
@@ -355,7 +355,7 @@ int CVideoDeviceModel_8038::GetMultiBaselineDepthImage(STREAM_TYPE type)
             case STREAM_DEPTH_150mm:
                 m_pDepthFusionHelper->UpdateDepthData(2, nSerial,  &m_imageData[STREAM_DEPTH_150mm].imageBuffer[0], nImageSize);
                 break;
-            default: return ETronDI_NotSupport;
+            default: return APC_NotSupport;
         }
     }
 
@@ -366,8 +366,8 @@ int CVideoDeviceModel_8038::ProcessImageCallback(STREAM_TYPE streamType,
                          int nImageSize, int nSerialNumber)
 {
     if (STREAM_DEPTH_FUSION == streamType){
-        CEtronUIView *pView = m_pVideoDeviceController->GetControlView();
-        if (!pView) return ETronDI_OK;
+        CEYSDUIView *pView = m_pVideoDeviceController->GetControlView();
+        if (!pView) return APC_OK;
 
         return pView->ImageCallback(m_imageData[streamType].imageDataType, streamType,
                                     &m_imageData[streamType].imageBuffer[0],

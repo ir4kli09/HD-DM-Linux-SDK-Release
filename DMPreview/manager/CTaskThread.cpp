@@ -4,14 +4,14 @@
 #include "CThreadWorkerManage.h"
 #include "CVideoDeviceController.h"
 #include "CRegisterReadWriteController.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CMessageManager.h"
 #include "CIMUDataController.h"
 #include "CVideoDeviceAudoWidget.h"
 #include "CImageDataModel.h"
 #include <QMessageBox>
 #include <QTime>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 
 CTaskThread::CTaskThread(QObject *parent):
 QThread(parent),
@@ -20,21 +20,21 @@ m_pTaskInfo(nullptr)
 
 int CTaskThread::AssignTask(CTaskInfo *pInfo)
 {
-    if (isRunning()) return ETronDI_NotSupport;
-    if (!pInfo) return ETronDI_NullPtr;
+    if (isRunning()) return APC_NotSupport;
+    if (!pInfo) return APC_NullPtr;
 
     m_pTaskInfo = pInfo;
     m_pTaskInfo->SetHandleThread(this);
     setObjectName(GetThreadName());
     start(GetPriority());
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CTaskThread::RemoveTask()
 {
     m_pTaskInfo = nullptr;
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 QString CTaskThread::GetThreadName()
@@ -177,7 +177,7 @@ void CTaskThread::DoStartStreaming()
     pController->GetControlView()->UpdateUI();
     CMessageManager::CloseMessage();
 
-    if(ETronDI_OK != ret){
+    if(APC_OK != ret){
         CMessageManager::Error("Open device failed!");
     }
     CThreadWorkerManage::GetInstance()->RemoveTask(m_pTaskInfo);
@@ -241,7 +241,7 @@ void CTaskThread::DoColdReset()
     }
 
     CMessageManager::ShowMessage("Reconnecting Device.");
-    if (ETronDI_OK == CEtronDeviceManager::GetInstance()->Reconnect()){
+    if (APC_OK == CEYSDDeviceManager::GetInstance()->Reconnect()){
         CThreadWorkerManage::GetInstance()->RemoveTask(m_pTaskInfo);
         CMessageManager::CloseMessage();
     }
@@ -259,7 +259,7 @@ void CTaskThread::DoQualityRegisterSetting()
 void CTaskThread::DoInterleaveMode()
 {
     CVideoDeviceModel *pModel = static_cast<CVideoDeviceModel *>(m_pTaskInfo->GetParam());
-    if (ETronDI_OK == pModel->AdjustInterleaveModeState()){
+    if (APC_OK == pModel->AdjustInterleaveModeState()){
         CThreadWorkerManage::GetInstance()->RemoveTask(m_pTaskInfo);
     }
 }
@@ -267,7 +267,7 @@ void CTaskThread::DoInterleaveMode()
 void CTaskThread::DoModuleSync()
 {
     CVideoDeviceModel *pModel = static_cast<CVideoDeviceModel *>(m_pTaskInfo->GetParam());
-    if(ETronDI_OK == pModel->ModuleSync()){
+    if(APC_OK == pModel->ModuleSync()){
         CThreadWorkerManage::GetInstance()->RemoveTask(m_pTaskInfo);
     }
     QThread::sleep(1);
@@ -277,7 +277,7 @@ void CTaskThread::DoFrameSync()
 {
     CVideoDeviceModel *pModel = static_cast<CVideoDeviceModel *>(m_pTaskInfo->GetParam());
     QThread::sleep(1);
-    if(ETronDI_OK == pModel->FrameSync()){
+    if(APC_OK == pModel->FrameSync()){
         CThreadWorkerManage::GetInstance()->RemoveTask(m_pTaskInfo);
     }
 }

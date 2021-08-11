@@ -1,6 +1,6 @@
 #include "CVideoDeviceModel_Grap.h"
 #include "CVideoDeviceController.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 
 //+[Thermal device]
 #include <linux/uvcvideo.h>
@@ -29,7 +29,7 @@ int CVideoDeviceModel_Grap::InitDeviceSelInfo()
 {
     CVideoDeviceModel::InitDeviceSelInfo();
 
-    if(m_deviceSelInfo.empty()) return ETronDI_NullPtr;    
+    if(m_deviceSelInfo.empty()) return APC_NullPtr;    
 
     for (int i = 1 ; i <= 3 ; ++i){
         DEVSELINFO *pDevSelfInfo = new DEVSELINFO;
@@ -37,7 +37,7 @@ int CVideoDeviceModel_Grap::InitDeviceSelInfo()
         m_deviceSelInfo.push_back(pDevSelfInfo);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_Grap::InitDeviceInformation()
@@ -45,19 +45,19 @@ int CVideoDeviceModel_Grap::InitDeviceInformation()
     SetPlumAR0330(false);
     CVideoDeviceModel::InitDeviceInformation();
     m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[1]));
-    if(ETronDI_OK == SetPlumAR0330(true)){
+    if(APC_OK == SetPlumAR0330(true)){
         m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[0]));
         SetPlumAR0330(false);
     }
 
     m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[2]));
     m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[3]));
-    if(ETronDI_OK == SetPlumAR0330(true)){
+    if(APC_OK == SetPlumAR0330(true)){
         m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[2]));
         SetPlumAR0330(false);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 bool CVideoDeviceModel_Grap::IsStreamSupport(STREAM_TYPE type)
@@ -79,12 +79,12 @@ int CVideoDeviceModel_Grap::InitStreamInfoList()
     {
         m_streamInfo[type].resize(MAX_STREAM_INFO_COUNT, {0, 0, false});
         int ret;
-        RETRY_ETRON_API(ret, EtronDI_GetDeviceResolutionList(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        RETRY_APC_API(ret, APC_GetDeviceResolutionList(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                              pDevSelInfo,
                                                              MAX_STREAM_INFO_COUNT, &m_streamInfo[type][0],
                                                              MAX_STREAM_INFO_COUNT, nullptr));
 
-        if (ETronDI_OK != ret) return ret;
+        if (APC_OK != ret) return ret;
 
         auto it = m_streamInfo[type].begin();
         for ( ; it != m_streamInfo[type].end() ; ++it){
@@ -103,7 +103,7 @@ int CVideoDeviceModel_Grap::InitStreamInfoList()
     AddStreamInfoList(m_deviceSelInfo[1], STREAM_KOLOR);
     AddStreamInfoList(m_deviceSelInfo[3], STREAM_KOLOR_SLAVE);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 bool CVideoDeviceModel_Grap::IsStreamAvailable()
@@ -119,15 +119,15 @@ int CVideoDeviceModel_Grap::PrepareOpenDevice()
     auto PrepareImageData = [&](STREAM_TYPE type){
         bool bStreamEnable = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(type);
         if(bStreamEnable){
-            std::vector<ETRONDI_STREAM_INFO> streamInfo = GetStreamInfoList(type);
+            std::vector<APC_STREAM_INFO> streamInfo = GetStreamInfoList(type);
             int index = m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(type);
             m_imageData[type].nWidth = streamInfo[index].nWidth;
             m_imageData[type].nHeight  = streamInfo[index].nHeight;
             m_imageData[type].bMJPG = streamInfo[index].bFormatMJPG;
             m_imageData[type].depthDataType = GetDepthDataType();
             m_imageData[type].imageDataType = m_imageData[type].bMJPG ?
-                                              EtronDIImageType::COLOR_MJPG :
-                                              EtronDIImageType::COLOR_YUY2;
+                                              EYSDImageType::COLOR_MJPG :
+                                              EYSDImageType::COLOR_YUY2;
 
             unsigned short nBytePerPixel = 2;
             unsigned int nBufferSize = m_imageData[type].nWidth * m_imageData[type].nHeight * nBytePerPixel;
@@ -146,7 +146,7 @@ int CVideoDeviceModel_Grap::PrepareOpenDevice()
 
     //+[Thermal device]
     #if defined(THERMAL_SENSOR)
-   isSupportThermal =EtronDI_GetThermalFD(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+   isSupportThermal =APC_GetThermalFD(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                     &FD);
      if(isSupportThermal){
         //+set device resolution
@@ -156,7 +156,7 @@ int CVideoDeviceModel_Grap::PrepareOpenDevice()
         m_imageData[STREAM_THERMAL].nWidth = video_w;
         m_imageData[STREAM_THERMAL].nHeight  = video_h;
         m_imageData[STREAM_THERMAL].bMJPG = false;
-        m_imageData[STREAM_THERMAL].imageDataType = EtronDIImageType::COLOR_RGB24;
+        m_imageData[STREAM_THERMAL].imageDataType = EYSDImageType::COLOR_RGB24;
 
        unsigned short nBytePerPixel = 3;
        unsigned int nBufferSize = m_imageData[STREAM_THERMAL].nWidth * m_imageData[STREAM_THERMAL].nHeight * nBytePerPixel;
@@ -168,7 +168,7 @@ int CVideoDeviceModel_Grap::PrepareOpenDevice()
      #endif
     //-[Thermal device]
     
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_Grap::OpenDevice()
@@ -177,7 +177,7 @@ int CVideoDeviceModel_Grap::OpenDevice()
     if(bColorStream)
     {
         int nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_COLOR);
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[0],
                                              m_imageData[STREAM_COLOR].nWidth, m_imageData[STREAM_COLOR].nHeight, m_imageData[STREAM_COLOR].bMJPG,
                                              0, 0,
@@ -185,11 +185,11 @@ int CVideoDeviceModel_Grap::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
 
         nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_COLOR);
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[2],
                                              m_imageData[STREAM_COLOR_SLAVE].nWidth, m_imageData[STREAM_COLOR_SLAVE].nHeight, m_imageData[STREAM_COLOR_SLAVE].bMJPG,
                                              0, 0,
@@ -197,7 +197,7 @@ int CVideoDeviceModel_Grap::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
 
         m_pVideoDeviceController->GetPreviewOptions()->SetStreamFPS(STREAM_COLOR, nFPS);
@@ -207,7 +207,7 @@ int CVideoDeviceModel_Grap::OpenDevice()
     if(bKolorStream)
     {
         int nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_KOLOR);
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[1],
                                              m_imageData[STREAM_KOLOR].nWidth, m_imageData[STREAM_KOLOR].nHeight, m_imageData[STREAM_KOLOR].bMJPG,
                                              0, 0,
@@ -215,11 +215,11 @@ int CVideoDeviceModel_Grap::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
 
         nFPS = m_pVideoDeviceController->GetPreviewOptions()->GetStreamFPS(STREAM_KOLOR);
-        if(ETronDI_OK != EtronDI_OpenDevice2(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK != APC_OpenDevice2(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[3],
                                              m_imageData[STREAM_KOLOR_SLAVE].nWidth, m_imageData[STREAM_KOLOR_SLAVE].nHeight, m_imageData[STREAM_KOLOR_SLAVE].bMJPG,
                                              0, 0,
@@ -227,7 +227,7 @@ int CVideoDeviceModel_Grap::OpenDevice()
                                              true, nullptr,
                                              &nFPS,
                                              IMAGE_SN_SYNC)){
-            return ETronDI_OPEN_DEVICE_FAIL;
+            return APC_OPEN_DEVICE_FAIL;
         }
         m_pVideoDeviceController->GetPreviewOptions()->SetStreamFPS(STREAM_KOLOR, nFPS);
     }
@@ -239,7 +239,7 @@ int CVideoDeviceModel_Grap::OpenDevice()
      }
     #endif
     //-[Thermal device]    
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_Grap::StartStreamingTask()
@@ -262,7 +262,7 @@ int CVideoDeviceModel_Grap::StartStreamingTask()
     }
     #endif
     //+[Thermal device]
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_Grap::CloseDevice()
@@ -271,27 +271,27 @@ int CVideoDeviceModel_Grap::CloseDevice()
 
     bool bColorStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_COLOR);
     if(bColorStream){
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[0])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
 
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[2])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
     }
 
     bool bKolorStream = m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_KOLOR);
     if(bKolorStream){
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[1])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
 
-        if(ETronDI_OK == EtronDI_CloseDevice(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+        if(APC_OK == APC_CloseDevice(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                              m_deviceSelInfo[3])){
-            ret = ETronDI_OK;
+            ret = APC_OK;
         }
     }
 
@@ -333,7 +333,7 @@ int CVideoDeviceModel_Grap::ClosePreviewView()
      }
     #endif
     //-[Thermal device]
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_Grap::GetImage(STREAM_TYPE type)
@@ -354,7 +354,7 @@ int CVideoDeviceModel_Grap::GetImage(STREAM_TYPE type)
             break;
         //-[Thermal device]
         default:
-            return ETronDI_NotSupport;
+            return APC_NotSupport;
     }
 
     return ret;
@@ -369,19 +369,19 @@ int CVideoDeviceModel_Grap::GetColorImage(STREAM_TYPE type)
         case STREAM_COLOR_SLAVE: deviceSelInfo = m_deviceSelInfo[2]; break;
         case STREAM_KOLOR: deviceSelInfo = m_deviceSelInfo[1]; break;
         case STREAM_KOLOR_SLAVE: deviceSelInfo = m_deviceSelInfo[3]; break;
-        default: return ETronDI_NotSupport;
+        default: return APC_NotSupport;
     }
 
     unsigned long int nImageSize = 0;
     int nSerial = EOF;
-    int ret = EtronDI_GetColorImage(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    int ret = APC_GetColorImage(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                     deviceSelInfo,
                                     &m_imageData[type].imageBuffer[0],
                                     &nImageSize,
                                     &nSerial,
                                     0);
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     return ProcessImage(type, nImageSize, nSerial);
 }
@@ -429,8 +429,8 @@ int  CVideoDeviceModel_Grap::GetThermalImage(STREAM_TYPE type, int video_w,v4l2 
                         
                         centerTemp = pSurfaceTemper[device.VIDEO_WIDTH*device.VIDEO_HEIGHT/2+device.VIDEO_WIDTH/2];
                         
-                        CEtronUIView *pView = m_pVideoDeviceController->GetControlView();
-                        if (!pView) return ETronDI_OK;
+                        CEYSDUIView *pView = m_pVideoDeviceController->GetControlView();
+                        if (!pView) return APC_OK;
                         int length = device.VIDEO_WIDTH*device.VIDEO_HEIGHT*3;
                         memcpy( &m_imageData[type].imageBuffer[0], device.rgb24, length);
        

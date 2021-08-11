@@ -1,5 +1,5 @@
 #include "CVideoDeviceModel_Kolor.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceController.h"
 #include "eSPDI.h"
 #include "CImageDataModel.h"
@@ -14,13 +14,13 @@ int CVideoDeviceModel_Kolor::InitDeviceSelInfo()
 {
     CVideoDeviceModel::InitDeviceSelInfo();
 
-    if(m_deviceSelInfo.empty()) return ETronDI_NullPtr;
+    if(m_deviceSelInfo.empty()) return APC_NullPtr;
 
     DEVSELINFO *pDevSelfInfo = new DEVSELINFO;
     pDevSelfInfo->index = m_deviceSelInfo[0]->index + 1;
     m_deviceSelInfo.push_back(pDevSelfInfo);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_Kolor::InitDeviceInformation()
@@ -28,14 +28,14 @@ int CVideoDeviceModel_Kolor::InitDeviceInformation()
     CVideoDeviceModel::InitDeviceInformation();
 
     m_deviceInfo.push_back(GetDeviceInformation(m_deviceSelInfo[1]));
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceModel_Kolor::AddCameraPropertyModels()
 {
     CVideoDeviceModel::AddCameraPropertyModels();
     m_cameraPropertyModel.push_back(new CCameraPropertyModel("Kolor", this, m_deviceSelInfo[1]));
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 bool CVideoDeviceModel_Kolor::IsStreamSupport(STREAM_TYPE type)
@@ -52,12 +52,12 @@ int CVideoDeviceModel_Kolor::InitStreamInfoList()
 {
     m_streamInfo[STREAM_KOLOR].resize(MAX_STREAM_INFO_COUNT, {0, 0, false});
     int ret;
-    RETRY_ETRON_API(ret, EtronDI_GetDeviceResolutionList(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    RETRY_APC_API(ret, APC_GetDeviceResolutionList(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                          m_deviceSelInfo[1],
                                                          MAX_STREAM_INFO_COUNT, &m_streamInfo[STREAM_KOLOR][0],
                                                          MAX_STREAM_INFO_COUNT, nullptr));
 
-    if (ETronDI_OK != ret) return ret;
+    if (APC_OK != ret) return ret;
 
     auto it = m_streamInfo[STREAM_KOLOR].begin();
     for ( ; it != m_streamInfo[STREAM_KOLOR].end() ; ++it){

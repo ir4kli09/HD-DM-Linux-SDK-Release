@@ -2,10 +2,10 @@
 #define CMESSAGEDIALOG_H
 #include <QDialog>
 #include <QLabel>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 
 class CMessageDialog : public QDialog,
-                       public CEtronUIView
+                       public CEYSDUIView
 {
 Q_OBJECT
 public:

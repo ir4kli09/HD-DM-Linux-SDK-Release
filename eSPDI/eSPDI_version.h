@@ -1,4 +1,4 @@
-#ifndef LIB_ETRONDI_VERSION_H
-#define LIB_ETRONDI_VERSION_H
-#define ETRONDI_VERSION "4.0.3.4"
+#ifndef LIB_ESPDI_VERSION_H
+#define LIB_ESPDI_VERSION_H
+#define APC_VERSION "v5.0.0.1"
 #endif

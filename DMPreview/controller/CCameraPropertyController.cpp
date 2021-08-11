@@ -48,13 +48,13 @@ int CCameraPropertyController::GetRange(CCameraPropertyModel::CAMERA_PROPERTY ty
     nMin = item.nMin;
     nMax = item.nMax;
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CCameraPropertyController::GetValue(CCameraPropertyModel::CAMERA_PROPERTY type, int &nValue)
 {
     nValue = m_pVideoDeviceModel->GetCameraproperty()[m_nCurrentIndex]->GetCameraProperty(type).nValue;
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CCameraPropertyController::SetValue(CCameraPropertyModel::CAMERA_PROPERTY type, int nValue)

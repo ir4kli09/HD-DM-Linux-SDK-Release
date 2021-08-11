@@ -1,11 +1,11 @@
 #ifndef CPOINTCLOUDVIEWERDIALOG_H
 #define CPOINTCLOUDVIEWERDIALOG_H
 #include <QDialog>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 #include "CPointCloudViewerWidget.h"
 
 class CPointCloudViewerDialog : public QDialog,
-                                public CEtronUIView
+                                public CEYSDUIView
 {
 Q_OBJECT
 

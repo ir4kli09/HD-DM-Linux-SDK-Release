@@ -10,10 +10,10 @@ CVideoDeviceModel(pDeviceSelfInfo)
 int CVideoDeviceModel_8037::AdjustZDTableIndex(int &nIndex)
 {
     if (!m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_DEPTH)){
-        return ETronDI_OK;
+        return APC_OK;
     }
 
-    std::vector<ETRONDI_STREAM_INFO> streamInfo = GetStreamInfoList(STREAM_DEPTH);
+    std::vector<APC_STREAM_INFO> streamInfo = GetStreamInfoList(STREAM_DEPTH);
     int nDepthIndex = m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH);
 
     if (720 == streamInfo[nDepthIndex].nHeight){
@@ -22,5 +22,5 @@ int CVideoDeviceModel_8037::AdjustZDTableIndex(int &nIndex)
         nIndex = 1;
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }

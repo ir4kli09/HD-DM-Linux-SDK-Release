@@ -21,8 +21,8 @@ CIMUDataController::~CIMUDataController()
 
 int CIMUDataController::StartCaptureData()
 {
-    if (m_bIsCapturingData) return ETronDI_OK;
-    if (!m_pVideoDeviceModel->GetIMUModel()) return ETronDI_NullPtr;
+    if (m_bIsCapturingData) return APC_OK;
+    if (!m_pVideoDeviceModel->GetIMUModel()) return APC_NullPtr;
 
     m_pVideoDeviceModel->GetIMUModel()->ReadDataOutputFormat();
     m_pVideoDeviceModel->GetIMUModel()->EnableDataOutout(true);
@@ -32,18 +32,18 @@ int CIMUDataController::StartCaptureData()
 
     m_bIsCapturingData = true;
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::StopCaptrueData()
 {
-    if(!m_bIsCapturingData) return ETronDI_OK;
+    if(!m_bIsCapturingData) return APC_OK;
 
     CThreadWorkerManage::GetInstance()->RemoveTask(m_pCaptureDataTask);
 
     m_bIsCapturingData = false;
     m_pVideoDeviceModel->GetIMUModel()->EnableDataOutout(false);
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::StartLogData()
@@ -62,18 +62,18 @@ int CIMUDataController::StartLogData()
     m_pLogFile = fopen(buf, "wt");
     m_pVideoDeviceModel->GetIMUModel()->SetLogFile(m_pLogFile);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::StopLogData()
 {
-    if(!m_pLogFile) return ETronDI_OK;
+    if(!m_pLogFile) return APC_OK;
 
     fclose(m_pLogFile);
     m_pLogFile = nullptr;
     m_pVideoDeviceModel->GetIMUModel()->SetLogFile(nullptr);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::SelectDataFormatIndex(int nIndex)
@@ -85,7 +85,7 @@ int CIMUDataController::SelectDataFormatIndex(int nIndex)
         case 2: dataForamt = CIMUModel::OFFSET_DATA; break;
         case 3: dataForamt = CIMUModel::DMP_DATA_WITHOT_OFFSET; break;
         case 4: dataForamt = CIMUModel::DMP_DATA_WITH_OFFSET; break;
-        default: return ETronDI_NotSupport;
+        default: return APC_NotSupport;
     }
 
     return m_pVideoDeviceModel->GetIMUModel()->SelectDataFormat(dataForamt);
@@ -107,36 +107,36 @@ int CIMUDataController::GetCurrentDataFormatIndex()
 int CIMUDataController::GetFWVersion()
 {
     m_sIMUInfo = "FW version: " + m_pVideoDeviceModel->GetIMUModel()->GetFWVersion();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::GetModuleName()
 {
     m_sIMUInfo = "Module name: " + m_pVideoDeviceModel->GetIMUModel()->GetModuleName();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::GetStatus()
 {
     m_sIMUInfo = "Status : " + m_pVideoDeviceModel->GetIMUModel()->GetStatus();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::StartCalibration()
 {
-    if(m_bIsCalibration) return ETronDI_OK;
+    if(m_bIsCalibration) return APC_OK;
 
     m_bIsCalibration = true;
 
     CTaskInfo *pInfo = CTaskInfoManager::GetInstance()->RequestTaskInfo(CTaskInfo::IMU_CALIBRATION, this);
     CThreadWorkerManage::GetInstance()->AddTask(pInfo);
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::DoCalibration()
 {
     CIMUModel *pModel = m_pVideoDeviceModel->GetIMUModel();
-    if(!pModel) return ETronDI_NullPtr;
+    if(!pModel) return APC_NullPtr;
 
     char calibratingStatus = 0;
     pModel->CheckCalibratingStatus(&calibratingStatus);
@@ -192,14 +192,14 @@ int CIMUDataController::DoCalibration()
 
     m_bIsCalibration = false;
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CIMUDataController::ReadIMUData()
 {
     CIMUModel *pModel = m_pVideoDeviceModel->GetIMUModel();
-    if (!pModel) return ETronDI_NullPtr;
-    if (CVideoDeviceModel::RECONNECTING == m_pVideoDeviceModel->GetState()) return ETronDI_NullPtr;
+    if (!pModel) return APC_NullPtr;
+    if (CVideoDeviceModel::RECONNECTING == m_pVideoDeviceModel->GetState()) return APC_NullPtr;
 
     IMUData imuData;
     int ret = pModel->ReadIMUData(imuData);
@@ -234,11 +234,11 @@ int CIMUDataController::ReadIMUData()
 int CIMUDataController::IMUCallback(IMUData *pImuData, int status)
 {
     CIMUModel *pModel = m_pVideoDeviceModel->GetIMUModel();
-    if (!pModel) return ETronDI_NullPtr;
+    if (!pModel) return APC_NullPtr;
 
-    if (ETronDI_NullPtr == status){
+    if (APC_NullPtr == status){
         m_sIMUData = "unable to open device.";
-        return ETronDI_NullPtr;
+        return APC_NullPtr;
     }
 
     m_imuData = *pImuData;
@@ -285,5 +285,5 @@ int CIMUDataController::IMUCallback(IMUData *pImuData, int status)
         }
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }

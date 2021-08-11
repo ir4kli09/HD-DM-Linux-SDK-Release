@@ -153,7 +153,7 @@ void utImageProcessingUtility::UpdateD8bitsDisplayImage_DIB24(RGBQUAD *pColorPal
         for (int x = 0; x < width; x++) {
             int pixelIndex = y * width + x;
             unsigned short depth = (unsigned short)pDepth[pixelIndex];
-            if (nZDTableSize == ETronDI_ZD_TABLE_FILE_SIZE_11_BITS)
+            if (nZDTableSize == APC_ZD_TABLE_FILE_SIZE_11_BITS)
                 zdIndex = (depth << 3) * sizeof(unsigned short);
             else
                 zdIndex = depth * sizeof(unsigned short);

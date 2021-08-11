@@ -1,5 +1,5 @@
 ﻿#include "CVideoDeviceController.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CImageDataModel.h"
 #include "CThreadWorkerManage.h"
 #include "CRegisterReadWriteController.h"
@@ -11,7 +11,7 @@
 #include "CFrameSyncManager.h"
 
 CVideoDeviceController::CVideoDeviceController(CVideoDeviceModel *pVideoDeviceModel,
-                                               CEtronUIView *pView):
+                                               CEYSDUIView *pView):
 m_pVideoDeviceModel(pVideoDeviceModel),
 m_pControlView(pView),
 m_pIMUDataController(nullptr)
@@ -86,13 +86,13 @@ void CVideoDeviceController::EnableRectifyData(bool bEnable)
 
 int CVideoDeviceController::SetDepthDataBits(int nDepthDataBits)
 {
-    int depthDataType = ETronDI_DEPTH_DATA_DEFAULT;
+    int depthDataType = APC_DEPTH_DATA_DEFAULT;
     switch (nDepthDataBits){
-        case 8: depthDataType = ETronDI_DEPTH_DATA_8_BITS; break;
-        case 11: depthDataType = ETronDI_DEPTH_DATA_11_BITS; break;
-        case 14: depthDataType = ETronDI_DEPTH_DATA_14_BITS; break;
-        case 0 : depthDataType =  ETronDI_DEPTH_DATA_OFF_RAW; break;
-        default: return ETronDI_NotSupport;
+        case 8: depthDataType = APC_DEPTH_DATA_8_BITS; break;
+        case 11: depthDataType = APC_DEPTH_DATA_11_BITS; break;
+        case 14: depthDataType = APC_DEPTH_DATA_14_BITS; break;
+        case 0 : depthDataType =  APC_DEPTH_DATA_OFF_RAW; break;
+        default: return APC_NotSupport;
     }
 
     return SetDepthDataType(m_pVideoDeviceModel->TransformDepthDataType(depthDataType));
@@ -100,13 +100,13 @@ int CVideoDeviceController::SetDepthDataBits(int nDepthDataBits)
 
 int CVideoDeviceController::SetDepthDataBits(int nDepthDataBits, bool bRectify)
 {
-    int depthDataType = ETronDI_DEPTH_DATA_DEFAULT;
+    int depthDataType = APC_DEPTH_DATA_DEFAULT;
     switch (nDepthDataBits){
-        case 8: depthDataType = ETronDI_DEPTH_DATA_8_BITS; break;
-        case 11: depthDataType = ETronDI_DEPTH_DATA_11_BITS; break;
-        case 14: depthDataType = ETronDI_DEPTH_DATA_14_BITS; break;
-        case 0 : depthDataType =  ETronDI_DEPTH_DATA_OFF_RAW; break;
-        default: return ETronDI_NotSupport;
+        case 8: depthDataType = APC_DEPTH_DATA_8_BITS; break;
+        case 11: depthDataType = APC_DEPTH_DATA_11_BITS; break;
+        case 14: depthDataType = APC_DEPTH_DATA_14_BITS; break;
+        case 0 : depthDataType =  APC_DEPTH_DATA_OFF_RAW; break;
+        default: return APC_NotSupport;
     }
 
     return SetDepthDataType(m_pVideoDeviceModel->TransformDepthDataType(depthDataType, bRectify));
@@ -138,7 +138,7 @@ int CVideoDeviceController::StartStreaming()
 {
     CTaskInfo *pTask = CTaskInfoManager::GetInstance()->RequestTaskInfo(CTaskInfo::START_STREAMING, this);
     CThreadWorkerManage::GetInstance()->AddTask(pTask);
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::StopStreaming()
@@ -151,7 +151,7 @@ int CVideoDeviceController::StopStreaming()
     pTask->WaitTaskFinished();
 #endif
     GetControlView()->UpdateUI();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::DoSnapShot(bool bAsync)
@@ -159,7 +159,7 @@ int CVideoDeviceController::DoSnapShot(bool bAsync)
     if (bAsync){
         CTaskInfo *pInfo = CTaskInfoManager::GetInstance()->RequestTaskInfo(CTaskInfo::VIDEO_SNAP_SHOT, this);
         CThreadWorkerManage::GetInstance()->AddTask(pInfo);
-        return ETronDI_OK;
+        return APC_OK;
     }
 
     unsigned short nIRValue =  GetVideoDeviceModel()->GetIRValue();
@@ -297,7 +297,7 @@ int CVideoDeviceController::DoSnapShot(bool bAsync)
         SavePly(pFilePath, cloudPoints);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 
 }
 
@@ -306,9 +306,9 @@ int CVideoDeviceController::SaveBitmap(char *pFilePath,
                unsigned short nWidth, unsigned short nHeight,
                unsigned short nBytePerPixel)
 {
-    if (!pFilePath || !pBuffer) return ETronDI_NullPtr;
-    EtronDI_RGB2BMP(pFilePath, nWidth, nHeight, pBuffer);
-    return ETronDI_OK;
+    if (!pFilePath || !pBuffer) return APC_NullPtr;
+    APC_RGB2BMP(pFilePath, nWidth, nHeight, pBuffer);
+    return APC_OK;
 }
 
 int CVideoDeviceController::SaveYUV(char *pFilePath,
@@ -316,21 +316,21 @@ int CVideoDeviceController::SaveYUV(char *pFilePath,
             unsigned short nWidth, unsigned short nHeight,
             unsigned short nBytePerPixel)
 {
-    if (!pFilePath || !pBuffer) return ETronDI_NullPtr;
+    if (!pFilePath || !pBuffer) return APC_NullPtr;
 
     FILE *pFile = fopen(pFilePath, "wb");
-    if (!pFile) return ETronDI_NullPtr;
+    if (!pFile) return APC_NullPtr;
 
     fseek(pFile, 0, SEEK_SET);
     fwrite(&pBuffer[0], sizeof(unsigned char), nWidth * nHeight * nBytePerPixel, pFile);
     fclose(pFile);
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::SavePly(char *pFilePath, std::vector<CloudPoint> cloudPoints)
 {
-    if (!pFilePath) return ETronDI_NullPtr;
-    if (cloudPoints.empty()) return ETronDI_NullPtr;
+    if (!pFilePath) return APC_NullPtr;
+    if (cloudPoints.empty()) return APC_NullPtr;
 
     PlyWriter::writePly(cloudPoints, pFilePath);
 
@@ -341,13 +341,13 @@ int CVideoDeviceController::SavePly(char *pFilePath, std::vector<CloudPoint> clo
     sprintf(buffer, "meshlab \"%s/%s\" &", path, pFilePath);
     system(buffer);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::GetRectifyLogData(int nIndex, eSPCtrl_RectLogData *pRectifyLogData)
 {
     std::vector<DEVSELINFO *> deviceSelInfo = m_pVideoDeviceModel->GetDeviceSelInfo();
-    return EtronDI_GetRectifyMatLogData(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    return APC_GetRectifyMatLogData(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                         deviceSelInfo[0],
                                         pRectifyLogData,
                                         nIndex);
@@ -356,9 +356,9 @@ int CVideoDeviceController::GetRectifyLogData(int nIndex, eSPCtrl_RectLogData *p
 int CVideoDeviceController::GetSlaveRectifyLogData(int nIndex, eSPCtrl_RectLogData *pRectifyLogData)
 {
     std::vector<DEVSELINFO *> deviceSelInfo = m_pVideoDeviceModel->GetDeviceSelInfo();
-    if(deviceSelInfo.size() < 2) return ETronDI_NotSupport;
+    if(deviceSelInfo.size() < 2) return APC_NotSupport;
 
-    return EtronDI_GetRectifyMatLogData(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    return APC_GetRectifyMatLogData(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                         deviceSelInfo[1],
                                         pRectifyLogData,
                                         nIndex);
@@ -367,7 +367,7 @@ int CVideoDeviceController::GetSlaveRectifyLogData(int nIndex, eSPCtrl_RectLogDa
 int CVideoDeviceController::SelectModeConfigIndex(int nIndex)
 {
     int ret = GetModeConfigOptions()->SelectCurrentIndex(nIndex);
-    if(ETronDI_OK != ret) return ret;
+    if(APC_OK != ret) return ret;
 
     auto SetStreamInfo = [&](CVideoDeviceModel::STREAM_TYPE streamType,
                                int nWidth,
@@ -380,7 +380,7 @@ int CVideoDeviceController::SelectModeConfigIndex(int nIndex)
             return;
         }
 
-        std::vector<ETRONDI_STREAM_INFO> streamInfoList = m_pVideoDeviceModel->GetStreamInfoList(streamType);
+        std::vector<APC_STREAM_INFO> streamInfoList = m_pVideoDeviceModel->GetStreamInfoList(streamType);
 
         int nIndex = EOF;
         for(size_t i = 0 ; i < streamInfoList.size() ; ++i){
@@ -444,7 +444,7 @@ int CVideoDeviceController::SelectModeConfigIndex(int nIndex)
         SetDepthDataBits(0, modeConfig.bRectifyMode);
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::SetModuleSync(bool bModuleSync)
@@ -452,7 +452,7 @@ int CVideoDeviceController::SetModuleSync(bool bModuleSync)
     GetPreviewOptions()->EnableModuleSync(bModuleSync);
     if (bModuleSync) GetVideoDeviceModel()->ModuleSync();
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::SetModuleSyncMaster(bool bMaster)
@@ -460,7 +460,7 @@ int CVideoDeviceController::SetModuleSyncMaster(bool bMaster)
     GetPreviewOptions()->SetModuleSyncMaster(bMaster);
     if (bMaster) GetVideoDeviceModel()->ModuleSyncReset();
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::SetZRange(int nZNear, int nZFar)
@@ -468,7 +468,7 @@ int CVideoDeviceController::SetZRange(int nZNear, int nZFar)
     nZNear = std::max(nZNear, (int)m_pVideoDeviceModel->GetZDTableInfo()->nZNear);
     GetPreviewOptions()->SetZRange(nZNear, nZFar);
     GetControlView()->UpdateColorPalette();
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::AdjustZRange()
@@ -485,12 +485,12 @@ int CVideoDeviceController::AdjustZRange()
 
     GetControlView()->UpdateColorPalette();
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::UpdateStreamOptionForCombineMode(int nIndex)
 {
-    if(!GetVideoDeviceModel()->IsColorWithDepthDevice()) return ETronDI_NotSupport;    
+    if(!GetVideoDeviceModel()->IsColorWithDepthDevice()) return APC_NotSupport;    
 
     int nDepthStreamIndex = GetVideoDeviceModel()->GetDepthIndexFromCombineStream(nIndex);
     GetPreviewOptions()->EnableStream(CVideoDeviceModel::STREAM_DEPTH, nDepthStreamIndex != EOF);
@@ -502,7 +502,7 @@ int CVideoDeviceController::UpdateStreamOptionForCombineMode(int nIndex)
     GetPreviewOptions()->EnableStream(CVideoDeviceModel::STREAM_COLOR, nColorStreamIndex != EOF);    
     GetPreviewOptions()->SelectStreamIndex(CVideoDeviceModel::STREAM_COLOR, nIndex);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CVideoDeviceController::UpdateSpecificDepthPosition(int x, int y)

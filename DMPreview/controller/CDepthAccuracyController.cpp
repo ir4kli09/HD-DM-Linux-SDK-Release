@@ -1,6 +1,6 @@
 #include "CDepthAccuracyController.h"
 #include "CImageDataModel.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 
 CDepthAccuracyController::CDepthAccuracyController(CVideoDeviceController *pVideoDeviceController):
 m_pVideoDeviceController(pVideoDeviceController),

@@ -2,7 +2,7 @@
 #define CVIDEODEVICEDIALOG_H
 
 #include <QDialog>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 #include "CPointCloudViewerDialog.h"
 
 namespace Ui {
@@ -19,7 +19,7 @@ class CVideoDeviceAudoWidget;
 class CPreviewDialog;
 class CVideoDeviceController;
 class CVideoDeviceDialog : public QDialog,
-                           public CEtronUIView
+                           public CEYSDUIView
 {
     Q_OBJECT
 public:
@@ -38,7 +38,7 @@ public:
     virtual void OpenPreviewView(CVideoDeviceModel::STREAM_TYPE type);
     virtual void ClosePreviewView(CVideoDeviceModel::STREAM_TYPE type);
     virtual CImageDataModel *GetPreviewImageData(CVideoDeviceModel::STREAM_TYPE type);
-    virtual int ImageCallback(EtronDIImageType::Value imageType,
+    virtual int ImageCallback(EYSDImageType::Value imageType,
                               CVideoDeviceModel::STREAM_TYPE streamType,
                               BYTE *pImageBuffer, int nImageSize,
                               int nWidth, int nHeight, int nSerialNumber,

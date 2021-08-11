@@ -12,22 +12,22 @@
 class CVideoDeviceModel_Grap : public CVideoDeviceModel
 {
 public:
-    virtual int SetDepthDataType(int nDepthDataType){ return ETronDI_NotSupport;}
+    virtual int SetDepthDataType(int nDepthDataType){ return APC_NotSupport;}
     virtual bool IsDepthDataTypeSupport(DEPTH_DATA_TYPE type){ return false; }
-    virtual int UpdateDepthDataType(){ return ETronDI_NotSupport;}
+    virtual int UpdateDepthDataType(){ return APC_NotSupport;}
 
-    virtual int SetIRValue(unsigned short nValue){ return ETronDI_NotSupport;}
-    virtual int UpdateIR(){ return ETronDI_NotSupport;}
-    virtual int GetIRRange(unsigned short &nMin, unsigned short &nMax){ return ETronDI_NotSupport;}
+    virtual int SetIRValue(unsigned short nValue){ return APC_NotSupport;}
+    virtual int UpdateIR(){ return APC_NotSupport;}
+    virtual int GetIRRange(unsigned short &nMin, unsigned short &nMax){ return APC_NotSupport;}
     virtual unsigned short GetIRValue(){ return 0;}
 
     virtual bool IRExtendSupport(){ return false; }
     virtual bool IsIRExtended(){ return false; }
-    virtual int ExtendIR(bool bEnable){ return ETronDI_NotSupport; }
+    virtual int ExtendIR(bool bEnable){ return APC_NotSupport; }
 
     virtual bool HWPPSupprot(){ return false; }
     virtual bool IsHWPP(){ return false; }
-    virtual int SetHWPP(bool bEnable){ return ETronDI_NotSupport; }
+    virtual int SetHWPP(bool bEnable){ return APC_NotSupport; }
 
     virtual int InitDeviceSelInfo();
     virtual int InitDeviceInformation();
@@ -67,7 +67,7 @@ protected:
     float *pSurfaceTemper = nullptr;
     float *pInternalTemper = nullptr;
     bool isFirstLoadCurve = true;
-    char paramlinedata[80]={"paramlineData.raw"};
+    const char *paramlinedata = "paramlineData.raw";
     #endif
     //-[Thermal device]
 };

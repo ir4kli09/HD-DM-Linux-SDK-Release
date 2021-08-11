@@ -1,7 +1,7 @@
 #include "CMessageManager.h"
 #include <QDialog>
 #include "CMessageDialog.h"
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 #include <QMessageBox>
 
 CMessageDialog *CMessageManager::m_pMessageDialog = nullptr;

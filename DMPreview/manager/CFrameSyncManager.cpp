@@ -10,7 +10,7 @@ CFrameSyncManager::~CFrameSyncManager()
 }
 
 int CFrameSyncManager::RegisterDataCallback(CVideoDeviceModel *pModel,
-                                            CEtronUIView *pControlView,
+                                            CEYSDUIView *pControlView,
                                             CIMUDataController *pIMUDataController)
 {
     std::lock_guard<std::mutex> locker(m_mutex);
@@ -29,14 +29,14 @@ int CFrameSyncManager::RegisterDataCallback(CVideoDeviceModel *pModel,
     });
     m_mapSyncList[pModel]->timer.start(5);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CFrameSyncManager::AccomplishFrameCallback(CVideoDeviceModel *pModel)
 {
     std::lock_guard<std::mutex> accomplishLock(m_mapSyncList[pModel]->mutexAccomplish);
 
-    if (m_mapSyncList[pModel]->vectorAccomplishFrame.empty()) return ETronDI_NullPtr;
+    if (m_mapSyncList[pModel]->vectorAccomplishFrame.empty()) return APC_NullPtr;
 
     m_mapSyncList[pModel]->pControlView->BeginFrameSync();
 
@@ -61,27 +61,27 @@ int CFrameSyncManager::AccomplishFrameCallback(CVideoDeviceModel *pModel)
 
     m_mapSyncList[pModel]->vectorAccomplishFrame.clear();
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CFrameSyncManager::UnregisterDataCallback(CVideoDeviceModel *pModel)
 {
-    if (0 == m_mapSyncList.count(pModel)) return ETronDI_NullPtr;
+    if (0 == m_mapSyncList.count(pModel)) return APC_NullPtr;
 
     std::lock_guard<std::mutex> locker(m_mutex);
     m_mapSyncList.erase(pModel);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CFrameSyncManager::SyncImageCallback(CVideoDeviceModel *pModel,
-                                         EtronDIImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
+                                         EYSDImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
                                          BYTE *pImageBuffer, int nImageSize,
                                          int nWidth, int nHeight, int nSerialNumber,
                                          void *pUserData)
 {
     std::lock_guard<std::mutex> locker(m_mutex);
-    if (0 == m_mapSyncList.count(pModel)) return ETronDI_NullPtr;
+    if (0 == m_mapSyncList.count(pModel)) return APC_NullPtr;
 
     if (nSerialNumber <= 0) {
         return m_mapSyncList[pModel]->pControlView->ImageCallback(imageType, streamType,
@@ -117,14 +117,14 @@ int CFrameSyncManager::SyncImageCallback(CVideoDeviceModel *pModel,
 
     DoFrameSync(pModel, nSerialNumber);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CFrameSyncManager::SyncIMUCallback(CVideoDeviceModel *pModel,
                                        IMUData *pData, int status)
 {
     std::lock_guard<std::mutex> locker(m_mutex);
-    if (0 == m_mapSyncList.count(pModel)) return ETronDI_NullPtr;
+    if (0 == m_mapSyncList.count(pModel)) return APC_NullPtr;
     if (pData->_frameCount <= 0) {
         return m_mapSyncList[pModel]->pIMUDataController->IMUCallback(pData, status);
     }
@@ -143,13 +143,13 @@ int CFrameSyncManager::SyncIMUCallback(CVideoDeviceModel *pModel,
 
     DoFrameSync(pModel, pData->_frameCount);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CFrameSyncManager::DoFrameSync(CVideoDeviceModel *pModel, FrameCount framCount)
 {
-    if (0 == m_mapSyncList.count(pModel)) return ETronDI_NullPtr;
-    if (framCount <= 0) return ETronDI_NullPtr;
+    if (0 == m_mapSyncList.count(pModel)) return APC_NullPtr;
+    if (framCount <= 0) return APC_NullPtr;
 
     if (m_mapSyncList[pModel]->syncConditionMask == m_mapSyncList[pModel]->mapSyncObject[framCount].syncMask){
 
@@ -182,5 +182,5 @@ int CFrameSyncManager::DoFrameSync(CVideoDeviceModel *pModel, FrameCount framCou
 
     m_mapSyncList[pModel]->setHistory.emplace(framCount);
 
-    return ETronDI_OK;
+    return APC_OK;
 }

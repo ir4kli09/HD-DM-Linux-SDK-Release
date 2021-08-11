@@ -2,7 +2,7 @@
 #define CVIDEODEVICECONTROLLER_H
 #include <QWidget>
 #include "CVideoDeviceModel.h"
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 #include "PreviewOptions.h"
 #include "CRegisterReadWriteController.h"
 #include "CCameraPropertyController.h"
@@ -16,12 +16,12 @@ class CVideoDeviceController
 {
 public:
     CVideoDeviceController(CVideoDeviceModel *pVideoDeviceModel,
-                           CEtronUIView *pView);
+                           CEYSDUIView *pView);
     ~CVideoDeviceController();
 
     void Init();
 
-    CEtronUIView *GetControlView(){ return m_pControlView; }
+    CEYSDUIView *GetControlView(){ return m_pControlView; }
     CVideoDeviceModel *GetVideoDeviceModel(){ return m_pVideoDeviceModel; }
     PreviewOptions *GetPreviewOptions(){ return m_pPreviewOptions; }
     ModeConfigOptions *GetModeConfigOptions(){ return m_pModeConfigOptions; }
@@ -77,7 +77,7 @@ private:
 
 private:
     CVideoDeviceModel *m_pVideoDeviceModel;
-    CEtronUIView *m_pControlView;
+    CEYSDUIView *m_pControlView;
     PreviewOptions    *m_pPreviewOptions;
     ModeConfigOptions *m_pModeConfigOptions;
     CRegisterReadWriteController *m_pRegisterReadWriteController;

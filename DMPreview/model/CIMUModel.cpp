@@ -4,7 +4,7 @@
 #include <vector>
 #include "CVideoDeviceModel.h"
 #include <map>
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CIMUDeviceManager.h"
 
 unsigned char CIMUModel::GenerateIMUNumber()
@@ -175,7 +175,7 @@ int CIMUModel::Init(INFO info)
     };
 
     if(IMU_UNKNOWN == m_imuType){
-        return ETronDI_NotSupport;
+        return APC_NotSupport;
     }
 
     if (IMU_9_AXIS == m_imuType) {
@@ -183,13 +183,13 @@ int CIMUModel::Init(INFO info)
     }
 
     int nDeviceCount = EnumerateIMU(hidDeviceList);
-    if (0 == nDeviceCount) return ETronDI_NoDevice;
+    if (0 == nDeviceCount) return APC_NoDevice;
 
     InitializeIMUWithCamera();
 
     ReadDataOutputFormat();
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 void CIMUModel::ReadDataOutputFormat()
@@ -246,12 +246,12 @@ int CIMUModel::SelectDataFormat(DATA_FORMAT format)
         break;
 
     default:
-        return ETronDI_NotSupport;
+        return APC_NotSupport;
     }
 
     SendFeatureReport(setFeatureData.pData, setFeatureData.nDataLength);
     m_nCurrentIMUFormat = format;
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 void CIMUModel::GetFeatureReport(char* pData, size_t data_lenght)
@@ -430,12 +430,12 @@ int CIMUModel::GetModuleID()
 
     unsigned short value;
 
-    int ret = EtronDI_GetHWRegister(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    int ret = APC_GetHWRegister(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                     m_pVideoDeviceModel->GetDeviceSelInfo()[0],
                                     0xf306, &value,
                                     FG_Address_2Byte | FG_Value_1Byte);
 
-    if (ETronDI_OK != ret) return -1;
+    if (APC_OK != ret) return -1;
 
     return value;
 }
@@ -444,7 +444,7 @@ void CIMUModel::SetModuleID(unsigned char nID)
 {
     if (IMU_9_AXIS != m_imuType) return;
 
-    EtronDI_SetHWRegister(CEtronDeviceManager::GetInstance()->GetEtronDI(),
+    APC_SetHWRegister(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                           m_pVideoDeviceModel->GetDeviceSelInfo()[0],
                           0xf306, nID,
                           FG_Address_2Byte | FG_Value_1Byte);
@@ -453,7 +453,7 @@ void CIMUModel::SetModuleID(unsigned char nID)
 int CIMUModel::ReadIMUData(IMUData &imuData, bool bSync)
 {
     if(!m_pHandle){
-        return ETronDI_NullPtr;
+        return APC_NullPtr;
     }
 
     unsigned char imuRawData[256] = {0};

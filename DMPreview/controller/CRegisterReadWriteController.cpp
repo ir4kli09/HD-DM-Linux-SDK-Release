@@ -2,7 +2,7 @@
 #include "RegisterReadWriteOptions.h"
 #include "CThreadWorkerManage.h"
 #include "CTaskInfoManager.h"
-#include "CEtronDeviceManager.h"
+#include "CEYSDDeviceManager.h"
 #include "CVideoDeviceModel.h"
 #include "eSPDI.h"
 #include <QMessageBox>
@@ -27,7 +27,7 @@ int CRegisterReadWriteController::StartReadRegister()
         ReadRegister();
     }
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CRegisterReadWriteController::StartPeriodicRead()
@@ -51,7 +51,7 @@ int CRegisterReadWriteController::StartPeriodicRead()
     m_pRegisterTaskInfo = CTaskInfoManager::GetInstance()->RequestTaskInfo(CTaskInfo::REGISTER_PERIODIC_READ, this);
     CThreadWorkerManage::GetInstance()->AddTask(m_pRegisterTaskInfo);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CRegisterReadWriteController::StopPeriodicRead()
@@ -68,13 +68,13 @@ int CRegisterReadWriteController::StopPeriodicRead()
     }
 
     m_bPeriodicReadRunning = false;
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CRegisterReadWriteController::LogRegister()
 {
     FILE *pFile = GetLogFile();
-    if (!pFile) return ETronDI_NullPtr;
+    if (!pFile) return APC_NullPtr;
 
     fprintf(pFile, "-----------------------------------------------\n");
 
@@ -142,7 +142,7 @@ int CRegisterReadWriteController::LogRegister()
     fprintf(pFile, "-----------------------------------------------\n");
     fflush(pFile);
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CRegisterReadWriteController::ReadRegister()
@@ -152,14 +152,14 @@ int CRegisterReadWriteController::ReadRegister()
 
         m_pRegisterReadWriteOptions->SetRequestValue(i, EOF);
 
-        void *pEtronDI = CEtronDeviceManager::GetInstance()->GetEtronDI();
+        void *pEYSDI = CEYSDDeviceManager::GetInstance()->GetEYSD();
         std::vector<DEVSELINFO *> deviceSelfInfo = m_pVideoDeviceModel->GetDeviceSelInfo();
         int ret;
         unsigned short value;
         switch (m_pRegisterReadWriteOptions->GetType()){
             case RegisterReadWriteOptions::IC2:
             {
-                ret = EtronDI_GetSensorRegister( pEtronDI, deviceSelfInfo[0],
+                ret = APC_GetSensorRegister( pEYSDI, deviceSelfInfo[0],
                                                  m_pRegisterReadWriteOptions->GetSlaveID(),
                                                  m_pRegisterReadWriteOptions->GetRequestAddress(i),
                                                  &value,
@@ -169,7 +169,7 @@ int CRegisterReadWriteController::ReadRegister()
             }
             case RegisterReadWriteOptions::ASIC:
             {
-                ret = EtronDI_GetHWRegister( pEtronDI, deviceSelfInfo[0],
+                ret = APC_GetHWRegister( pEYSDI, deviceSelfInfo[0],
                                              m_pRegisterReadWriteOptions->GetRequestAddress(i),
                                              &value,
                                              m_pRegisterReadWriteOptions->GetAddressSize() | m_pRegisterReadWriteOptions->GetValueSize());
@@ -177,17 +177,17 @@ int CRegisterReadWriteController::ReadRegister()
             }
             case RegisterReadWriteOptions::FW:
             {
-                ret = EtronDI_GetFWRegister( pEtronDI, deviceSelfInfo[0],
+                ret = APC_GetFWRegister( pEYSDI, deviceSelfInfo[0],
                                              m_pRegisterReadWriteOptions->GetRequestAddress(i),
                                              &value,
                                              m_pRegisterReadWriteOptions->GetAddressSize() | m_pRegisterReadWriteOptions->GetValueSize());
                 break;
             }
             default:
-                return ETronDI_NotSupport;
+                return APC_NotSupport;
         }
 
-        if (ETronDI_OK == ret)
+        if (APC_OK == ret)
         {
             m_pRegisterReadWriteOptions->SetRequestValue(i, value);
         }else{
@@ -198,7 +198,7 @@ int CRegisterReadWriteController::ReadRegister()
     LogRegister();
     SetLastestReadTime(QTime::currentTime());
 
-    return ETronDI_OK;
+    return APC_OK;
 }
 
 int CRegisterReadWriteController::WriteRegister()
@@ -207,13 +207,13 @@ int CRegisterReadWriteController::WriteRegister()
         if (EOF == m_pRegisterReadWriteOptions->GetRequestAddress(i)) continue;
         if (EOF == m_pRegisterReadWriteOptions->GetRequestValue(i)) continue;
 
-        void *pEtronDI = CEtronDeviceManager::GetInstance()->GetEtronDI();
+        void *pEYSDI = CEYSDDeviceManager::GetInstance()->GetEYSD();
         std::vector<DEVSELINFO *> deviceSelfInfo = m_pVideoDeviceModel->GetDeviceSelInfo();
         int ret;
         switch (m_pRegisterReadWriteOptions->GetType()){
             case RegisterReadWriteOptions::IC2:
             {
-                ret = EtronDI_SetSensorRegister( pEtronDI, deviceSelfInfo[0],
+                ret = APC_SetSensorRegister( pEYSDI, deviceSelfInfo[0],
                                                  m_pRegisterReadWriteOptions->GetSlaveID(),
                                                  m_pRegisterReadWriteOptions->GetRequestAddress(i),
                                                  m_pRegisterReadWriteOptions->GetRequestValue(i),
@@ -223,7 +223,7 @@ int CRegisterReadWriteController::WriteRegister()
             }
             case RegisterReadWriteOptions::ASIC:
             {
-                ret = EtronDI_SetHWRegister( pEtronDI, deviceSelfInfo[0],
+                ret = APC_SetHWRegister( pEYSDI, deviceSelfInfo[0],
                                              m_pRegisterReadWriteOptions->GetRequestAddress(i),
                                              m_pRegisterReadWriteOptions->GetRequestValue(i),
                                              m_pRegisterReadWriteOptions->GetAddressSize() | m_pRegisterReadWriteOptions->GetValueSize());
@@ -231,16 +231,16 @@ int CRegisterReadWriteController::WriteRegister()
             }
             case RegisterReadWriteOptions::FW:
             {
-                ret = EtronDI_SetFWRegister( pEtronDI, deviceSelfInfo[0],
+                ret = APC_SetFWRegister( pEYSDI, deviceSelfInfo[0],
                                              m_pRegisterReadWriteOptions->GetRequestAddress(i),
                                              m_pRegisterReadWriteOptions->GetRequestValue(i),
                                              m_pRegisterReadWriteOptions->GetAddressSize() | m_pRegisterReadWriteOptions->GetValueSize());
                 break;
             }
             default:
-                return ETronDI_NotSupport;
+                return APC_NotSupport;
         }
-        if (ret != ETronDI_OK)
+        if (ret != APC_OK)
         {
             m_pRegisterReadWriteOptions->SetRequestValue(i, 0xff);
         }
@@ -248,5 +248,5 @@ int CRegisterReadWriteController::WriteRegister()
 
     m_pVideoDeviceModel->Update();
 
-    return ETronDI_OK;
+    return APC_OK;
 }

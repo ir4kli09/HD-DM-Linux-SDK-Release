@@ -5,6 +5,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <math.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 
 CPointCloudViewerWidget::CPointCloudViewerWidget(CVideoDeviceController *pVideoDeviceController,
                                                  QWidget *parent):

@@ -2,7 +2,7 @@
 #define CVIDEODEVICEPREVIEWWIDGET_H
 
 #include <QWidget>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 #include "CVideoDeviceModel.h"
 
 namespace Ui {
@@ -11,7 +11,7 @@ class CVideoDevicePreviewWidget;
 
 class CVideoDeviceController;
 class CVideoDevicePreviewWidget : public QWidget,
-                                  public CEtronUIView
+                                  public CEYSDUIView
 {
     Q_OBJECT
 

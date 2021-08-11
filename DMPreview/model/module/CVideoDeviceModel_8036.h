@@ -10,6 +10,8 @@ public:
 
     virtual bool InterleaveModeSupport(){ return m_bIsInterleaveSupport; }
 
+    virtual int TransformDepthDataType(int nDepthDataType, bool bRectifyData);
+
     virtual int GetRectifyLogData(int nDevIndex, int nRectifyLogIndex, eSPCtrl_RectLogData *pRectifyLogData, STREAM_TYPE depthType = STREAM_DEPTH);
 
     friend class CVideoDeviceModelFactory;
@@ -19,6 +21,7 @@ protected:
 
 private:
     bool m_bIsInterleaveSupport;
+    bool m_bIsScaleDown;
 };
 
 #endif // CVIDEODEVICEMODEL_8036_H

@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <vector>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 
 namespace Ui {
 class CVideoDeviceRegisterWidget;
@@ -12,7 +12,7 @@ class CVideoDeviceRegisterWidget;
 class CRegisterReadWriteController;
 class QLineEdit;
 class CVideoDeviceRegisterWidget : public QWidget,
-                                   public CEtronUIView
+                                   public CEYSDUIView
 {
     Q_OBJECT
 public:

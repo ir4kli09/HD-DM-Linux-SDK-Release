@@ -2,14 +2,14 @@
 #define CVIDEODEVICEDEPTHFILTERWIDGET_H
 
 #include <QWidget>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 
 namespace Ui {
 class CVideoDeviceDepthFilterWidget;
 }
 
 class CVideoDeviceDepthFilterWidget : public QWidget,
-                                      public CEtronUIView
+                                      public CEYSDUIView
 {
     Q_OBJECT
 public:

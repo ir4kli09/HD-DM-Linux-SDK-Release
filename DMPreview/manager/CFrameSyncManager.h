@@ -1,7 +1,7 @@
 #ifndef CFRAMESYNCMANAGER_H
 #define CFRAMESYNCMANAGER_H
 
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 #include "CIMUDataController.h"
 
 #include <memory>
@@ -15,7 +15,7 @@
 class CFrameSyncManager
 {
 public:
-    typedef int (CEtronUIView::*ImageCallback)(EtronDIImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
+    typedef int (CEYSDUIView::*ImageCallback)(EYSDImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
                                                BYTE *pImageBuffer, int nImageSize,
                                                int nWidth, int nHeight, int nSerialNumber,
                                                void *pUserData);
@@ -24,7 +24,7 @@ public:
 
 private:
     struct ImageObject{
-        EtronDIImageType::Value imageType;
+        EYSDImageType::Value imageType;
         CVideoDeviceModel::STREAM_TYPE streamType;
         std::vector<BYTE> imageBuffer;
         int nImageSize;
@@ -58,7 +58,7 @@ private:
     struct SyncList{
         bool bRunning = false;
 
-        CEtronUIView *pControlView = nullptr;
+        CEYSDUIView *pControlView = nullptr;
         CIMUDataController *pIMUDataController = nullptr;
 
         std::mutex mutexObject;
@@ -84,13 +84,13 @@ public:
 
 public:
     int RegisterDataCallback(CVideoDeviceModel *pModel,
-                             CEtronUIView *pControlView,
+                             CEYSDUIView *pControlView,
                              CIMUDataController *pIMUDataController);
 
     int UnregisterDataCallback(CVideoDeviceModel *pModel);
 
     int SyncImageCallback(CVideoDeviceModel *pModel,
-                          EtronDIImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
+                          EYSDImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
                           BYTE *pImageBuffer, int nImageSize,
                           int nWidth, int nHeight, int nSerialNumber,
                           void *pUserData);

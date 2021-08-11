@@ -2,7 +2,7 @@
 #define CVIDEODEVICEAUDOWIDGET_H
 
 #include <QWidget>
-#include "CEtronUIView.h"
+#include "CEYSDUIView.h"
 
 namespace Ui {
 class CVideoDeviceAudioWidget;
@@ -10,7 +10,7 @@ class CVideoDeviceAudioWidget;
 
 
 class CVideoDeviceAudoWidget : public QWidget,
-                               public CEtronUIView
+                               public CEYSDUIView
 {
     Q_OBJECT
 public:

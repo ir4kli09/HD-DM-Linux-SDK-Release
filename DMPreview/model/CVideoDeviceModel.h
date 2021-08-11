@@ -19,7 +19,7 @@
     do{ \
         if (!ret){ \
             CMessageManager::Error(error_message); \
-            return ETronDI_Init_Fail; \
+            return APC_Init_Fail; \
         } \
     }while (0) \
 
@@ -27,14 +27,14 @@
 #define EOF (-1)
 #endif
 
-#ifndef RETRY_ETRON_API
+#ifndef RETRY_APC_API
 #define RETRY_COUNT (5)
-#define RETRY_ETRON_API(ret, func) \
+#define RETRY_APC_API(ret, func) \
     do{ \
         int retryCount = RETRY_COUNT; \
         while (retryCount > 0){ \
             ret = func; \
-            if (ETronDI_OK == ret) break; \
+            if (APC_OK == ret) break; \
             --retryCount; \
         } \
     }while (false) \
@@ -104,10 +104,10 @@ public:
 
     struct ZDTableInfo{
         unsigned short nIndex = 0;
-        unsigned short nTableSize = ETronDI_ZD_TABLE_FILE_SIZE_11_BITS;
+        unsigned short nTableSize = APC_ZD_TABLE_FILE_SIZE_11_BITS;
         unsigned short nZNear = 0;
         unsigned short nZFar  = 0;
-        BYTE ZDTable[ETronDI_ZD_TABLE_FILE_SIZE_11_BITS] = {0};
+        BYTE ZDTable[APC_ZD_TABLE_FILE_SIZE_11_BITS] = {0};
     };    
 
     struct ImageData{
@@ -115,7 +115,7 @@ public:
         int nHeight = EOF;
         bool bMJPG = false;
         int depthDataType = EOF;
-        EtronDIImageType::Value imageDataType = EtronDIImageType::IMAGE_UNKNOWN;
+        EYSDImageType::Value imageDataType = EYSDImageType::IMAGE_UNKNOWN;
         std::vector<BYTE> imageBuffer;
     };
 
@@ -155,7 +155,7 @@ public:
 
     virtual bool IsStreamSupport(STREAM_TYPE type);
     virtual int InitStreamInfoList();
-    virtual std::vector<ETRONDI_STREAM_INFO> GetStreamInfoList(STREAM_TYPE type);
+    virtual std::vector<APC_STREAM_INFO> GetStreamInfoList(STREAM_TYPE type);
 
     virtual int InitCameraproperty();
     virtual std::vector<CCameraPropertyModel *> GetCameraproperty();
@@ -174,13 +174,14 @@ public:
 
     virtual bool IsDepthDataTypeSupport(DEPTH_DATA_TYPE type){ return true; }
     virtual int UpdateDepthDataType();
+    virtual int NormalizeDepthDataType(int &nDepthDataType);
     virtual int TransformDepthDataType(int nDepthDataType, bool bRectifyData);
     virtual int TransformDepthDataType(int nDepthDataType);
     virtual int TransformDepthDataType(bool bRectifyData);
     virtual int SetDepthDataType(int nDepthDataType);
     virtual unsigned short GetDepthDataType();
     virtual bool IsRectifyData();
-    virtual EtronDIImageType::Value GetDepthImageType();
+    virtual EYSDImageType::Value GetDepthImageType();
 
     virtual double GetCameraFocus(){ return 0.0; }
     virtual double GetCameraFOV(){ return 75.0f; }
@@ -190,7 +191,7 @@ public:
     virtual int SetHWPP(bool bEnable);
 
     virtual int UpdateZDTable();
-    virtual int AdjustZDTableIndex(int &nIndex){ return ETronDI_OK; }
+    virtual int AdjustZDTableIndex(int &nIndex){ return APC_OK; }
     virtual ZDTableInfo *GetZDTableInfo();
 
     virtual int GetRectifyLogData(int nDevIndex, int nRectifyLogIndex, eSPCtrl_RectLogData *pRectifyLogData, STREAM_TYPE depthType = STREAM_DEPTH);
@@ -198,11 +199,11 @@ public:
 
     virtual bool HasSlaveRectifyLogData(){ return false; }
 
-    virtual int ModuleSync(){ return ETronDI_OK; }
-    virtual int ModuleSyncReset(){ return ETronDI_OK; }
+    virtual int ModuleSync(){ return APC_OK; }
+    virtual int ModuleSyncReset(){ return APC_OK; }
     virtual bool ModuleSyncSupport(){ return false; }
 
-    virtual int FrameSync(){ return ETronDI_OK; }
+    virtual int FrameSync(){ return APC_OK; }
     virtual bool FrameSyncSupport(){ return false; }
 
     virtual bool InterleaveModeSupport(){ return false; }
@@ -216,7 +217,7 @@ public:
     {
         return {{0, 0, CIMUModel::IMU_UNKNOWN}};
     }
-    virtual int ConfigIMU(){ return ETronDI_OK; }
+    virtual int ConfigIMU(){ return APC_OK; }
     virtual bool IMUSupport(){ return false; }
     virtual CIMUModel *GetIMUModel(){ return m_pIMUModel; }
     virtual void SetIMUSyncWithFrame(bool bSync);
@@ -306,7 +307,7 @@ public:
     int CreateStreamTask(STREAM_TYPE type);
     virtual int SetColdResetThresholdMs(STREAM_TYPE type, int ms){
         m_nColdResetThresholdMs[type] = ms;
-        return ETronDI_OK;
+        return APC_OK;
     }
     virtual int FirstOpenDeviceColdeRestThresholdMs(){ return 10 * 1000; }
     virtual int OpenDeviceColdeRestThresholdMs(){ return 1.5 * 1000; }
@@ -321,7 +322,7 @@ public:
                                    unsigned short &nColorHeight,
                                    std::vector<float> &imgFloatBufOut,
                                    eSPCtrl_RectLogData &rectifyLogData,
-                                   EtronDIImageType::Value depthImageType);
+                                   EYSDImageType::Value depthImageType);
 
     virtual std::vector<CloudPoint> GeneratePointCloud(std::vector<unsigned char> &depthData,
                                                        std::vector<unsigned char> &colorData,
@@ -330,7 +331,7 @@ public:
                                                        unsigned short nColorWidth,
                                                        unsigned short nColorHeight,
                                                        eSPCtrl_RectLogData rectifyLogData,
-                                                       EtronDIImageType::Value depthImageType,
+                                                       EYSDImageType::Value depthImageType,
                                                        int nZNear, int nZFar,
                                                        bool bUsePlyFilter = false,
                                                        std::vector<float> imgFloatBufOut = {});
@@ -340,7 +341,7 @@ public:
                                             int serialNumber);
     virtual int FrameGrabberDataTransform(std::vector<unsigned char>& bufDepth, int &widthDepth, int &heightDepth,
                                           std::vector<unsigned char>& bufColor, int &widthColor, int &heightColor,
-                                          int &serialNumber){ return ETronDI_OK; }
+                                          int &serialNumber){ return APC_OK; }
 protected:
 
     STATE m_state;
@@ -348,7 +349,7 @@ protected:
 
     std::vector<DEVSELINFO *> m_deviceSelInfo;
     std::vector<DeviceInfo> m_deviceInfo;
-    std::vector<ETRONDI_STREAM_INFO> m_streamInfo[STREAM_TYPE_COUNT];
+    std::vector<APC_STREAM_INFO> m_streamInfo[STREAM_TYPE_COUNT];
     std::vector<CCameraPropertyModel *> m_cameraPropertyModel;
     USB_PORT_TYPE m_usbPortType;
     ZDTableInfo m_zdTableInfo;

@@ -112,8 +112,8 @@ void CVideoDevicePreviewWidget::UpdateColorWithDepthStream()
 
     ui->comboBox_color_and_depth_stream->blockSignals(true);
     ui->comboBox_color_and_depth_stream->clear();
-    std::vector<ETRONDI_STREAM_INFO> infoList = m_pVideoDeviceController->GetVideoDeviceModel()->GetStreamInfoList(CVideoDeviceModel::STREAM_COLOR);
-    for (ETRONDI_STREAM_INFO info : infoList){
+    std::vector<APC_STREAM_INFO> infoList = m_pVideoDeviceController->GetVideoDeviceModel()->GetStreamInfoList(CVideoDeviceModel::STREAM_COLOR);
+    for (APC_STREAM_INFO info : infoList){
         QString resolution;
         resolution.sprintf("[%d x %d] %s", info.nWidth, info.nHeight, info.bFormatMJPG ? "MJPG" : "YUV");
         ui->comboBox_color_and_depth_stream->addItem(resolution);
@@ -184,8 +184,8 @@ void CVideoDevicePreviewWidget::UpdateStream(CVideoDeviceModel::STREAM_TYPE type
 
     pStreamInfo->blockSignals(true);
     pStreamInfo->clear();
-    std::vector<ETRONDI_STREAM_INFO> infoList = m_pVideoDeviceController->GetVideoDeviceModel()->GetStreamInfoList(type);
-    for (ETRONDI_STREAM_INFO info : infoList){
+    std::vector<APC_STREAM_INFO> infoList = m_pVideoDeviceController->GetVideoDeviceModel()->GetStreamInfoList(type);
+    for (APC_STREAM_INFO info : infoList){
         QString resolution;
         resolution.sprintf("[%d x %d] %s", info.nWidth, info.nHeight, info.bFormatMJPG ? "MJPG" : "YUV");
         pStreamInfo->addItem(resolution);
@@ -455,13 +455,13 @@ void CVideoDevicePreviewWidget::UpdateDepthmapBits()
 
     QString currentDepthDataType;
     switch (m_pVideoDeviceController->GetVideoDeviceModel()->GetDepthImageType()){
-        case EtronDIImageType::DEPTH_8BITS:
+        case EYSDImageType::DEPTH_8BITS:
             currentDepthDataType = "8 Bits";
             break;
-        case EtronDIImageType::DEPTH_11BITS:
+        case EYSDImageType::DEPTH_11BITS:
             currentDepthDataType = "11 Bits";
             break;
-        case EtronDIImageType::DEPTH_14BITS:
+        case EYSDImageType::DEPTH_14BITS:
             currentDepthDataType = "14 Bits";
             break;
         default:
@@ -492,7 +492,7 @@ void CVideoDevicePreviewWidget::UpdateIRLevel()
 
     int ret;
     ret = m_pVideoDeviceController->GetVideoDeviceModel()->GetIRRange(nMin, nMax);
-    if (ETronDI_OK != ret)   return;
+    if (APC_OK != ret)   return;
 
     ui->horizontalSlider_ir_level_control->setMinimum(nMin);
     ui->horizontalSlider_ir_level_control->setMaximum(nMax);
