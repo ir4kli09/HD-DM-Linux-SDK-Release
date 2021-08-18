@@ -2218,10 +2218,10 @@ int APC_GetAutoExposureMode(void* pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned
 */
 int APC_SetAutoExposureMode(void* pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned short mode);
 /*! \fn int APC_RotateImg90(
-    EYSDImageType::Value imgType, int width, int height,
+    APCImageType::Value imgType, int width, int height,
         unsigned char *src, unsigned char *dstBuf, int len, bool clockwise)
     \brief Rotate the image to 90 degree.
-    \param EYSDImageType::Value mgType Image Type
+    \param APCImageType::Value mgType Image Type
     \param int width image width
     \param int height image height
     \param unsigned char *src image source
@@ -2231,13 +2231,13 @@ int APC_SetAutoExposureMode(void* pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned
     \param bOpencv useage, not supported.
     \return success: APC_OK, others: see eSPDI_def.h
 */
-int APC_RotateImg90(EYSDImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len, bool clockwise);
+int APC_RotateImg90(APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len, bool clockwise);
 
 /*! \fn int APC_RotateImg180(
-    EYSDImageType::Value imgType, int width, int height,
+    APCImageType::Value imgType, int width, int height,
         unsigned char *src, unsigned char *dstBuf, int len)
     \brief Rotate the image to 180 degree.
-    \param EYSDImageType::Value mgType Image Type
+    \param APCImageType::Value mgType Image Type
     \param int width image width
     \param int height image height
     \param unsigned char *src image source
@@ -2245,13 +2245,13 @@ int APC_RotateImg90(EYSDImageType::Value imgType, int width, int height, unsigne
     \param int len desteration buffer length
     \return success: APC_OK, others: see eSPDI_def.h
 */
-int APC_RotateImg180(EYSDImageType::Value imgType, int width, int height,unsigned char *src, unsigned char *dst, int len);
+int APC_RotateImg180(APCImageType::Value imgType, int width, int height,unsigned char *src, unsigned char *dst, int len);
 
 /*! \fn int APC_ResizeImgToHalf(
-        EYSDImageType::Value imgType, int width, int height,
+        APCImageType::Value imgType, int width, int height,
             unsigned char *src, unsigned char *dst, int len)
     \brief Resize the image to half.
-    \param EYSDImageType::Value mgType Image Type
+    \param APCImageType::Value mgType Image Type
     \param int width image width
     \param int height image height
     \param unsigned char *src image source
@@ -2259,20 +2259,20 @@ int APC_RotateImg180(EYSDImageType::Value imgType, int width, int height,unsigne
     \param int len desteration buffer length
     \return success: APC_OK, others: see eSPDI_def.h
 */
-int APC_ResizeImgToHalf(EYSDImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len);
+int APC_ResizeImgToHalf(APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len);
 
 /*! \fn int APC_ImgMirro(
-    EYSDImageType::Value imgType, int width, int height,
+    APCImageType::Value imgType, int width, int height,
         unsigned char *src, unsigned char *dstBuf)
     \brief Make the image to Mirro.
-    \param EYSDImageType::Value imgType Image Type
+    \param APCImageType::Value imgType Image Type
     \param int width image width
     \param int height image height
     \param unsigned char *src image source
     \param unsigned char *dstBuf image desteration
     \return success: APC_OK, others: see eSPDI_def.h
 */
-int APC_ImgMirro(EYSDImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst);
+int APC_ImgMirro(APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst);
 
 /*! \fn int APC_RGB2BMP(
     char *filename, int width, int height, unsigned char *data)
@@ -2436,7 +2436,7 @@ int APC_GetPointCloud( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned char
  *  PDEVSELINFO pDevSelInfo,
  * unsigned char *ImgDst,
  * unsigned char *ImgSrc, int SrcSize,
- * int width, int height, EYSDImageType::Value type)
+ * int width, int height, APCImageType::Value type)
     \brief get hardware post processing status
     \param void *pHandleEYSD	 the pointer to the initilized EYSD SDK instance
     \param PDEVSELINFO pDevSelInfo	pointer of device select index
@@ -2445,20 +2445,20 @@ int APC_GetPointCloud( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned char
     \param int SrcSize   sizeof of source image
     \param int width	input  image width
     \param int height	input  image height
-    \param EYSDImageType::Value type     input  image-format
+    \param APCImageType::Value type     input  image-format
     \return success: APC_OK, others: see eSPDI_def.h
 */
-int APC_ColorFormat_to_RGB24( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned char* ImgDst, unsigned char* ImgSrc, int SrcSize, int width, int height, EYSDImageType::Value type );
+int APC_ColorFormat_to_RGB24( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned char* ImgDst, unsigned char* ImgSrc, int SrcSize, int width, int height, APCImageType::Value type );
 
 } // end of extern "C" 02
 
 /*! \fn int APC_RotateImg90(
         void *pHandleEYSD, PDEVSELINFO pDevSelInfo,
-        EYSDImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf, int len, bool clockwise)
+        APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf, int len, bool clockwise)
     \brief Make the image to rotate.
     \param void * pHandleEYSD	 the pointer to the initilized EYSD SDK instance
     \param PDEVSELINFO pDevSelInfo	pointer of device select index
-    \param EYSDImageType::Value imgType Image Type
+    \param APCImageType::Value imgType Image Type
     \param int width image width
     \param int height image height
     \param unsigned char *src image source
@@ -2468,25 +2468,25 @@ int APC_ColorFormat_to_RGB24( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsign
 */
 
 int APC_RotateImg90(void *pHandleEYSD, PDEVSELINFO pDevSelInfo,
-                    EYSDImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf, int len, bool clockwise);
+                    APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf, int len, bool clockwise);
 
 /*! \fn int APC_ImgMirro(
     void *pHandleEYSD,
     PDEVSELINFO pDevSelInfo,
-    EYSDImageType::Value imgType,
+    APCImageType::Value imgType,
     int width, int height,
     unsigned char *src, unsigned char *dstBuf)
     \brief Make the image to Mirro.
     \param void *pHandleEYSD	 the pointer to the initilized EYSD SDK instance
     \param PDEVSELINFO pDevSelInfo	pointer of device select index
-    \param EYSDImageType::Value imgType Image Type
+    \param APCImageType::Value imgType Image Type
     \param int width image width
     \param int height image height
     \param unsigned char *src image source
     \param unsigned char *dstBuf image desteration
     \return success: APC_OK, others: see eSPDI_def.h
 */
-int APC_ImgMirro(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, EYSDImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf);
+int APC_ImgMirro(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf);
 
 extern "C" {
 /*! \fn int APC_SubSample(void *pHandleEYSD,
@@ -2610,17 +2610,17 @@ int APC_TableToData(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, int width, int h
 /*! \fn APC_InitPostProcess(void **ppPostProcessHandle,
  * unsigned int nWidth,
  * unsigned int nHeight,
- * EYSDImageType::Value imageType)
+ * APCImageType::Value imageType)
     \brief APC_InitPostProcess
     \param void **ppPostProcessHandle	 [TODO]
     \param unsigned int nWidth  [TODO]
     \param unsigned int nHeight [TODO]
-    \param EYSDImageType::Value imageType [TODO]
+    \param APCImageType::Value imageType [TODO]
     \return success: APC_OK, others: see eSPDI_def.h
 */
 int APC_InitPostProcess(void **ppPostProcessHandle, unsigned int nWidth,
                             unsigned int nHeight,
-                            EYSDImageType::Value imageType);
+                            APCImageType::Value imageType);
 
 /*! \fn APC_PostProcess(void *pPostProcessHandle, unsigned char *pDepthData)
     \brief APC_PostProcess

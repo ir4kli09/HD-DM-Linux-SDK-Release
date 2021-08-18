@@ -611,7 +611,7 @@ bool CVideoDeviceModel::IsRectifyData()
     }
 }
 
-EYSDImageType::Value CVideoDeviceModel::GetDepthImageType()
+APCImageType::Value CVideoDeviceModel::GetDepthImageType()
 {
     int depthDataType = GetDepthDataType();
     NormalizeDepthDataType(depthDataType);
@@ -619,20 +619,20 @@ EYSDImageType::Value CVideoDeviceModel::GetDepthImageType()
     switch (depthDataType){
         case APC_DEPTH_DATA_8_BITS:
         case APC_DEPTH_DATA_8_BITS_RAW:
-            return EYSDImageType::DEPTH_8BITS;
+            return APCImageType::DEPTH_8BITS;
         case APC_DEPTH_DATA_8_BITS_x80:
         case APC_DEPTH_DATA_8_BITS_x80_RAW:
-            return EYSDImageType::DEPTH_8BITS_0x80;
+            return APCImageType::DEPTH_8BITS_0x80;
         case APC_DEPTH_DATA_11_BITS:
         case APC_DEPTH_DATA_11_BITS_RAW:
         case APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY:
-            return EYSDImageType::DEPTH_11BITS;
+            return APCImageType::DEPTH_11BITS;
         case APC_DEPTH_DATA_14_BITS:
         case APC_DEPTH_DATA_14_BITS_RAW:
         case APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY:
-            return EYSDImageType::DEPTH_14BITS;
+            return APCImageType::DEPTH_14BITS;
         default:
-            return EYSDImageType::IMAGE_UNKNOWN;
+            return APCImageType::IMAGE_UNKNOWN;
     }
 }
 
@@ -816,8 +816,8 @@ int CVideoDeviceModel::PrepareOpenDevice()
         m_imageData[STREAM_COLOR].bMJPG = streamInfo[index].bFormatMJPG;
         m_imageData[STREAM_COLOR].depthDataType = GetDepthDataType();
         m_imageData[STREAM_COLOR].imageDataType = m_imageData[STREAM_COLOR].bMJPG ?
-                                                  EYSDImageType::COLOR_MJPG :
-                                                  EYSDImageType::COLOR_YUY2;
+                                                  APCImageType::COLOR_MJPG :
+                                                  APCImageType::COLOR_YUY2;
 
         unsigned short nBytePerPixel = 2;
         unsigned int nBufferSize = m_imageData[STREAM_COLOR].nWidth * m_imageData[STREAM_COLOR].nHeight * nBytePerPixel;
@@ -904,8 +904,8 @@ int CVideoDeviceModel::GetPointCloudInfo(eSPCtrl_RectLogData *pRectifyLogData, P
     pointCloudInfo.focalLength = pRectifyLogData->ReProjectMat[11] * ratio_Mat;
 
     switch (depthImageData.imageDataType){
-        case EYSDImageType::DEPTH_14BITS: pointCloudInfo.disparity_len = 0; break;
-        case EYSDImageType::DEPTH_11BITS:
+        case APCImageType::DEPTH_14BITS: pointCloudInfo.disparity_len = 0; break;
+        case APCImageType::DEPTH_11BITS:
         {
             pointCloudInfo.disparity_len = 2048;
             for(int i = 0 ; i < pointCloudInfo.disparity_len ; ++i){
@@ -964,8 +964,8 @@ int CVideoDeviceModel::StartStreamingTask()
     }
 
     if (bDepthStream){
-        auto AdjustRealDepthWidth = [](int &nWidth, EYSDImageType::Value type){
-            if (EYSDImageType::DEPTH_8BITS == type){
+        auto AdjustRealDepthWidth = [](int &nWidth, APCImageType::Value type){
+            if (APCImageType::DEPTH_8BITS == type){
                 nWidth *= 2;
             }
         };
@@ -1396,7 +1396,7 @@ int CVideoDeviceModel::UpdateFrameGrabberData(STREAM_TYPE streamType)
             if (!pDepthData) return APC_NullPtr;
 
             int nBytesPerPixelDepth = 2;
-            if(EYSDImageType::DEPTH_8BITS == m_imageData[STREAM_DEPTH].imageDataType) nBytesPerPixelDepth = 1;
+            if(APCImageType::DEPTH_8BITS == m_imageData[STREAM_DEPTH].imageDataType) nBytesPerPixelDepth = 1;
             m_pFrameGrabber->SetFrameFormat(FrameGrabber::FRAME_POOL_INDEX_DEPTH,
                                             pDepthData->GetWidth(), pDepthData->GetHeight(),
                                             nBytesPerPixelDepth);
@@ -1513,7 +1513,7 @@ std::vector<CloudPoint> CVideoDeviceModel::GeneratePointCloud(
         std::vector<BYTE> &colorData, unsigned short nColorWidth, unsigned short nColorHeight,
         bool bEnableFilter)
 {
-    EYSDImageType::Value depthImageType = EYSDImageType::DepthDataTypeToDepthImageType(GetDepthDataType());
+    APCImageType::Value depthImageType = APCImageType::DepthDataTypeToDepthImageType(GetDepthDataType());
 
     int nZNear, nZFar;
     m_pVideoDeviceController->GetPreviewOptions()->GetZRange(nZNear, nZFar);
@@ -1549,7 +1549,7 @@ std::vector<CloudPoint> CVideoDeviceModel::GeneratePointCloud(std::vector<unsign
                                                               unsigned short nColorWidth,
                                                               unsigned short nColorHeight,
                                                               eSPCtrl_RectLogData rectifyLogData,
-                                                              EYSDImageType::Value depthImageType,
+                                                              APCImageType::Value depthImageType,
                                                               int nZNear, int nZFar,
                                                               bool bUsePlyFilter, std::vector<float> imgFloatBufOut)
 {
@@ -1583,7 +1583,7 @@ int CVideoDeviceModel::PlyFilterTransform(std::vector<unsigned char> &depthData,
                                           unsigned short &nColorHeight,
                                           std::vector<float> &imgFloatBufOut,
                                           eSPCtrl_RectLogData &rectifyLogData,
-                                          EYSDImageType::Value depthImageType)
+                                          APCImageType::Value depthImageType)
 {
     float ratio = (float)rectifyLogData.OutImgHeight / nDepthHeight;
     if (ratio != 1.0f) {
@@ -1592,7 +1592,7 @@ int CVideoDeviceModel::PlyFilterTransform(std::vector<unsigned char> &depthData,
 
         int bufSize = resampleWidthDepth * resampleHeightDepth * 2;
         std::vector<unsigned char> dArrayResized(bufSize);
-        if ( depthImageType == EYSDImageType::DEPTH_8BITS )
+        if ( depthImageType == APCImageType::DEPTH_8BITS )
             PlyWriter::MonoBilinearFineScaler( &depthData[0], &dArrayResized[0], nDepthWidth, nDepthHeight, resampleWidthDepth, resampleHeightDepth, 1);
         else
             PlyWriter::MonoBilinearFineScaler_short( (unsigned short*)&depthData[0], (unsigned short*)&dArrayResized[0], nDepthWidth, nDepthHeight, resampleWidthDepth, resampleHeightDepth, 1 );
@@ -1605,7 +1605,7 @@ int CVideoDeviceModel::PlyFilterTransform(std::vector<unsigned char> &depthData,
     }
 
     switch (depthImageType){
-        case EYSDImageType::DEPTH_8BITS:
+        case APCImageType::DEPTH_8BITS:
         {
             //D8 TO D11 IMAGE +
             std::vector< BYTE > bufDepthTmpout;
@@ -1626,7 +1626,7 @@ int CVideoDeviceModel::PlyFilterTransform(std::vector<unsigned char> &depthData,
                                  &rectifyLogData);
             break;
         }
-        case EYSDImageType::DEPTH_11BITS:
+        case APCImageType::DEPTH_11BITS:
         {
             PlyFilter::UnavailableDisparityCancellation(depthData, nDepthWidth, nDepthHeight, 16383);
             PlyFilter::CF_FILTER(depthData, colorData,
@@ -1636,7 +1636,7 @@ int CVideoDeviceModel::PlyFilterTransform(std::vector<unsigned char> &depthData,
                                  &rectifyLogData);
             break;
         }
-        case EYSDImageType::DEPTH_14BITS:
+        case APCImageType::DEPTH_14BITS:
         {
             PlyFilter::CF_FILTER_Z14(depthData, colorData,
                                      nDepthWidth, nDepthHeight,

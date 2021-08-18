@@ -70,7 +70,7 @@ std::vector<CloudPoint> CVideoDeviceModel_8054::GeneratePointCloud(std::vector<u
                                                                    unsigned short nColorWidth,
                                                                    unsigned short nColorHeight,
                                                                    eSPCtrl_RectLogData rectifyLogData,
-                                                                   EYSDImageType::Value depthImageType,
+                                                                   APCImageType::Value depthImageType,
                                                                    int nZNear, int nZFar,
                                                                    bool bUsePlyFilter,
                                                                    std::vector<float> imgFloatBufOut)

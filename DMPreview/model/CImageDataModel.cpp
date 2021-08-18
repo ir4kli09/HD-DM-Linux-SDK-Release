@@ -12,7 +12,7 @@ m_nHeight(0),
 m_nDataSize(0),
 m_nSerialNumber(0),
 m_nSpecificX(0), m_nSpecificY(0),
-m_imageType(EYSDImageType::IMAGE_UNKNOWN),
+m_imageType(APCImageType::IMAGE_UNKNOWN),
 m_pVideoDeviceController(pVideoDeviceController),
 m_pUserData(nullptr),
 m_streamType(streamType),
@@ -42,7 +42,7 @@ CImageDataModel::~CImageDataModel()
     if (m_pDataTransformTask) CThreadWorkerManage::GetInstance()->RemoveTask(m_pDataTransformTask);
 }
 
-bool CImageDataModel::SetImageInfo(EYSDImageType::Value imageType,
+bool CImageDataModel::SetImageInfo(APCImageType::Value imageType,
                                    int nWidth, int nHeight)
 {
     if (m_imageType == imageType &&
@@ -66,15 +66,15 @@ bool CImageDataModel::SetImageInfo(EYSDImageType::Value imageType,
 int CImageDataModel::GetRawDataBytePerPixel()
 {
     switch (m_imageType){
-        case EYSDImageType::COLOR_YUY2:
-        case EYSDImageType::COLOR_MJPG:
-        case EYSDImageType::DEPTH_8BITS_0x80:
-        case EYSDImageType::DEPTH_11BITS:
-        case EYSDImageType::DEPTH_14BITS:
+        case APCImageType::COLOR_YUY2:
+        case APCImageType::COLOR_MJPG:
+        case APCImageType::DEPTH_8BITS_0x80:
+        case APCImageType::DEPTH_11BITS:
+        case APCImageType::DEPTH_14BITS:
             return 2;
-        case EYSDImageType::DEPTH_8BITS:
+        case APCImageType::DEPTH_8BITS:
             return 1;
-        case EYSDImageType::COLOR_RGB24:
+        case APCImageType::COLOR_RGB24:
             return 3;
         default:
             return 0;
@@ -134,7 +134,7 @@ int CImageDataModel_Color::TransformRawToRGB()
 
     if (CVideoDeviceModel::STREAMING == m_pVideoDeviceController->GetVideoDeviceModel()->GetState()){
 		//+[Thermal device]
-		if(GetImageType() == EYSDImageType::COLOR_RGB24) {
+		if(GetImageType() == APCImageType::COLOR_RGB24) {
 			if (m_streamType == CVideoDeviceModel::STREAM_THERMAL) {
                                 
                                  memcpy( &m_rgbData[0],&m_rawData[0], m_rawData.size());
@@ -219,7 +219,7 @@ CImageDataModel_Depth::~CImageDataModel_Depth()
     }
 }
 
-bool CImageDataModel_Depth::SetImageInfo(EYSDImageType::Value imageType, 
+bool CImageDataModel_Depth::SetImageInfo(APCImageType::Value imageType, 
                                          int nWidth, int nHeight){
     
     if (nWidth != m_nWidth || nHeight != m_nHeight){
@@ -254,15 +254,15 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
     if (!pDepthFilterOptions || !pDepthFilterOptions->IsDepthFilter()) return;
 
     switch(GetImageType()){
-        case EYSDImageType::DEPTH_8BITS:
+        case APCImageType::DEPTH_8BITS:
             pDepthFilterOptions->SetType(1);
             pDepthFilterOptions->SetBytesPerPixel(1);
             break;
-        case EYSDImageType::DEPTH_11BITS:
+        case APCImageType::DEPTH_11BITS:
             pDepthFilterOptions->SetType(2);
             pDepthFilterOptions->SetBytesPerPixel(2);
             break;
-        case EYSDImageType::DEPTH_14BITS:
+        case APCImageType::DEPTH_14BITS:
             pDepthFilterOptions->SetType(3);
             pDepthFilterOptions->SetBytesPerPixel(2);
             break;
@@ -332,17 +332,17 @@ void CImageDataModel_Depth::DepthFilter(BYTE *pData)
 
     if (pDepthFilterOptions->IsFlyingDepthCancellation())
     {
-        if (GetImageType() == EYSDImageType::DEPTH_8BITS)
+        if (GetImageType() == APCImageType::DEPTH_8BITS)
             APC_FlyingDepthCancellation_D8(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                                pData,
                                                m_nWidth, m_nHeight);
-        else if (GetImageType() == EYSDImageType::DEPTH_11BITS)
+        else if (GetImageType() == APCImageType::DEPTH_11BITS)
             APC_FlyingDepthCancellation_D11(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                                 m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                                 pData,
                                                 m_nWidth, m_nHeight);
-        else if (GetImageType() == EYSDImageType::DEPTH_14BITS)
+        else if (GetImageType() == APCImageType::DEPTH_14BITS)
         {
             CVideoDeviceModel::ZDTableInfo *pZDTableINfo = m_pVideoDeviceController->GetVideoDeviceModel()->GetZDTableInfo();
             if ( !pZDTableINfo ) return;
@@ -446,7 +446,7 @@ int CImageDataModel_Depth::TransformRawToRGB()
             pColorPalette = &m_colorPalette[COLOR_PALETTE_GRAY][0];
             break;
         default:
-            if (EYSDImageType::DEPTH_8BITS == GetImageType()){
+            if (APCImageType::DEPTH_8BITS == GetImageType()){
                 utImageProcessingUtility::convert_yuv_to_rgb_buffer( &m_rawData[0], &m_rgbData[0], GetWidth(), GetHeight());
             }else{
                 utImageProcessingUtility::convert_yuv_to_rgb_buffer( &m_rawData[0], &m_rgbData[0], GetWidth() * 2, GetHeight());
@@ -478,7 +478,7 @@ int CImageDataModel_Depth::TransformRawToRGB()
     }else{
         CVideoDeviceModel::ZDTableInfo *pZDTableINfo = m_pVideoDeviceController->GetVideoDeviceModel()->GetZDTableInfo();
         switch (GetImageType()){
-            case EYSDImageType::DEPTH_8BITS:
+            case APCImageType::DEPTH_8BITS:
                 utImageProcessingUtility::UpdateD8bitsDisplayImage_DIB24(pColorPalette,
                                                                          &m_rawData[0], &m_rgbData[0],
                                                                          GetWidth(), GetHeight(),
@@ -486,13 +486,13 @@ int CImageDataModel_Depth::TransformRawToRGB()
                                                                          pZDTableINfo->nTableSize
                                                                          );
                 break;
-            case EYSDImageType::DEPTH_11BITS:
+            case APCImageType::DEPTH_11BITS:
                 utImageProcessingUtility::UpdateD11DisplayImage_DIB24(pColorPalette,
                                                                       &m_rawData[0], &m_rgbData[0],
                                                                       GetWidth(), GetHeight(),
                                                                       pZDTableINfo->ZDTable);
                 break;
-            case EYSDImageType::DEPTH_14BITS:
+            case APCImageType::DEPTH_14BITS:
                 utImageProcessingUtility::UpdateZ14DisplayImage_DIB24(pColorPalette,
                                                                       &m_rawData[0], &m_rgbData[0],
                                                                       GetWidth(), GetHeight());
@@ -588,7 +588,7 @@ unsigned short CImageDataModel_Depth::GetDepth(int nX, int nY)
 unsigned short CImageDataModel_Depth::GetZValue(int nDepth)
 {
     CVideoDeviceModel::ZDTableInfo *pZDTableInfo = m_pVideoDeviceController->GetVideoDeviceModel()->GetZDTableInfo();
-    EYSDImageType::Value imageType = m_pVideoDeviceController->GetVideoDeviceModel()->GetDepthImageType();
+    APCImageType::Value imageType = m_pVideoDeviceController->GetVideoDeviceModel()->GetDepthImageType();
     if (CVideoDeviceModel::STREAMING != m_pVideoDeviceController->GetVideoDeviceModel()->GetState()){
         return 0;
     }
@@ -598,23 +598,23 @@ unsigned short CImageDataModel_Depth::GetZValue(int nDepth)
         if (!nDepth) return 0;
 
         switch (imageType){
-            case EYSDImageType::DEPTH_8BITS_0x80:
-            case EYSDImageType::DEPTH_8BITS:
+            case APCImageType::DEPTH_8BITS_0x80:
+            case APCImageType::DEPTH_8BITS:
                 return (WORD)(m_dblCamFocus * m_dblBaselineDist / nDepth);
-            case EYSDImageType::DEPTH_11BITS:
+            case APCImageType::DEPTH_11BITS:
                 return (WORD)(8.0 * m_dblCamFocus * m_dblBaselineDist / nDepth);
-            case EYSDImageType::DEPTH_14BITS:
+            case APCImageType::DEPTH_14BITS:
                 return nDepth;
             default:
                 return 0;
         }
     } else {
 
-        if (EYSDImageType::DEPTH_14BITS == imageType){
+        if (APCImageType::DEPTH_14BITS == imageType){
             return nDepth;
         }
 
-        WORD zdIndex = (EYSDImageType::DEPTH_8BITS == imageType) ?
+        WORD zdIndex = (APCImageType::DEPTH_8BITS == imageType) ?
                         nDepth << 3 :
                         nDepth;
 

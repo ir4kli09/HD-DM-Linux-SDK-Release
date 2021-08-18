@@ -8,6 +8,8 @@ public:
 
     virtual bool InterleaveModeSupport(){ return true; }
 
+    virtual int TransformDepthDataType(int nDepthDataType, bool bRectifyData);
+
     friend class CVideoDeviceModelFactory;
 
 protected:

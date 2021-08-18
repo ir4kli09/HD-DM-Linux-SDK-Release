@@ -20,7 +20,7 @@ int CVideoDeviceModel_8053::AdjustZDTableIndex(int &nIndex)
 
     if (720 == streamInfo[nDepthIndex].nHeight &&
         1280 == streamInfo[nDepthIndex].nWidth &&
-        EYSDImageType::DEPTH_8BITS == GetDepthImageType()){
+        APCImageType::DEPTH_8BITS == GetDepthImageType()){
         nIndex = 0;
     }
 
@@ -29,7 +29,7 @@ int CVideoDeviceModel_8053::AdjustZDTableIndex(int &nIndex)
 
 int CVideoDeviceModel_8053::AdjustRegister()
 {
-    if (EYSDImageType::DEPTH_8BITS == GetDepthImageType() &&
+    if (APCImageType::DEPTH_8BITS == GetDepthImageType() &&
         m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_COLOR) &&
         m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_DEPTH)){
 

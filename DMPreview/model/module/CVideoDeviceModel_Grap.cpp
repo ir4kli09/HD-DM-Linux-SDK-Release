@@ -126,8 +126,8 @@ int CVideoDeviceModel_Grap::PrepareOpenDevice()
             m_imageData[type].bMJPG = streamInfo[index].bFormatMJPG;
             m_imageData[type].depthDataType = GetDepthDataType();
             m_imageData[type].imageDataType = m_imageData[type].bMJPG ?
-                                              EYSDImageType::COLOR_MJPG :
-                                              EYSDImageType::COLOR_YUY2;
+                                              APCImageType::COLOR_MJPG :
+                                              APCImageType::COLOR_YUY2;
 
             unsigned short nBytePerPixel = 2;
             unsigned int nBufferSize = m_imageData[type].nWidth * m_imageData[type].nHeight * nBytePerPixel;
@@ -156,7 +156,7 @@ int CVideoDeviceModel_Grap::PrepareOpenDevice()
         m_imageData[STREAM_THERMAL].nWidth = video_w;
         m_imageData[STREAM_THERMAL].nHeight  = video_h;
         m_imageData[STREAM_THERMAL].bMJPG = false;
-        m_imageData[STREAM_THERMAL].imageDataType = EYSDImageType::COLOR_RGB24;
+        m_imageData[STREAM_THERMAL].imageDataType = APCImageType::COLOR_RGB24;
 
        unsigned short nBytePerPixel = 3;
        unsigned int nBufferSize = m_imageData[STREAM_THERMAL].nWidth * m_imageData[STREAM_THERMAL].nHeight * nBytePerPixel;

@@ -1,6 +1,6 @@
 1. How to build console tool:
 
-sh build.sh (For x86-64, select '1'. For NVIDIA TX2 and NVIDIA NANO, select '2'. )
+sh build.sh (For x86-64, select '1'. For NVIDIA TX2 and NVIDIA NANO, select '2'. For Rockchip, select '3' )
 
 2. How to run console tool:
 
@@ -9,6 +9,9 @@ sh run_x86.sh
 
 (2) For NVIDIA TX2 and NVIDIA NANO:
 sh run_arm64_tx2.sh
+
+(3) For Rockchip PX30:
+sh run_arm64_px30.sh
 
 
 3. There are the macros in main.cpp to enable/disable the demo:

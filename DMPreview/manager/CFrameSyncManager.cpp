@@ -75,7 +75,7 @@ int CFrameSyncManager::UnregisterDataCallback(CVideoDeviceModel *pModel)
 }
 
 int CFrameSyncManager::SyncImageCallback(CVideoDeviceModel *pModel,
-                                         EYSDImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
+                                         APCImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
                                          BYTE *pImageBuffer, int nImageSize,
                                          int nWidth, int nHeight, int nSerialNumber,
                                          void *pUserData)

@@ -115,7 +115,7 @@ public:
         int nHeight = EOF;
         bool bMJPG = false;
         int depthDataType = EOF;
-        EYSDImageType::Value imageDataType = EYSDImageType::IMAGE_UNKNOWN;
+        APCImageType::Value imageDataType = APCImageType::IMAGE_UNKNOWN;
         std::vector<BYTE> imageBuffer;
     };
 
@@ -181,7 +181,7 @@ public:
     virtual int SetDepthDataType(int nDepthDataType);
     virtual unsigned short GetDepthDataType();
     virtual bool IsRectifyData();
-    virtual EYSDImageType::Value GetDepthImageType();
+    virtual APCImageType::Value GetDepthImageType();
 
     virtual double GetCameraFocus(){ return 0.0; }
     virtual double GetCameraFOV(){ return 75.0f; }
@@ -322,7 +322,7 @@ public:
                                    unsigned short &nColorHeight,
                                    std::vector<float> &imgFloatBufOut,
                                    eSPCtrl_RectLogData &rectifyLogData,
-                                   EYSDImageType::Value depthImageType);
+                                   APCImageType::Value depthImageType);
 
     virtual std::vector<CloudPoint> GeneratePointCloud(std::vector<unsigned char> &depthData,
                                                        std::vector<unsigned char> &colorData,
@@ -331,7 +331,7 @@ public:
                                                        unsigned short nColorWidth,
                                                        unsigned short nColorHeight,
                                                        eSPCtrl_RectLogData rectifyLogData,
-                                                       EYSDImageType::Value depthImageType,
+                                                       APCImageType::Value depthImageType,
                                                        int nZNear, int nZFar,
                                                        bool bUsePlyFilter = false,
                                                        std::vector<float> imgFloatBufOut = {});

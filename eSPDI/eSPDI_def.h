@@ -652,7 +652,7 @@ typedef enum
 // for 3D Motor Control -
 
 // for Point Cloud
-struct EYSDImageType
+struct APCImageType
 {
     enum Value
     {
@@ -666,17 +666,17 @@ struct EYSDImageType
         DEPTH_14BITS
     };
 
-    static bool IsImageColor(EYSDImageType::Value type)
+    static bool IsImageColor(APCImageType::Value type)
     {
         return (type == COLOR_YUY2 || type == COLOR_RGB24 || type == COLOR_MJPG);
     }
 
-    static bool IsImageDepth(EYSDImageType::Value type)
+    static bool IsImageDepth(APCImageType::Value type)
     {
         return (type != IMAGE_UNKNOWN && !IsImageColor(type));
     }
 
-    static EYSDImageType::Value DepthDataTypeToDepthImageType(WORD dataType)
+    static APCImageType::Value DepthDataTypeToDepthImageType(WORD dataType)
     {
         switch (dataType)
         {
@@ -688,7 +688,7 @@ struct EYSDImageType
         case APC_DEPTH_DATA_SCALE_DOWN_8_BITS_RAW:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_8_BITS:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_8_BITS_RAW:
-            return EYSDImageType::DEPTH_8BITS;
+            return APCImageType::DEPTH_8BITS;
         case APC_DEPTH_DATA_8_BITS_x80:
         case APC_DEPTH_DATA_8_BITS_x80_RAW:
         case APC_DEPTH_DATA_ILM_8_BITS_x80:
@@ -697,7 +697,7 @@ struct EYSDImageType
         case APC_DEPTH_DATA_SCALE_DOWN_8_BITS_x80_RAW:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_8_BITS_x80:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_8_BITS_x80_RAW:
-            return EYSDImageType::DEPTH_8BITS_0x80;
+            return APCImageType::DEPTH_8BITS_0x80;
         case APC_DEPTH_DATA_11_BITS:
         case APC_DEPTH_DATA_11_BITS_RAW:
         case APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY:
@@ -710,7 +710,7 @@ struct EYSDImageType
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_11_BITS:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_11_BITS_RAW:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_11_BITS_COMBINED_RECTIFY:
-            return EYSDImageType::DEPTH_11BITS;
+            return APCImageType::DEPTH_11BITS;
         case APC_DEPTH_DATA_14_BITS:
         case APC_DEPTH_DATA_14_BITS_RAW:
         case APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY:
@@ -723,8 +723,8 @@ struct EYSDImageType
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_14_BITS:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_14_BITS_RAW:
         case APC_DEPTH_DATA_SCALE_DOWN_ILM_14_BITS_COMBINED_RECTIFY:
-            return EYSDImageType::DEPTH_14BITS;
-        default: return EYSDImageType::IMAGE_UNKNOWN;
+            return APCImageType::DEPTH_14BITS;
+        default: return APCImageType::IMAGE_UNKNOWN;
         }
     }
 };

@@ -23,7 +23,7 @@ public:
     CImageDataModel(CVideoDeviceModel::STREAM_TYPE streamType, TYPE modelType, CVideoDeviceController *pVideoDeviceController);
     virtual ~CImageDataModel();
 
-    virtual bool SetImageInfo(EYSDImageType::Value imageType,
+    virtual bool SetImageInfo(APCImageType::Value imageType,
                               int nWidth, int nHeight);
     int GetWidth(){ return m_nWidth; }
     int GetHeight(){ return m_nHeight; }
@@ -31,7 +31,7 @@ public:
     int GetRawDataBytePerPixel();
     TYPE GetModelType(){ return m_type; }
 
-    EYSDImageType::Value GetImageType(){ return m_imageType; }
+    APCImageType::Value GetImageType(){ return m_imageType; }
 
     std::vector<BYTE> &GetRawData(){ return m_rawData; }
     std::vector<BYTE> &GetRGBData(){ return m_rgbData; }
@@ -60,7 +60,7 @@ protected:
     std::vector<BYTE> m_rgbData;
 
     CVideoDeviceModel::STREAM_TYPE m_streamType;
-    EYSDImageType::Value m_imageType;
+    APCImageType::Value m_imageType;
 
     std::deque<QTime> m_receiveTimeStorage;
 
@@ -107,7 +107,7 @@ public:
                           double dblBaselineDist = 0.0);
     virtual ~CImageDataModel_Depth();
 
-    virtual bool SetImageInfo(EYSDImageType::Value imageType, int nWidth,
+    virtual bool SetImageInfo(APCImageType::Value imageType, int nWidth,
                               int nHeight);
     virtual int SetRawData(BYTE *pData, int nDataSize, int nSerialNumber);
     virtual int TransformRawToRGB();

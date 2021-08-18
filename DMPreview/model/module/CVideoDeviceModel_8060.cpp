@@ -135,8 +135,8 @@ int CVideoDeviceModel_8060::PrepareOpenDevice()
             m_imageData[type].bMJPG = streamInfo[index].bFormatMJPG;
             m_imageData[type].depthDataType = GetDepthDataType();
             m_imageData[type].imageDataType = m_imageData[STREAM_KOLOR].bMJPG ?
-                                                      EYSDImageType::COLOR_MJPG :
-                                                      EYSDImageType::COLOR_YUY2;
+                                                      APCImageType::COLOR_MJPG :
+                                                      APCImageType::COLOR_YUY2;
 
             unsigned short nBytePerPixel = 2;
             unsigned int nBufferSize = m_imageData[type].nWidth * m_imageData[STREAM_KOLOR].nHeight * nBytePerPixel;

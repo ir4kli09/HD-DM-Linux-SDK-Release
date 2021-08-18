@@ -38,7 +38,7 @@ public:
     virtual void OpenPreviewView(CVideoDeviceModel::STREAM_TYPE type);
     virtual void ClosePreviewView(CVideoDeviceModel::STREAM_TYPE type);
     virtual CImageDataModel *GetPreviewImageData(CVideoDeviceModel::STREAM_TYPE type);
-    virtual int ImageCallback(EYSDImageType::Value imageType,
+    virtual int ImageCallback(APCImageType::Value imageType,
                               CVideoDeviceModel::STREAM_TYPE streamType,
                               BYTE *pImageBuffer, int nImageSize,
                               int nWidth, int nHeight, int nSerialNumber,

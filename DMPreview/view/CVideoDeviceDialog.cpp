@@ -241,7 +241,7 @@ void CVideoDeviceDialog::RelocateDialogPosition()
 
 }
 
-int CVideoDeviceDialog::ImageCallback(EYSDImageType::Value imageType,
+int CVideoDeviceDialog::ImageCallback(APCImageType::Value imageType,
                                       CVideoDeviceModel::STREAM_TYPE streamType,
                                       BYTE *pImageBuffer, int nImageSize,
                                       int nWidth, int nHeight, int nSerialNumber,

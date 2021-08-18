@@ -103,7 +103,7 @@ void CPreviewDialog::paintEvent(QPaintEvent *event)
     }
     
     //+[Thermal device]
-    if(EYSDImageType::COLOR_RGB24 == m_pImageDataModel->GetImageType()) {
+    if(APCImageType::COLOR_RGB24 == m_pImageDataModel->GetImageType()) {
             QPainter painter(&img);
             painter.setPen(QPen(Qt::green, 2));
             QFont font;

@@ -25,13 +25,13 @@ INCPATH = -I../eSPDI -I../eSPDI/turbojpeg/armhf_32/include/
 .SUFFIXES: .o .cpp
 
 .cpp.o:
-	$(CXX) -c $(CFLAGS) $(INCPATH) -g -o $@ $<
+	g++ -c $(CFLAGS) $(INCPATH) -g -o $@ $<
 
 all: $(TARGET)
 
 ####### Build rules
 $(TARGET): $(OBJECTS)
-	$(CXX) $(LFLAGS) -g -o $@ $^ $(LIBS)
+	g++ $(LFLAGS) -g -o $@ $^ $(LIBS)
 
 ####### clean rules
 clean: 

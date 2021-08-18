@@ -179,7 +179,7 @@ static void GetCounterMode();
 static void setV4L2buffer();
 static void setIRValue();
 //e:[eys3D] 20200610 definition functions
-static void test_file_saving(EYSDImageType::Value type);
+static void test_file_saving(APCImageType::Value type);
 static int TransformDepthDataType(int *nDepthDataType, bool bRectifyData);
 static unsigned int gCameraPID = 0xffff;
 
@@ -340,7 +340,7 @@ int main(void)
         case 20:
             init_device();
             open_device_default(true, 30, APC_DEPTH_DATA_14_BITS /* Distance mm*/);
-            test_file_saving(EYSDImageType::Value::COLOR_YUY2);
+            test_file_saving(APCImageType::Value::COLOR_YUY2);
             close_device();
             release_device();
             printf("Sync the filesytem !! Please wait a minute !!\n");
@@ -869,7 +869,7 @@ static void *pthread_saving_color(void *param) {
     const size_t RGB_SIZE = 3, saving_size = gColorWidth * gColorHeight * RGB_SIZE;
 
     BYTE* writingBuffer = new BYTE[gColorWidth * gColorHeight * RGB_SIZE];
-    auto imageType = *(EYSDImageType::Value*)(param);
+    auto imageType = *(APCImageType::Value*)(param);
 
     while (mCount < 1)
     {
@@ -955,7 +955,7 @@ static void *pthread_saving_color(void *param) {
     return NULL;
     
 }
-static void test_file_saving(EYSDImageType::Value arg)
+static void test_file_saving(APCImageType::Value arg)
 {
     pthread_t color_saving_tid = -1;
     sched_param color_saving_thread_param;
@@ -1745,9 +1745,9 @@ static int getPointCloudInfo(void *pHandleEYSD, DEVSELINFO *pDevSelInfo, PointCl
         pointCloudInfo->centerY = -1.0f * pRectifyLogData->ReProjectMat[7] * ratio_Mat;
         pointCloudInfo->focalLength = pRectifyLogData->ReProjectMat[11] * ratio_Mat;
 
-        switch (EYSDImageType::DepthDataTypeToDepthImageType(depthDataType)){
-            case EYSDImageType::DEPTH_14BITS: pointCloudInfo->disparity_len = 0; break;
-            case EYSDImageType::DEPTH_11BITS:
+        switch (APCImageType::DepthDataTypeToDepthImageType(depthDataType)){
+            case APCImageType::DEPTH_14BITS: pointCloudInfo->disparity_len = 0; break;
+            case APCImageType::DEPTH_11BITS:
             {
                 pointCloudInfo->disparity_len = 2048;
                 for(int i = 0 ; i < pointCloudInfo->disparity_len ; ++i){
@@ -2555,7 +2555,7 @@ static int TransformDepthDataType(int *nDepthDataType, bool bRectifyData)
             *nDepthDataType = bRectifyData ? APC_DEPTH_DATA_DEFAULT : APC_DEPTH_DATA_OFF_RECTIFY;  break;
     }
 
-    if ((gCameraPID == APC_PID_8036) && (gDepthWidth == 640 && gDepthHeight == 360)) {
+    if ((gCameraPID == APC_PID_8036 || gCameraPID == APC_PID_8052) && (gDepthWidth == 640 && gDepthHeight == 360)) {
         
         *nDepthDataType += APC_DEPTH_DATA_SCALE_DOWN_MODE_OFFSET;
     }

@@ -20,10 +20,6 @@ int CVideoDeviceModel_8036_8052::AdjustZDTableIndex(int &nIndex)
     std::vector<APC_STREAM_INFO> colorStreamInfo = GetStreamInfoList(STREAM_COLOR);
     int nColorIndex = m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_COLOR);
 
-    if (colorStreamInfo[nColorIndex].nHeight % depthStreamInfo[nDepthIndex].nHeight != 0){
-        nIndex = 2;
-    }
-
     if (colorStreamInfo[nColorIndex].nHeight / depthStreamInfo[nDepthIndex].nHeight == 2){
         nIndex = 0;
     }

@@ -455,13 +455,13 @@ void CVideoDevicePreviewWidget::UpdateDepthmapBits()
 
     QString currentDepthDataType;
     switch (m_pVideoDeviceController->GetVideoDeviceModel()->GetDepthImageType()){
-        case EYSDImageType::DEPTH_8BITS:
+        case APCImageType::DEPTH_8BITS:
             currentDepthDataType = "8 Bits";
             break;
-        case EYSDImageType::DEPTH_11BITS:
+        case APCImageType::DEPTH_11BITS:
             currentDepthDataType = "11 Bits";
             break;
-        case EYSDImageType::DEPTH_14BITS:
+        case APCImageType::DEPTH_14BITS:
             currentDepthDataType = "14 Bits";
             break;
         default:

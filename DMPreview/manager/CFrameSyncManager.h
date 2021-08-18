@@ -15,7 +15,7 @@
 class CFrameSyncManager
 {
 public:
-    typedef int (CEYSDUIView::*ImageCallback)(EYSDImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
+    typedef int (CEYSDUIView::*ImageCallback)(APCImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
                                                BYTE *pImageBuffer, int nImageSize,
                                                int nWidth, int nHeight, int nSerialNumber,
                                                void *pUserData);
@@ -24,7 +24,7 @@ public:
 
 private:
     struct ImageObject{
-        EYSDImageType::Value imageType;
+        APCImageType::Value imageType;
         CVideoDeviceModel::STREAM_TYPE streamType;
         std::vector<BYTE> imageBuffer;
         int nImageSize;
@@ -90,7 +90,7 @@ public:
     int UnregisterDataCallback(CVideoDeviceModel *pModel);
 
     int SyncImageCallback(CVideoDeviceModel *pModel,
-                          EYSDImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
+                          APCImageType::Value imageType, CVideoDeviceModel::STREAM_TYPE streamType,
                           BYTE *pImageBuffer, int nImageSize,
                           int nWidth, int nHeight, int nSerialNumber,
                           void *pUserData);
