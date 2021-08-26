@@ -11,6 +11,6 @@ void CVideoDeviceModel_Hypatia::SetVideoDeviceController(CVideoDeviceController 
 {
     CVideoDeviceModel::SetVideoDeviceController(pVideoDeviceController);
     if(m_pVideoDeviceController){
-        m_pVideoDeviceController->GetPreviewOptions()->SetIRLevel(48);
+        m_pVideoDeviceController->GetPreviewOptions()->SetIRLevel(60);
     }
 }

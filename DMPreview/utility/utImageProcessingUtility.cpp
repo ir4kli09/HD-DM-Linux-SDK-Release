@@ -84,11 +84,11 @@ void utImageProcessingUtility::UpdateZ14DisplayImage_DIB24(RGBQUAD *pColorPalett
         pWS = pWSL;
         pD = pDL;
         for (x=0; x<width; x++) {
+            //++ avoid afterimage on outdoor
             if ( pWS[x] >= COLOR_PALETTE_MAX_COUNT) {
-                pD += 3;
-                continue;
+                pWS[x] = COLOR_PALETTE_MAX_COUNT-1;
             }
-
+            //-- avoid afterimage on outdoor
             pClr = &(pColorPaletteZ14[pWS[x]]);
             pD[0] = pClr->rgbRed;
             pD[1] = pClr->rgbGreen;
@@ -109,24 +109,24 @@ void utImageProcessingUtility::UpdateD11DisplayImage_DIB24(RGBQUAD* pColorPalett
     BYTE* pD     = NULL;
     const RGBQUAD* pClr = NULL;
     unsigned short z = 0;
-
     unsigned depthValueLimit11Bit = ((1 << 12) - 1);
     for (int y = 0; y < height; y++) {
         pD = pDL;
         for (int x = 0; x < width; x++) {
             int pixelIndex = y * width + x;
             unsigned short depth = pDepth[pixelIndex * sizeof(unsigned short) + 1] << 8 |  pDepth[pixelIndex * sizeof(unsigned short)];
+            //++ avoid afterimage on outdoor
             if (depth > depthValueLimit11Bit) {
-                pD += 3;
-                continue;
+                depth = depthValueLimit11Bit;
             }
+            //-- avoid afterimage on outdoor
             unsigned short zdIndex = depth * sizeof(unsigned short);
             z = (((unsigned short)pZDTable[zdIndex]) << 8) + pZDTable[zdIndex + 1];
+            //++ avoid afterimage on outdoor
             if ( z >= COLOR_PALETTE_MAX_COUNT) {
-                pD += 3;
-                continue;
+                z = COLOR_PALETTE_MAX_COUNT-1;
             }
-
+            //-- avoid afterimage on outdoor
             pClr = &(pColorPalette[z]);
             pD[0] = pClr->rgbRed;
             pD[1] = pClr->rgbGreen;
@@ -158,10 +158,11 @@ void utImageProcessingUtility::UpdateD8bitsDisplayImage_DIB24(RGBQUAD *pColorPal
             else
                 zdIndex = depth * sizeof(unsigned short);
             z = (((unsigned short)pZDTable[zdIndex]) << 8) + pZDTable[zdIndex + 1];
+            //++ avoid afterimage on outdoor
             if ( z >= COLOR_PALETTE_MAX_COUNT) {
-                pD += 3;
-                continue;
+                z = COLOR_PALETTE_MAX_COUNT-1;
             }
+            //-- avoid afterimage on outdoor
 
             pClr = &(pColorPalette[z]);
             pD[0] = pClr->rgbRed;
@@ -198,10 +199,11 @@ void utImageProcessingUtility::UpdateD11_Baseline_DisplayImage_DIB24(RGBQUAD* pC
             if ( wDepth > nZFar || wDepth < nZNear )
                 pClr = &empty;
             else {
+                //++ avoid afterimage on outdoor
                 if ( wDepth >= COLOR_PALETTE_MAX_COUNT) {
-                    pD += 3;
-                    continue;
+                    wDepth = COLOR_PALETTE_MAX_COUNT-1;
                 }
+                //-- avoid afterimage on outdoor
                 pClr = &(pColorPalette[wDepth]);
             }
 
@@ -240,10 +242,11 @@ void utImageProcessingUtility::UpdateD11_Fusion_DisplayImage_DIB24(RGBQUAD* pCol
                 pClr = &empty;
             else {
                 wDepth = ( pDepthFs[ x ] ? ( WORD )( 8.0 * dblCamFocus * dblBaselineDist / pDepthFs[ x ] ) : 0 );
+                //++ avoid afterimage on outdoor
                 if ( wDepth >= COLOR_PALETTE_MAX_COUNT) {
-                    pD += 3;
-                    continue;
+                    wDepth = COLOR_PALETTE_MAX_COUNT-1;
                 }
+                //-- avoid afterimage on outdoor
                 pClr = &(pColorPalette[wDepth]);
             }
 

@@ -166,6 +166,10 @@ int CVideoDeviceController::DoSnapShot(bool bAsync)
     bool bNeedResetIR = 0 != nIRValue &&
                         !m_pVideoDeviceModel->IsInterleaveMode() &&
                         !m_pPreviewOptions->IsStreamEnable(CVideoDeviceModel::STREAM_KOLOR);
+    if (APC_PID_HYPATIA == m_pVideoDeviceModel->GetDeviceInformation()[0].deviceInfomation.wPID)
+    {
+        bNeedResetIR = false;
+    }
     if (bNeedResetIR){
         SetIRLevel(0);
         usleep(1000 * 1000);

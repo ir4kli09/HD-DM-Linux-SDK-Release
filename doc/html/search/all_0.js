@@ -124,7 +124,7 @@ var searchData=
   ['apc_5fresizeimgtohalf',['APC_ResizeImgToHalf',['../e_s_p_d_i_8h.html#ad48eab33c569c39387c0f4275516764a',1,'eSPDI.h']]],
   ['apc_5fretrieveextradatafrommp4',['APC_RetrieveExtraDataFromMp4',['../e_s_p_d_i_8h.html#ac4988d52d66d68d20ea4cf60519da73d',1,'eSPDI.h']]],
   ['apc_5frgb2bmp',['APC_RGB2BMP',['../e_s_p_d_i_8h.html#ae0028f8f2ed627eebaf4850c3a2a3927',1,'eSPDI.h']]],
-  ['apc_5frotateimg180',['APC_RotateImg180',['../e_s_p_d_i_8h.html#aebaa63c02f6680465aa80e1b4efc320f',1,'eSPDI.h']]],
+  ['apc_5frotateimg180',['APC_RotateImg180',['../e_s_p_d_i_8h.html#aebaa63c02f6680465aa80e1b4efc320f',1,'APC_RotateImg180(APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len):&#160;eSPDI.h'],['../e_s_p_d_i_8h.html#a5339b909607cc00155cbc4d415dc1cfe',1,'APC_RotateImg180(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len):&#160;eSPDI.h']]],
   ['apc_5frotateimg90',['APC_RotateImg90',['../e_s_p_d_i_8h.html#ab04e723e2072a515dad69f84d89fd62b',1,'APC_RotateImg90(APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len, bool clockwise):&#160;eSPDI.h'],['../e_s_p_d_i_8h.html#ad4e88d85b52cdb768df5e221d9a17735',1,'APC_RotateImg90(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf, int len, bool clockwise):&#160;eSPDI.h']]],
   ['apc_5fsavelutdata',['APC_SaveLutData',['../e_s_p_d_i_8h.html#a10e40f864e3f458b5d62482fb6b4dfdc',1,'eSPDI.h']]],
   ['apc_5fselectdevice',['APC_SelectDevice',['../e_s_p_d_i_8h.html#a1b94f15b46e4aaa159e422875eb9158b',1,'eSPDI.h']]],

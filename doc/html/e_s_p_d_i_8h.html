@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="eYs3D_logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">eYs3D Linux SDK
-   &#160;<span id="projectnumber">5.0.0.3</span>
+   &#160;<span id="projectnumber">v5.0.0.4</span>
    </div>
   </td>
  </tr>
@@ -270,6 +270,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p
 <tr class="memitem:a7ad661c1b40b139408e8f957145438e6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#a7ad661c1b40b139408e8f957145438e6">APC_Get2Image</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, BYTE *pColorImgBuf, BYTE *pDepthImgBuf, unsigned long int *pColorImageSize, unsigned long int *pDepthImageSize, int *pSerial=0, int *pSerial2=0, int nDepthDataType=0)</td></tr>
 <tr class="memdesc:a7ad661c1b40b139408e8f957145438e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">get color and/or depth pin images see APC_GetImage for detailed description  <a href="#a7ad661c1b40b139408e8f957145438e6">More...</a><br /></td></tr>
 <tr class="separator:a7ad661c1b40b139408e8f957145438e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdf06eb82c0809e4ad31eb90a0042c52"><td class="memItemLeft" align="right" valign="top"><a id="abdf06eb82c0809e4ad31eb90a0042c52"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>APC_Get2ImageWithTimestamp</b> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, BYTE *pColorImgBuf, BYTE *pDepthImgBuf, unsigned long int *pColorImageSize, unsigned long int *pDepthImageSize, int *pColorSerial, int *pDepthSerial, int nDepthDataType, int64_t *pcur_tv_sec, int64_t *pcur_tv_usec)</td></tr>
+<tr class="separator:abdf06eb82c0809e4ad31eb90a0042c52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac46eecfafb2a12af72def7495ea2ecb2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#ac46eecfafb2a12af72def7495ea2ecb2">APC_GetExposureTime</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, int nSensorMode, float *pfExpTimeMS)</td></tr>
 <tr class="memdesc:ac46eecfafb2a12af72def7495ea2ecb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">get exposure time of ISP setting in millisecond the target sensor type was set in <a class="el" href="e_s_p_d_i_8h.html#a7ad9ac9ad61c820bc6177045b84b9649" title="set the sensor type you want to work on ">APC_SetSensorTypeName()</a>  <a href="#ac46eecfafb2a12af72def7495ea2ecb2">More...</a><br /></td></tr>
 <tr class="separator:ac46eecfafb2a12af72def7495ea2ecb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -564,6 +567,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p
 <tr class="memitem:ad4e88d85b52cdb768df5e221d9a17735"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#ad4e88d85b52cdb768df5e221d9a17735">APC_RotateImg90</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf, int len, bool clockwise)</td></tr>
 <tr class="memdesc:ad4e88d85b52cdb768df5e221d9a17735"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make the image to rotate.  <a href="#ad4e88d85b52cdb768df5e221d9a17735">More...</a><br /></td></tr>
 <tr class="separator:ad4e88d85b52cdb768df5e221d9a17735"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5339b909607cc00155cbc4d415dc1cfe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#a5339b909607cc00155cbc4d415dc1cfe">APC_RotateImg180</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len)</td></tr>
+<tr class="memdesc:a5339b909607cc00155cbc4d415dc1cfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotate the image to 180 degree.  <a href="#a5339b909607cc00155cbc4d415dc1cfe">More...</a><br /></td></tr>
+<tr class="separator:a5339b909607cc00155cbc4d415dc1cfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae99a873988b258ca34ef837a9e63d7f0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#ae99a873988b258ca34ef837a9e63d7f0">APC_ImgMirro</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf)</td></tr>
 <tr class="memdesc:ae99a873988b258ca34ef837a9e63d7f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make the image to Mirro.  <a href="#ae99a873988b258ca34ef837a9e63d7f0">More...</a><br /></td></tr>
 <tr class="separator:ae99a873988b258ca34ef837a9e63d7f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -7085,7 +7091,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p
 </div>
 </div>
 <a id="aebaa63c02f6680465aa80e1b4efc320f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aebaa63c02f6680465aa80e1b4efc320f">&#9670;&nbsp;</a></span>APC_RotateImg180()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aebaa63c02f6680465aa80e1b4efc320f">&#9670;&nbsp;</a></span>APC_RotateImg180() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -7137,6 +7143,86 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p
 <p>Rotate the image to 180 degree. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">APCImageType::Value</td><td>mgType Image Type </td></tr>
+    <tr><td class="paramname">int</td><td>width image width </td></tr>
+    <tr><td class="paramname">int</td><td>height image height </td></tr>
+    <tr><td class="paramname">unsigned</td><td>char *src image source </td></tr>
+    <tr><td class="paramname">unsigned</td><td>char *dstBuf image desteration </td></tr>
+    <tr><td class="paramname">int</td><td>len desteration buffer length </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>success: APC_OK, others: see <a class="el" href="e_s_p_d_i__def_8h.html" title="error/data type definitions ">eSPDI_def.h</a> </dd></dl>
+
+</div>
+</div>
+<a id="a5339b909607cc00155cbc4d415dc1cfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5339b909607cc00155cbc4d415dc1cfe">&#9670;&nbsp;</a></span>APC_RotateImg180() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int APC_RotateImg180 </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>pHandleEYSD</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a>&#160;</td>
+          <td class="paramname"><em>pDevSelInfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">APCImageType::Value&#160;</td>
+          <td class="paramname"><em>imgType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>height</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>dstBuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Rotate the image to 180 degree. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">void</td><td>* pHandleEYSD the pointer to the initilized EYSD SDK instance </td></tr>
+    <tr><td class="paramname">PDEVSELINFO</td><td>pDevSelInfo pointer of device select index </td></tr>
     <tr><td class="paramname">APCImageType::Value</td><td>mgType Image Type </td></tr>
     <tr><td class="paramname">int</td><td>width image width </td></tr>
     <tr><td class="paramname">int</td><td>height image height </td></tr>

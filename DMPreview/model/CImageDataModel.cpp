@@ -446,11 +446,11 @@ int CImageDataModel_Depth::TransformRawToRGB()
             pColorPalette = &m_colorPalette[COLOR_PALETTE_GRAY][0];
             break;
         default:
-            if (APCImageType::DEPTH_8BITS == GetImageType()){
+            //if (APCImageType::DEPTH_8BITS == GetImageType()){
                 utImageProcessingUtility::convert_yuv_to_rgb_buffer( &m_rawData[0], &m_rgbData[0], GetWidth(), GetHeight());
-            }else{
-                utImageProcessingUtility::convert_yuv_to_rgb_buffer( &m_rawData[0], &m_rgbData[0], GetWidth() * 2, GetHeight());
-            }
+            //}else{
+            //    utImageProcessingUtility::convert_yuv_to_rgb_buffer( &m_rawData[0], &m_rgbData[0], GetWidth() * 2, GetHeight());
+            //}
             return APC_OK;
     }
 
