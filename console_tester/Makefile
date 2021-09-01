@@ -12,6 +12,12 @@ ifeq ($(CPU), NVIDIA)
 	       -L../eSPDI/turbojpeg/TX2/lib/ -lturbojpeg \
 	       -lrt
 endif
+ifeq ($(CPU), PX30)
+	TARGET = test_arm64_px30
+	LIBS = -L../eSPDI -leSPDI_$(CPU)_64 \
+	       -L../eSPDI/turbojpeg/PX30/lib/ -L../eSPDI/OpenCL/aarch64/lib/ -lturbojpeg \
+	       -lrt -lOpenCL
+endif
 
 CFLAGS = -Wall -W -std=c++11
 LFLAGS = -Wall -W 
@@ -25,13 +31,13 @@ INCPATH = -I../eSPDI -I../eSPDI/turbojpeg/armhf_32/include/
 .SUFFIXES: .o .cpp
 
 .cpp.o:
-	g++ -c $(CFLAGS) $(INCPATH) -g -o $@ $<
+	$(CXX) -c $(CFLAGS) $(INCPATH) -g -o $@ $<
 
 all: $(TARGET)
 
 ####### Build rules
 $(TARGET): $(OBJECTS)
-	g++ $(LFLAGS) -g -o $@ $^ $(LIBS)
+	$(CXX) $(LFLAGS) -g -o $@ $^ $(LIBS)
 
 ####### clean rules
 clean: 
