@@ -32,42 +32,110 @@
 #define ONLY_PRINT_OVER_DIFF 1
 
 static void* EYSD = NULL;
-static DEVSELINFO gsDevSelInfo;
+static DEVSELINFO g_DevSelInfo;
+static DEVINFORMATION *g_pDevInfo = NULL;
+
+#define CAMERA_PID_SANDRA 0x0167
+#define CAMERA_PID_NORA  0x0168
+
 
 static int gColorFormat = 0; // 0:YUYV (only support YUYV) 
 static int gColorWidth = 1280;
 static int gColorHeight = 720;
-
 static int gDepthWidth = 1280; // Depth is only YUYV format
 static int gDepthHeight = 720;
-
 static int gActualFps = 30;
-DEPTH_TRANSFER_CTRL gDepth_Transfer_ctrl = DEPTH_IMG_NON_TRANSFER;
+static uint32_t gDepthType = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY; //APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY
 
-static unsigned char *gColorImgBuf = NULL;
-static unsigned char *gDepthImgBuf = NULL;
+
+static DEPTH_TRANSFER_CTRL gDepth_Transfer_ctrl = DEPTH_IMG_NON_TRANSFER;
+
+static  uint8_t g_pzdTable[APC_ZD_TABLE_FILE_SIZE_11_BITS] = {0x0};
+static  uint16_t g_maxFar = 0;
+static  uint16_t g_maxNear = 0;
+static int g_zdTableInfo_index = 0;
+
+static uint8_t *gColorImgBuf = NULL;
+static uint8_t *gDepthImgBuf = NULL;
+static uint8_t *gColorRGBImgBuf = NULL;
 static unsigned long int gColorImgSize = 0;
 static unsigned long int gDepthImgSize = 0;
-
 static bool bSnapshot = true;
+
+int GetDateTime(char *psDateTime);
 
 static int init_device(void);
 static void release_device(void);
-static int open_device(void);
+static int open_device(uint32_t depthtype);
 static int close_device(void);
-static void *get_color_depth_image(void *arg);
+
+
+static int getZDtable(void);
+
+static int getIRValue(uint16_t *min, uint16_t *max);
+static int setIRValue(uint16_t IRvalue);
+
+static int getPointCloud(uint8_t *ImgColor,
+                         int CW, int CH,
+                         uint8_t *ImgDepth,
+                         int DW, int DH, int depthDataType,
+                         uint8_t *pPointCloudRGB,
+                         float *pPointCloudXYZ,
+                         float fNear, float fFar);
+
+
+static int demo(void *(*func)(void *), void *arg);
+static void *get_color_depth_image_func(void *arg);
+static void *point_cloud_func(void *arg);
 
 int main(void)
 {
+    int input = 255;
+    do {
+        printf("\n-----------------------------------------\n");
+        printf("Software version : %s\n", APC_VERSION);
+        printf("Please choose fllowing steps:\n");       
+        printf("0. Get Color and Depth Image\n");
+        printf("1. Point cloud\n");
+        printf("255. exit)\n");
+        scanf("%d", &input);
+        switch(input) {
+        case 0:
+            demo(get_color_depth_image_func, NULL);
+            break;
+        case 1:
+            demo(point_cloud_func, NULL);
+            break;
+        case 255:
+            return 0;
+            break; 
+        default:
+            continue;
+        }
+    } while(1);
+
+	return 0;
+}
+
+
+static int demo(void *(*func)(void *), void *arg)
+{
     int ret = 0;
-    
-    printf("MIPI SDK sample code !!\n");
+    pthread_t thread_id;
+    pthread_attr_t thread_attr;
+    struct sched_param thread_param; 
     
     ret = init_device();
     if (ret == APC_OK) {
-        ret = open_device();
+        ret = open_device(gDepthType);
         if (ret == APC_OK) { 
-            get_color_depth_image(NULL);
+            pthread_attr_init(&thread_attr);
+            pthread_attr_getschedparam (&thread_attr, &thread_param);
+            thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO) -1;
+            pthread_attr_setschedparam(&thread_attr, &thread_param);
+            pthread_create(&thread_id, &thread_attr, func, arg);
+            printf("Wait the finish of func !!\n");
+            pthread_join(thread_id, NULL);
             ret = close_device();
             if (ret != APC_OK) {
                 printf("Failed to call close_device()!!\n");
@@ -80,23 +148,74 @@ int main(void)
     return 0;
 }
 
+int GetDateTime(char *psDateTime)
+{
+    time_t timep; 
+    struct tm *p; 
+    
+    time(&timep); 
+    p=localtime(&timep); 
 
+    sprintf(psDateTime,"%04d%02d%02d_%02d%02d%02d", (1900+p->tm_year), (1+p->tm_mon), p->tm_mday,                                                                                                                                                                                                     
+            p->tm_hour, p->tm_min, p->tm_sec);
+    return 0;
+}
 
 static int init_device(void)
 {
     int ret = 0;
     char FWVersion[256] = {0x0};
     int nActualLength = 0;
-    
+
     ret = APC_Init(&EYSD, true);
     if (ret == APC_OK) {
-        printf("xxAPC_Init() success! (EYSD : %p)\n", EYSD);
+        printf("APC_Init() success! (EYSD : %p)\n", EYSD);
     } else {
         printf("APC_Init() fail.. (ret : %d, EYSD : %p)\n", ret, EYSD);
     }
 
-    if( APC_OK == APC_GetFwVersion(EYSD, &gsDevSelInfo, FWVersion, 256, &nActualLength)) {
+    if( APC_OK == APC_GetFwVersion(EYSD, &g_DevSelInfo, FWVersion, 256, &nActualLength)) {
         printf("FW Version = [%s]\n", FWVersion);
+    }
+
+    
+    g_DevSelInfo.index = 0;
+    g_pDevInfo = (DEVINFORMATION*)malloc(sizeof(DEVINFORMATION));
+    printf("select index = %d\n", g_DevSelInfo.index);
+    
+    ret = APC_GetDeviceInfo(EYSD, &g_DevSelInfo ,g_pDevInfo);
+    if (ret == APC_OK) {
+        printf("Device Name = %s\n", g_pDevInfo->strDevName);
+        printf("PID = 0x%04x\n", g_pDevInfo->wPID);
+        printf("VID = 0x%04x\n", g_pDevInfo->wVID);
+        printf("Chip ID = 0x%x\n", g_pDevInfo->nChipID);
+        printf("device type = %d\n", g_pDevInfo->nDevType);
+        
+       switch (g_pDevInfo->wPID) {
+           case CAMERA_PID_SANDRA:
+               gColorFormat = 0; // 0:YUYV (only support YUYV) 
+               gColorWidth = 1280;
+               gColorHeight = 720;
+               gDepthWidth = 1280; // Depth is only YUYV format
+               gDepthHeight = 720;
+               gActualFps = 30;
+               gDepthType = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY; //APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY
+               break;
+           case CAMERA_PID_NORA:
+               gColorFormat = 0; // 0:YUYV (only support YUYV) 
+               gColorWidth = 1024;
+               gColorHeight = 768;
+               gDepthWidth = 1024; // Depth is only YUYV format
+               gDepthHeight = 768;
+               gActualFps = 30;
+               gDepthType = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY; //APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY
+           default:
+               ret = APC_NoDevice;
+               printf("Unkown PID (0x%04x) !!\n", g_pDevInfo->wPID);
+               break;
+       }
+    } else {
+        printf("Failed to call APC_GetDeviceInfo()!!\n");
     }
 
     return ret;    
@@ -104,18 +223,38 @@ static int init_device(void)
 
 static void release_device(void)
 {
+    printf("Release (EYSD : %p) !!\n", EYSD);
     APC_Release(&EYSD);
+    if (g_pDevInfo) {
+        free(g_pDevInfo);
+        g_pDevInfo = NULL;
+    }
+
 }
 
-static int open_device(void)
+static int open_device(uint32_t depthtype)
 {
     int ret = 0;
+    uint16_t ir_max = 0;
+    uint16_t ir_min = 0;
     
     if (!EYSD) {
         init_device();
     }
-
-    ret= APC_OpenDevice(EYSD, &gsDevSelInfo,
+    
+    ret = APC_SetDepthDataType(EYSD, &g_DevSelInfo, depthtype);
+    if (ret != APC_OK) {
+        printf("APC_SetDepthDataType() fail.. (ret=%d)\n", ret);
+        goto exit;
+    }
+    
+    ret = getZDtable();
+    if (ret != APC_OK) {
+        printf("Failed to get ZD table!!\n");
+        goto exit;
+    }
+    
+    ret= APC_OpenDevice(EYSD, &g_DevSelInfo,
                           gColorWidth, gColorHeight, (bool)gColorFormat,
                           gDepthWidth, gDepthHeight,
                           gDepth_Transfer_ctrl,
@@ -126,7 +265,13 @@ static int open_device(void)
     } else {
             printf("APC_OpenDevice() fail.. (ret=%d)\n", ret);
     }
-    
+
+    setIRValue(0x00ff);
+    if (getIRValue(&ir_min, &ir_max) == 0) {
+        setIRValue(ir_max);
+    }
+
+ exit:   
     return ret;
 }
 
@@ -136,7 +281,7 @@ static int close_device(void)
 {
     int ret;
     
-    ret = APC_CloseDevice(EYSD, &gsDevSelInfo);
+    ret = APC_CloseDevice(EYSD, &g_DevSelInfo);
     if(ret == APC_OK) {
         printf("APC_CloseDevice() success!\n");
     } else {
@@ -146,9 +291,295 @@ static int close_device(void)
     return ret;
 }
 
+static int getZDtable(void)
+{
+    ZDTABLEINFO zdTableInfo = {0x0};
+    int bufSize = 0;
+    int nRet = APC_OK;
+    uint16_t nZValue;
+    int actualLength = 0;
+    
+    zdTableInfo.nDataType = APC_DEPTH_DATA_11_BITS;
+    
+    memset(g_pzdTable, 0, sizeof(g_pzdTable));
+   
+    bufSize = APC_ZD_TABLE_FILE_SIZE_11_BITS;
 
 
-static void *get_color_depth_image(void *arg)
+    zdTableInfo.nIndex = 0; //The resolution is original or scale down resolution of sensor. 
+
+
+    nRet = APC_GetZDTable(EYSD, &g_DevSelInfo, g_pzdTable, bufSize, &actualLength, &zdTableInfo);
+    if (nRet != APC_OK) {
+        printf("Failed to call APC_GetZDTable()(%d)\n", nRet);
+        return nRet;
+    }
+    
+    g_maxNear = 0xfff;
+    g_maxFar = 0;
+
+    for (int i = 0 ; i < APC_ZD_TABLE_FILE_SIZE_11_BITS ; ++i) {
+        nZValue = (((uint16_t)g_pzdTable[i * 2]) << 8) +g_pzdTable[i * 2 + 1];
+        if (nZValue) {
+            g_maxNear = std::min<uint16_t>(g_maxNear, nZValue);
+            g_maxFar = std::max<uint16_t>(g_maxFar, nZValue);
+        }
+    }
+    
+    if (g_maxNear > g_maxFar)
+        g_maxNear = g_maxFar;
+    
+    if (g_maxFar > 1000)
+        g_maxFar = 1000;
+    
+    g_zdTableInfo_index = zdTableInfo.nIndex;
+    
+    printf("Get ZD Table actualLength : %d, g_maxNear : %d, g_maxFar : %d\n", actualLength, g_maxNear ,g_maxFar);
+    return nRet;
+}
+
+static int getIRValue(uint16_t *min, uint16_t *max)
+{
+    int ret = APC_OK;
+    uint16_t m_nIRMax = 0; 
+    uint16_t m_nIRMin = 0;
+    
+    ret = APC_GetFWRegister(EYSD, &g_DevSelInfo,
+                                0xE2, &m_nIRMax,FG_Address_1Byte | FG_Value_1Byte);
+    if (APC_OK != ret) {
+        printf("get IR Max value failed\n");
+        return ret;
+     }
+
+    ret = APC_GetFWRegister(EYSD, &g_DevSelInfo,
+                                0xE1, &m_nIRMin,FG_Address_1Byte | FG_Value_1Byte);
+    if (APC_OK != ret) {
+        printf("get IR Min value failed\n");
+        return ret;
+     }
+    printf("IR range: %d ~ %d\n",m_nIRMin, m_nIRMax);      
+    
+    *min = m_nIRMin;
+    *max = m_nIRMax;
+    
+    return ret;
+}
+
+
+static int setIRValue(uint16_t IRvalue)
+{
+    int ret = APC_OK;
+    uint16_t m_nIRMax, m_nIRMin, m_nIRValue;
+    
+    ret = APC_GetFWRegister(EYSD, &g_DevSelInfo,
+                                0xE2, &m_nIRMax,FG_Address_1Byte | FG_Value_1Byte);
+    if (APC_OK != ret) return ret;
+
+    ret = APC_GetFWRegister(EYSD, &g_DevSelInfo,
+                                0xE1, &m_nIRMin,FG_Address_1Byte | FG_Value_1Byte);
+    if (APC_OK != ret) return ret;
+
+    if (IRvalue > m_nIRMax || m_nIRMax < m_nIRMin) {
+        m_nIRValue = (m_nIRMax - m_nIRMin) / 2;
+    } else {
+        m_nIRValue = IRvalue;
+    }
+    printf("IR range, IR Min : %d, IR Max : %d, set IR Value : %d\n", m_nIRMin, m_nIRMax, m_nIRValue);
+
+    if (m_nIRValue != 0) {
+        ret = APC_SetIRMode(EYSD, &g_DevSelInfo, 0x63); // 6 bits on for opening both 6 ir
+        if (APC_OK != ret) return ret;
+        printf("enable IR and set IR Value : %d\n",m_nIRValue);
+        ret = APC_SetCurrentIRValue(EYSD, &g_DevSelInfo, m_nIRValue);
+        if (APC_OK != ret) return ret;
+        ret = APC_GetCurrentIRValue(EYSD, &g_DevSelInfo, &m_nIRValue);
+        if (APC_OK != ret) return ret;
+        printf("get IR Value : %d\n",m_nIRValue);
+    } else {
+        ret = APC_SetCurrentIRValue(EYSD, &g_DevSelInfo, m_nIRValue);
+        if (APC_OK != ret) return ret;
+        ret = APC_SetIRMode(EYSD,&g_DevSelInfo, 0x00); // turn off ir
+        if (APC_OK != ret) return ret;
+        printf("disable IR\n");
+    }
+    return APC_OK;
+}
+
+
+static int getPointCloudInfo(void *pHandleEYSD, DEVSELINFO *pDevSelInfo, PointCloudInfo *pointCloudInfo, int depthDataType, int depthHeight)
+{
+    float ratio_Mat = 0.0f;
+    float baseline  = 0.0f;
+    float diff      = 0.0f;
+    eSPCtrl_RectLogData rectifyLogData;
+    eSPCtrl_RectLogData *pRectifyLogData = NULL;
+    int nIndex = g_zdTableInfo_index;
+    int ret = APC_NoDevice;
+    
+    if (!pointCloudInfo){
+        return -EINVAL;
+    }
+
+    memset(&rectifyLogData, 0x0, sizeof(eSPCtrl_RectLogData));
+    ret = APC_GetRectifyMatLogData(pHandleEYSD, pDevSelInfo, &rectifyLogData, nIndex);
+    if (ret == APC_OK) {
+        pRectifyLogData = &rectifyLogData;
+        ratio_Mat = (float)depthHeight / pRectifyLogData->OutImgHeight;
+        baseline  = 1.0f / pRectifyLogData->ReProjectMat[14];
+        diff      = pRectifyLogData->ReProjectMat[15] * ratio_Mat;
+        
+        memset(pointCloudInfo, 0, sizeof(PointCloudInfo));
+        pointCloudInfo->wDepthType = depthDataType;
+        
+        pointCloudInfo->centerX = -1.0f * pRectifyLogData->ReProjectMat[3] * ratio_Mat;
+        pointCloudInfo->centerY = -1.0f * pRectifyLogData->ReProjectMat[7] * ratio_Mat;
+        pointCloudInfo->focalLength = pRectifyLogData->ReProjectMat[11] * ratio_Mat;
+
+        switch (APCImageType::DepthDataTypeToDepthImageType(depthDataType)){
+            case APCImageType::DEPTH_14BITS: pointCloudInfo->disparity_len = 0; break;
+            case APCImageType::DEPTH_11BITS:
+            {
+                pointCloudInfo->disparity_len = 2048;
+                for(int i = 0 ; i < pointCloudInfo->disparity_len ; ++i){
+                    pointCloudInfo->disparityToW[i] = ( i * ratio_Mat / 8.0f ) / baseline + diff;
+                }
+                break;
+            }
+            default:
+                pointCloudInfo->disparity_len = 256;
+                for(int i = 0 ; i < pointCloudInfo->disparity_len ; ++i){
+                pointCloudInfo->disparityToW[i] = (i * ratio_Mat) / baseline + diff;
+                }
+                break;
+        }
+    }
+    return APC_OK;
+}
+
+
+static int getPointCloud(uint8_t *ImgColor, int CW, int CH,
+                  uint8_t *ImgDepth, int DW, int DH, int depthDataType,
+                  uint8_t *pPointCloudRGB,
+                  float *pPointCloudXYZ,
+                  float fNear,
+                  float fFar)
+{
+    int ret = 0;
+    PointCloudInfo pointCloudInfo;
+    std::vector<CloudPoint> cloud;
+    char DateTime[32] = {0};
+    static uint32_t yuv_index = 0;
+    char fname[256] = {0};
+    int i = 0;
+    CloudPoint cloudpoint = {0};
+    void *pHandleEYSD =  EYSD;
+    DEVSELINFO *pDevSelInfo = &g_DevSelInfo;
+    
+    if (!pHandleEYSD) {
+        return -EINVAL;
+    }
+
+    memset(DateTime, 0, sizeof(DateTime));
+    GetDateTime(DateTime);
+    
+    ret = getPointCloudInfo(pHandleEYSD, pDevSelInfo, &pointCloudInfo, depthDataType, DH);
+    if (ret == APC_OK) {
+        ret = APC_GetPointCloud(pHandleEYSD, pDevSelInfo, ImgColor, CW, CH, ImgDepth, DW, DH,
+                                &pointCloudInfo, pPointCloudRGB, pPointCloudXYZ, fNear, fFar);
+        if (ret == APC_OK) {
+            snprintf(fname, sizeof(fname), SAVE_FILE_DIR"cloud_%d_%s.ply", yuv_index++, DateTime);
+           
+            while(i < (DW * DH * 3)) {
+                
+                if (isnan(pPointCloudXYZ[i]) || isnan(pPointCloudXYZ[i+1]) || isnan(pPointCloudXYZ[i+2])) {
+                    //Do nothing!!
+                } else {
+                    cloudpoint.r = pPointCloudRGB[i];
+                    cloudpoint.g = pPointCloudRGB[i + 1];
+                    cloudpoint.b = pPointCloudRGB[i + 2];
+                    cloudpoint.x = pPointCloudXYZ[i];
+                    cloudpoint.y = pPointCloudXYZ[i + 1];
+                    cloudpoint.z = pPointCloudXYZ[i+2];
+                    cloud.push_back(cloudpoint);
+                }
+                i+=3;
+                if (i == (DW * DH * 3))
+                    break;
+            }
+            PlyWriter::writePly(cloud, fname);
+        }
+    }
+    
+    return ret;
+}
+
+int convert_yuv_to_rgb_pixel(int y, int u, int v)
+{
+    uint32_t pixel32 = 0;
+    uint8_t *pixel = (uint8_t *)&pixel32;
+    int r, g, b;
+
+    r = y + (1.370705 * (v-128));
+    g = y - (0.698001 * (v-128)) - (0.337633 * (u-128));
+    b = y + (1.732446 * (u-128));
+
+    if(r > 255) r = 255;
+    if(g > 255) g = 255;
+    if(b > 255) b = 255;
+
+    if(r < 0) r = 0;
+    if(g < 0) g = 0;
+    if(b < 0) b = 0;
+
+    pixel[0] = r * 220 / 256;
+    pixel[1] = g * 220 / 256;
+    pixel[2] = b * 220 / 256;
+
+    return pixel32;
+}
+
+int convert_yuv_to_rgb_buffer(uint8_t *yuv, uint8_t *rgb, uint32_t width, uint32_t height)
+{
+    uint32_t in, out = 0;
+    uint32_t pixel_16;
+    uint8_t pixel_24[3];
+    uint32_t pixel32;
+    int y0, u, y1, v;
+    for(in = 0; in < width * height * 2; in += 4) {
+        pixel_16 =
+        yuv[in + 3] << 24 |
+        yuv[in + 2] << 16 |
+        yuv[in + 1] <<  8 |
+        yuv[in + 0];
+
+        y0 = (pixel_16 & 0x000000ff);
+        u  = (pixel_16 & 0x0000ff00) >>  8;
+        y1 = (pixel_16 & 0x00ff0000) >> 16;
+        v  = (pixel_16 & 0xff000000) >> 24;
+
+        pixel32 = convert_yuv_to_rgb_pixel(y0, u, v);
+
+        pixel_24[0] = (pixel32 & 0x000000ff);
+        pixel_24[1] = (pixel32 & 0x0000ff00) >> 8;
+        pixel_24[2] = (pixel32 & 0x00ff0000) >> 16;
+        rgb[out++] = pixel_24[0];
+        rgb[out++] = pixel_24[1];
+        rgb[out++] = pixel_24[2];
+
+        pixel32 = convert_yuv_to_rgb_pixel(y1, u, v);
+
+        pixel_24[0] = (pixel32 & 0x000000ff);
+        pixel_24[1] = (pixel32 & 0x0000ff00) >> 8;
+        pixel_24[2] = (pixel32 & 0x00ff0000) >> 16;
+        rgb[out++] = pixel_24[0];
+        rgb[out++] = pixel_24[1];
+        rgb[out++] = pixel_24[2];
+    }
+
+    return 0;
+}
+
+static void *get_color_depth_image_func(void *arg)
 {
     int ret = APC_OK;
     int64_t cur_tv_sec = 0;
@@ -161,7 +592,7 @@ static void *get_color_depth_image(void *arg)
     int pre_serial_num = -1;
     int cur_depth_serial_num = -1;
     uint64_t frame_rate_count = 0;
-    unsigned int max_calc_frame_count = 10;
+    uint32_t max_calc_frame_count = 10;
     int mCount = 0;
     bool bFirstReceived = true;
     const char *pre_str = COLOR_DEPTH_STR;
@@ -170,7 +601,7 @@ static void *get_color_depth_image(void *arg)
     int serial_number = 0;
     int i = 0;
     uint64_t index = 0;
-    unsigned int BytesPerPixel = 2; //Only support YUYV
+    uint32_t BytesPerPixel = 2; //Only support YUYV
     char *color_file_name = NULL;
     char *depth_file_name = NULL;
     FILE *color_fp = NULL;
@@ -185,7 +616,7 @@ static void *get_color_depth_image(void *arg)
     printf("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
 
     if(gColorImgBuf == NULL) {
-        gColorImgBuf = (unsigned char*)calloc(gColorWidth * gColorHeight * BytesPerPixel, sizeof(unsigned char));
+        gColorImgBuf = (uint8_t*)calloc(gColorWidth * gColorHeight * BytesPerPixel, sizeof(uint8_t));
     }
     if(gColorImgBuf == NULL) {
         printf("alloc ColorImgBuf fail..\n");
@@ -193,7 +624,7 @@ static void *get_color_depth_image(void *arg)
     }
     
     if(gDepthImgBuf == NULL) {
-        gDepthImgBuf = (unsigned char*)calloc(gDepthWidth * gDepthHeight * BytesPerPixel, sizeof(unsigned char));
+        gDepthImgBuf = (uint8_t*)calloc(gDepthWidth * gDepthHeight * BytesPerPixel, sizeof(uint8_t));
     }
     
     if(gDepthImgBuf == NULL) {
@@ -221,22 +652,23 @@ static void *get_color_depth_image(void *arg)
     
     while (mCount < 1) {
 
-        ret = APC_Get2ImageWithTimestamp(EYSD, &gsDevSelInfo, (uint8_t*)gColorImgBuf,
+        ret = APC_Get2ImageWithTimestamp(EYSD, &g_DevSelInfo, (uint8_t*)gColorImgBuf,
                                          (uint8_t *)gDepthImgBuf, &gColorImgSize, &gDepthImgSize,
-                                         &cur_serial_num, &cur_depth_serial_num, APC_DEPTH_DATA_11_BITS, &cur_tv_sec, &cur_tv_usec);
+                                         &cur_serial_num, &cur_depth_serial_num, gDepthType, &cur_tv_sec, &cur_tv_usec);
         if (ret == APC_OK) {
             serial_number = 0;
             if (gColorFormat == 0) {   
                 //V4L2_PIX_FMT_YUYV
                 for ( i = 0; i < 16; i++ ) {
-                    serial_number |= ( *(((unsigned char*)gColorImgBuf)+i)&1) << i;
+                    serial_number |= ( *(((uint8_t*)gColorImgBuf)+i)&1) << i;
                 }
             } else {
                 //V4L2_PIX_FMT_MJPEG
-                  serial_number  = *(((unsigned char*)gColorImgBuf)+6)*256 + *(((unsigned char*)gColorImgBuf)+7);
+                  serial_number  = *(((uint8_t*)gColorImgBuf)+6)*256 + *(((uint8_t*)gColorImgBuf)+7);
             }
             if (bFirstReceived) {
                 bFirstReceived = false;
+                RegisterSettings::DM_Quality_Register_Setting(EYSD, &g_DevSelInfo, g_pDevInfo->wPID);
                 printf("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
                        (int)cur_serial_num, serial_number, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
             }
@@ -292,9 +724,9 @@ static void *get_color_depth_image(void *arg)
             
             if (bSnapshot) {
                 if (color_fp && gColorImgBuf)
-                    fwrite(gColorImgBuf, sizeof(unsigned char), gColorImgSize, color_fp);
+                    fwrite(gColorImgBuf, sizeof(uint8_t), gColorImgSize, color_fp);
                 if (depth_fp && gDepthImgBuf)
-                    fwrite(gDepthImgBuf, sizeof(unsigned char), gDepthImgSize, depth_fp);
+                    fwrite(gDepthImgBuf, sizeof(uint8_t), gDepthImgSize, depth_fp);
                 
             }
             index++;
@@ -339,6 +771,106 @@ static void *get_color_depth_image(void *arg)
     }
     
     return NULL;
+}
+
+static void *point_cloud_func(void *arg) 
+{
+    int ret = APC_OK;
+    int64_t cur_tv_sec = 0;
+    int64_t cur_tv_usec = 0;
+    int cur_serial_num = -1;
+    int cur_depth_serial_num = -1;
+    
+    unsigned int count = 0;
+    unsigned int max_count = 10;
+    
+    static unsigned int m_BufferSize = 0;
+    
+    bool bFirstReceived = true;
+
+    int i = 0;
+    uint8_t *pPointCloudRGB = NULL;
+    float *pPointCloudXYZ = NULL;
+
+    (void)arg;
+
+    printf("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
+    
+    pPointCloudRGB = (uint8_t *)malloc(gDepthWidth * gDepthHeight * 3 * sizeof(uint8_t));
+    pPointCloudXYZ = (float *)malloc(gDepthWidth * gDepthHeight * 3 * sizeof(float));
+    if((pPointCloudRGB == NULL) || (pPointCloudXYZ == NULL)) {
+        printf("alloc for pPointCloudRGB or  pPointCloudXYZ fail..\n");
+        goto exit;
+    }
+    
+    if(gDepthImgBuf == NULL) {
+        m_BufferSize = gDepthWidth * gDepthHeight * 2;
+        gDepthImgBuf = (uint8_t*)calloc(m_BufferSize, sizeof(uint8_t));
+    }
+    if(gDepthImgBuf == NULL) {
+        printf("alloc for gDepthImageBuf fail..\n");
+         goto exit;
+    }
+
+    printf("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
+    if(gColorImgBuf == NULL) {
+        gColorImgBuf = (uint8_t*)calloc(2 * gColorWidth * gColorHeight , sizeof(uint8_t));
+    }
+    if(gColorImgBuf == NULL) {
+        printf("alloc ColorImgBuf fail..\n");
+         goto exit;
+    }
+    
+    if(gColorRGBImgBuf == NULL) {
+        gColorRGBImgBuf = (uint8_t*)calloc(3 * gColorWidth * gColorHeight, sizeof(uint8_t));
+    }
+    if(gColorRGBImgBuf == NULL) {
+        printf("alloc gColorRGBImgBuf fail..\n");
+         goto exit;
+    }
+
+    while (count < max_count) {
+        ret = APC_Get2ImageWithTimestamp(EYSD, &g_DevSelInfo, (uint8_t*)gColorImgBuf,
+                                         (uint8_t *)gDepthImgBuf, &gColorImgSize, &gDepthImgSize,
+                                         &cur_serial_num, &cur_depth_serial_num, gDepthType, &cur_tv_sec, &cur_tv_usec);
+        if (ret == APC_OK) {
+            if (bFirstReceived){
+                bFirstReceived = false;
+                RegisterSettings::DM_Quality_Register_Setting(EYSD, &g_DevSelInfo, g_pDevInfo->wPID);
+            }
+            
+            convert_yuv_to_rgb_buffer(gColorImgBuf, gColorRGBImgBuf, gColorWidth, gColorHeight);
+            ret = getPointCloud(gColorRGBImgBuf, gColorWidth, gColorHeight,
+                                gDepthImgBuf, gDepthWidth, gDepthHeight, gDepthType,
+                                pPointCloudRGB, pPointCloudXYZ, g_maxNear, g_maxFar);
+        }
+        count++;
+    }
+    
+exit:
+    if(gDepthImgBuf != NULL){
+        free(gDepthImgBuf);
+        gDepthImgBuf = NULL;
+     }
+
+     
+    if (pPointCloudRGB != NULL) {
+        free(pPointCloudRGB);
+        pPointCloudRGB = NULL;
+    }
+    
+    if (pPointCloudXYZ != NULL) {
+        free(pPointCloudXYZ);
+        pPointCloudXYZ = NULL;
+    }
+    
+    if (gColorRGBImgBuf != NULL) {
+        free(gColorRGBImgBuf);
+        gColorRGBImgBuf = NULL;
+    }
+     
+    return NULL;
+    
 }
 
 

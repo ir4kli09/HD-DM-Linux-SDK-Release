@@ -25,7 +25,7 @@ int PlyWriter::writePly(std::vector<CloudPoint>& cloud, std::string filename) {
     char buf[MAX_PROPERTY_STIRING_SIZE];
     std::stringstream oss;
     for (int i = 0; i < vertexSize; i++) {
-        sprintf(buf, "%d %d %d %.8f %.8f %.8f \n", cloud[i].r, cloud[i].g, cloud[i].b, cloud[i].x, -cloud[i].y, -cloud[i].z);
+        sprintf(buf, "%d %d %d %.8f %.8f %.8f \n",cloud[i].r, cloud[i].g, cloud[i].b, cloud[i].x, -cloud[i].y, -cloud[i].z);
         oss << buf;
 
         if (i != 0 && i % 50000 == 0)

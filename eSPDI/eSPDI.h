@@ -2488,6 +2488,7 @@ int APC_GetPointCloud( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned char
     \return success: APC_OK, others: see eSPDI_def.h
 */
 int APC_ColorFormat_to_RGB24( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned char* ImgDst, unsigned char* ImgSrc, int SrcSize, int width, int height, APCImageType::Value type );
+int APC_ColorFormat_to_BGR24( void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned char* ImgDst, unsigned char* ImgSrc, int SrcSize, int width, int height, APCImageType::Value type );
 
 } // end of extern "C" 02
 

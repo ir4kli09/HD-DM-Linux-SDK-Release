@@ -144,7 +144,8 @@ int CImageDataModel_Color::TransformRawToRGB()
         	        }
 		} else {
 		//-[Thermal device]
-                    ret = APC_ColorFormat_to_RGB24(CEYSDDeviceManager::GetInstance()->GetEYSD(),
+                    //DMpreview use rgb format to show
+                    ret = APC_ColorFormat_to_BGR24(CEYSDDeviceManager::GetInstance()->GetEYSD(),
                                            m_pVideoDeviceController->GetVideoDeviceModel()->GetDeviceSelInfo()[0],
                                            &m_rgbData[0], &m_rawData[0],
                                            m_rawData.size(),

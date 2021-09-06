@@ -317,7 +317,8 @@ typedef enum {
   OTHERS = 0,
   AXES1,
   PUMA,
-  KIWI
+  KIWI,
+  UNKNOWN_DEVICE_TYPE = 0xffff
 }DEVICE_TYPE;
 // for device type -
 

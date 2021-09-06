@@ -883,9 +883,12 @@ static void *pthread_saving_color(void *param) {
                        (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
             }
             
-            // 000 Convert from to RGB color
+            // 000 Convert from to BGR color
             int convertRGBRet = APC_ColorFormat_to_RGB24(EYSD, &gsDevSelInfo, writingBuffer, gColorImgBuf, gColorImgSize,
                                                             gColorWidth, gColorHeight, imageType);
+            // 000 Convert from to RGB color
+            // int convertBGRRet = APC_ColorFormat_to_BGR24(EYSD, &gsDevSelInfo, writingBuffer, gColorImgBuf, gColorImgSize,
+            //                                                 gColorWidth, gColorHeight, imageType);
 
             fileName.append(SAVE_FILE_PATH"COLOR");
             fileName.append(std::to_string(cur_serial_num));

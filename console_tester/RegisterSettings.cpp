@@ -807,11 +807,11 @@ int RegisterSettings::DM_Quality_Register_Setting(void* hEYSD, PDEVSELINFO pDevS
     ifstream in(fileName);
 
     if (!in) {
-        printf("[%s][%d]Cannot open cfg file %s\n", __func__, __LINE__, fileName);
+        printf("[%s][%d]Cannot open cfg file %s for (0x%04x)\n", __func__, __LINE__, fileName, wPID);
         return -1;
     }
     
-    printf("[%s][%d]xxSuccessfully open cfg file %s\n", __func__, __LINE__, fileName);
+    printf("[%s][%d]Successfully open cfg file %s for (0x%04x)\n", __func__, __LINE__, fileName, wPID);
     
     while (in) {
             in.getline(tmp, 255);  // delim defaults to '\n'
