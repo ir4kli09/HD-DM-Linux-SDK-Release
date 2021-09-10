@@ -24,6 +24,17 @@
 #include "RegisterSettings.h"
 
 
+#define CT_DEBUG_PRINTF(format, ...) \
+    printf("[CT][%s][%d]" format, __func__, __LINE__, ##__VA_ARGS__)
+
+#define CT_DEBUG_ENABLE 1
+#ifdef CT_DEBUG_ENABLE
+#define CT_DEBUG CT_DEBUG_PRINTF
+#else
+#define CT_DEBUG(fmt, args...) do {} while (0)
+#endif
+
+
 #define SAVE_FILE_DIR "./out_img/"
 #define MAX_FILE_PATH_LEN 1024
 
@@ -38,6 +49,260 @@ static DEVINFORMATION *g_pDevInfo = NULL;
 #define CAMERA_PID_SANDRA 0x0167
 #define CAMERA_PID_NORA  0x0168
 
+#define DEFAULT_VIDEO_MODE_SELECTED_INDEX 0
+struct video_mode {
+    uint32_t width;
+    uint32_t height;
+    uint32_t fps;
+    uint32_t depth_type;
+    bool is_interleave_mode;
+    uint32_t pixelcode;
+    bool is_scale_down;
+};
+struct video_mode v1_video_modes []  ={
+    {
+        .width = 2560,
+        .height = 720,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2560,
+        .height = 720,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        
+        .width = 1280,
+        .height = 360,
+        .fps = 60,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+        
+    },
+    {
+        .width = 2560,
+        .height = 720,
+        .fps = 12,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2560,
+        .height = 720,
+        .fps = 12,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 1280,
+        .height = 360,
+        .fps = 24,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = true
+    }
+    
+};
+
+
+struct video_mode v2_video_modes []  ={
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 15,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 15,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 10,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 10,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 20,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 2048,
+        .height = 768,
+        .fps = 20,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = false
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 15,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 15,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 10,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 10,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 20,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = true,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    {
+        .width = 1024,
+        .height = 384,
+        .fps = 20,
+        .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = true
+    },
+    
+};
 
 static int gColorFormat = 0; // 0:YUYV (only support YUYV) 
 static int gColorWidth = 1280;
@@ -46,7 +311,8 @@ static int gDepthWidth = 1280; // Depth is only YUYV format
 static int gDepthHeight = 720;
 static int gActualFps = 30;
 static uint32_t gDepthType = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY; //APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY
-
+static bool gIsScaleDown = false;
+static bool gIsInterleaveMode = false;
 
 static DEPTH_TRANSFER_CTRL gDepth_Transfer_ctrl = DEPTH_IMG_NON_TRANSFER;
 
@@ -134,11 +400,11 @@ static int demo(void *(*func)(void *), void *arg)
             thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO) -1;
             pthread_attr_setschedparam(&thread_attr, &thread_param);
             pthread_create(&thread_id, &thread_attr, func, arg);
-            printf("Wait the finish of func !!\n");
+            CT_DEBUG("Wait the finish of func !!\n");
             pthread_join(thread_id, NULL);
             ret = close_device();
             if (ret != APC_OK) {
-                printf("Failed to call close_device()!!\n");
+                CT_DEBUG("Failed to call close_device()!!\n");
             }
         }
     }
@@ -166,64 +432,65 @@ static int init_device(void)
     int ret = 0;
     char FWVersion[256] = {0x0};
     int nActualLength = 0;
-
+    struct video_mode *mode = NULL;
+    
     ret = APC_Init(&EYSD, true);
     if (ret == APC_OK) {
-        printf("APC_Init() success! (EYSD : %p)\n", EYSD);
+        CT_DEBUG("APC_Init() success! (EYSD : %p)\n", EYSD);
     } else {
-        printf("APC_Init() fail.. (ret : %d, EYSD : %p)\n", ret, EYSD);
+        CT_DEBUG("APC_Init() fail.. (ret : %d, EYSD : %p)\n", ret, EYSD);
     }
 
     if( APC_OK == APC_GetFwVersion(EYSD, &g_DevSelInfo, FWVersion, 256, &nActualLength)) {
-        printf("FW Version = [%s]\n", FWVersion);
+        CT_DEBUG("FW Version = [%s]\n", FWVersion);
     }
 
     
     g_DevSelInfo.index = 0;
     g_pDevInfo = (DEVINFORMATION*)malloc(sizeof(DEVINFORMATION));
-    printf("select index = %d\n", g_DevSelInfo.index);
+    CT_DEBUG("select index = %d\n", g_DevSelInfo.index);
     
     ret = APC_GetDeviceInfo(EYSD, &g_DevSelInfo ,g_pDevInfo);
     if (ret == APC_OK) {
-        printf("Device Name = %s\n", g_pDevInfo->strDevName);
-        printf("PID = 0x%04x\n", g_pDevInfo->wPID);
-        printf("VID = 0x%04x\n", g_pDevInfo->wVID);
-        printf("Chip ID = 0x%x\n", g_pDevInfo->nChipID);
-        printf("device type = %d\n", g_pDevInfo->nDevType);
-        
-       switch (g_pDevInfo->wPID) {
+        CT_DEBUG("Device Name = %s\n", g_pDevInfo->strDevName);
+        CT_DEBUG("PID = 0x%04x\n", g_pDevInfo->wPID);
+        CT_DEBUG("VID = 0x%04x\n", g_pDevInfo->wVID);
+        CT_DEBUG("Chip ID = 0x%x\n", g_pDevInfo->nChipID);
+        CT_DEBUG("device type = %d\n", g_pDevInfo->nDevType);
+        switch (g_pDevInfo->wPID) {
            case CAMERA_PID_SANDRA:
-               gColorFormat = 0; // 0:YUYV (only support YUYV) 
-               gColorWidth = 1280;
-               gColorHeight = 720;
-               gDepthWidth = 1280; // Depth is only YUYV format
-               gDepthHeight = 720;
-               gActualFps = 30;
-               gDepthType = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY; //APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY
-               break;
+                mode = &v1_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
+                break;
            case CAMERA_PID_NORA:
-               gColorFormat = 0; // 0:YUYV (only support YUYV) 
-               gColorWidth = 1024;
-               gColorHeight = 768;
-               gDepthWidth = 1024; // Depth is only YUYV format
-               gDepthHeight = 768;
-               gActualFps = 30;
-               gDepthType = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY; //APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY
+                mode = &v2_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
            default:
                ret = APC_NoDevice;
-               printf("Unkown PID (0x%04x) !!\n", g_pDevInfo->wPID);
-               break;
+               CT_DEBUG("Unkown PID (0x%04x) !!\n", g_pDevInfo->wPID);
+               goto exit;
        }
-    } else {
-        printf("Failed to call APC_GetDeviceInfo()!!\n");
-    }
+       
+       gColorFormat = mode->pixelcode;
+       gColorWidth = mode->width / 2;
+       gColorHeight =  mode->height;
+       gDepthWidth = mode->width / 2;
+       gDepthHeight = mode->height;
+       gActualFps = mode->fps;
+       gDepthType = mode->depth_type;
+       gIsScaleDown = mode->is_scale_down;
+       gIsInterleaveMode = mode->is_interleave_mode;
+       
+       CT_DEBUG("vido mode:[%u, %u, %u, %u, %d, %d]\n", mode->width, mode->height, mode->fps, mode->depth_type, mode->is_scale_down, mode->is_interleave_mode);
 
+    } else {
+        CT_DEBUG("Failed to call APC_GetDeviceInfo()!!\n");
+    }
+exit:
     return ret;    
 }
 
 static void release_device(void)
 {
-    printf("Release (EYSD : %p) !!\n", EYSD);
+    CT_DEBUG("Release (EYSD : %p) !!\n", EYSD);
     APC_Release(&EYSD);
     if (g_pDevInfo) {
         free(g_pDevInfo);
@@ -237,23 +504,50 @@ static int open_device(uint32_t depthtype)
     int ret = 0;
     uint16_t ir_max = 0;
     uint16_t ir_min = 0;
-    
+    uint16_t ir_set = 0;
+    bool intleave_mode = false;
+    uint16_t depth_type_val = 0;
+
     if (!EYSD) {
         init_device();
     }
     
     ret = APC_SetDepthDataType(EYSD, &g_DevSelInfo, depthtype);
     if (ret != APC_OK) {
-        printf("APC_SetDepthDataType() fail.. (ret=%d)\n", ret);
+        CT_DEBUG("APC_SetDepthDataType() fail.. (ret=%d)\n", ret);
         goto exit;
+    } else {
+        ret = APC_GetDepthDataType(EYSD, &g_DevSelInfo, &depth_type_val);
+        if (ret != APC_OK) {
+            CT_DEBUG("APC_GetDepthDataType() fail.. (ret=%d)\n", ret);
+            goto exit;
+        }
+        CT_DEBUG("DepthType: (0x%04x)(0x%04x)\n",depthtype, depth_type_val);
     }
     
-    ret = getZDtable();
+    
+    ret = APC_SetInterleaveMode(EYSD, &g_DevSelInfo, gIsInterleaveMode);
     if (ret != APC_OK) {
-        printf("Failed to get ZD table!!\n");
+        CT_DEBUG("APC_SetInterleaveMode() fail.. (ret=%d)\n", ret);
         goto exit;
+    } else {
+        ret = APC_GetInterleaveMode(EYSD, &g_DevSelInfo, &intleave_mode);
+        if (ret != APC_OK) {
+            CT_DEBUG("APC_SetInterleaveMode() fail.. (ret=%d)\n", ret);
+            goto exit;
+        }
+        CT_DEBUG("InterleaveMode: (%d)(%d)\n",gIsInterleaveMode, intleave_mode);
     }
     
+    
+    if (APCImageType::DepthDataTypeToDepthImageType(gDepthType) == APCImageType::DEPTH_11BITS) {
+        ret = getZDtable();
+        if (ret != APC_OK) {
+            CT_DEBUG("Failed to get ZD table!!\n");
+            goto exit;
+        }
+    }
+
     ret= APC_OpenDevice(EYSD, &g_DevSelInfo,
                           gColorWidth, gColorHeight, (bool)gColorFormat,
                           gDepthWidth, gDepthHeight,
@@ -261,14 +555,19 @@ static int open_device(uint32_t depthtype)
                           false, NULL,
                           &gActualFps, IMAGE_SN_SYNC/*IMAGE_SN_NONSYNC*/);
     if (ret == APC_OK) {
-            printf("APC_OpenDevice() success! (FPS=%d)\n", gActualFps);
+            CT_DEBUG("APC_OpenDevice() success! (FPS=%d)\n", gActualFps);
     } else {
-            printf("APC_OpenDevice() fail.. (ret=%d)\n", ret);
+            CT_DEBUG("APC_OpenDevice() fail.. (ret=%d)\n", ret);
     }
 
-    setIRValue(0x00ff);
-    if (getIRValue(&ir_min, &ir_max) == 0) {
-        setIRValue(ir_max);
+    if (gIsInterleaveMode == true) {
+        setIRValue(0x00ff);
+        if (getIRValue(&ir_min, &ir_max) == 0) {
+            CT_DEBUG("(ir_min, ir_max) = [0x%04x, 0x%04x]\n", ir_min, ir_max);
+            ir_set = (ir_max + ir_min)/2;
+            CT_DEBUG("Set ir as [0x%4x]\n", ir_set);
+            setIRValue(ir_set);
+        }
     }
 
  exit:   
@@ -283,9 +582,9 @@ static int close_device(void)
     
     ret = APC_CloseDevice(EYSD, &g_DevSelInfo);
     if(ret == APC_OK) {
-        printf("APC_CloseDevice() success!\n");
+        CT_DEBUG("APC_CloseDevice() success!\n");
     } else {
-        printf("APC_CloseDevice() fail.. (ret=%d)\n", ret);
+        CT_DEBUG("APC_CloseDevice() fail.. (ret=%d)\n", ret);
     }
     
     return ret;
@@ -311,30 +610,35 @@ static int getZDtable(void)
 
     nRet = APC_GetZDTable(EYSD, &g_DevSelInfo, g_pzdTable, bufSize, &actualLength, &zdTableInfo);
     if (nRet != APC_OK) {
-        printf("Failed to call APC_GetZDTable()(%d)\n", nRet);
+        CT_DEBUG("Failed to call APC_GetZDTable()(%d)\n", nRet);
         return nRet;
     }
     
     g_maxNear = 0xfff;
     g_maxFar = 0;
 
+    CT_DEBUG("[%s][%d]Enter to calac mxaFar and maxNear...\n", __func__, __LINE__);
     for (int i = 0 ; i < APC_ZD_TABLE_FILE_SIZE_11_BITS ; ++i) {
+        if ((i * 2) == APC_ZD_TABLE_FILE_SIZE_11_BITS)
+            break;
         nZValue = (((uint16_t)g_pzdTable[i * 2]) << 8) +g_pzdTable[i * 2 + 1];
         if (nZValue) {
             g_maxNear = std::min<uint16_t>(g_maxNear, nZValue);
             g_maxFar = std::max<uint16_t>(g_maxFar, nZValue);
         }
     }
-    
+    CT_DEBUG("[%s][%d]Leave to calac mxaFar and maxNear...\n", __func__, __LINE__);
+
     if (g_maxNear > g_maxFar)
         g_maxNear = g_maxFar;
-    
+
     if (g_maxFar > 1000)
         g_maxFar = 1000;
+
     
     g_zdTableInfo_index = zdTableInfo.nIndex;
     
-    printf("Get ZD Table actualLength : %d, g_maxNear : %d, g_maxFar : %d\n", actualLength, g_maxNear ,g_maxFar);
+    CT_DEBUG("Get ZD Table actualLength : %d, g_maxNear : %d, g_maxFar : %d\n", actualLength, g_maxNear ,g_maxFar);
     return nRet;
 }
 
@@ -347,17 +651,17 @@ static int getIRValue(uint16_t *min, uint16_t *max)
     ret = APC_GetFWRegister(EYSD, &g_DevSelInfo,
                                 0xE2, &m_nIRMax,FG_Address_1Byte | FG_Value_1Byte);
     if (APC_OK != ret) {
-        printf("get IR Max value failed\n");
+        CT_DEBUG("get IR Max value failed\n");
         return ret;
      }
 
     ret = APC_GetFWRegister(EYSD, &g_DevSelInfo,
                                 0xE1, &m_nIRMin,FG_Address_1Byte | FG_Value_1Byte);
     if (APC_OK != ret) {
-        printf("get IR Min value failed\n");
+        CT_DEBUG("get IR Min value failed\n");
         return ret;
      }
-    printf("IR range: %d ~ %d\n",m_nIRMin, m_nIRMax);      
+    CT_DEBUG("IR range: %d ~ %d\n",m_nIRMin, m_nIRMax);      
     
     *min = m_nIRMin;
     *max = m_nIRMax;
@@ -384,23 +688,23 @@ static int setIRValue(uint16_t IRvalue)
     } else {
         m_nIRValue = IRvalue;
     }
-    printf("IR range, IR Min : %d, IR Max : %d, set IR Value : %d\n", m_nIRMin, m_nIRMax, m_nIRValue);
+    CT_DEBUG("IR range, IR Min : %d, IR Max : %d, set IR Value : %d\n", m_nIRMin, m_nIRMax, m_nIRValue);
 
     if (m_nIRValue != 0) {
         ret = APC_SetIRMode(EYSD, &g_DevSelInfo, 0x63); // 6 bits on for opening both 6 ir
         if (APC_OK != ret) return ret;
-        printf("enable IR and set IR Value : %d\n",m_nIRValue);
+        CT_DEBUG("enable IR and set IR Value : %d\n",m_nIRValue);
         ret = APC_SetCurrentIRValue(EYSD, &g_DevSelInfo, m_nIRValue);
         if (APC_OK != ret) return ret;
         ret = APC_GetCurrentIRValue(EYSD, &g_DevSelInfo, &m_nIRValue);
         if (APC_OK != ret) return ret;
-        printf("get IR Value : %d\n",m_nIRValue);
+        CT_DEBUG("get IR Value : %d\n",m_nIRValue);
     } else {
         ret = APC_SetCurrentIRValue(EYSD, &g_DevSelInfo, m_nIRValue);
         if (APC_OK != ret) return ret;
         ret = APC_SetIRMode(EYSD,&g_DevSelInfo, 0x00); // turn off ir
         if (APC_OK != ret) return ret;
-        printf("disable IR\n");
+        CT_DEBUG("disable IR\n");
     }
     return APC_OK;
 }
@@ -612,14 +916,14 @@ static void *get_color_depth_image_func(void *arg)
     
     // snprintf(fname, sizeof(fname), SAVE_FILE_PATH"cloud_%d_%s.ply", yuv_index++, DateTime);
     
-    printf("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
-    printf("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
+    CT_DEBUG("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
+    CT_DEBUG("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
 
     if(gColorImgBuf == NULL) {
         gColorImgBuf = (uint8_t*)calloc(gColorWidth * gColorHeight * BytesPerPixel, sizeof(uint8_t));
     }
     if(gColorImgBuf == NULL) {
-        printf("alloc ColorImgBuf fail..\n");
+        CT_DEBUG("alloc ColorImgBuf fail..\n");
         return NULL;
     }
     
@@ -628,7 +932,7 @@ static void *get_color_depth_image_func(void *arg)
     }
     
     if(gDepthImgBuf == NULL) {
-        printf("alloc DepthImgBuf fail..\n");
+        CT_DEBUG("alloc DepthImgBuf fail..\n");
         return NULL;
     }
     
@@ -669,7 +973,7 @@ static void *get_color_depth_image_func(void *arg)
             if (bFirstReceived) {
                 bFirstReceived = false;
                 RegisterSettings::DM_Quality_Register_Setting(EYSD, &g_DevSelInfo, g_pDevInfo->wPID);
-                printf("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
                        (int)cur_serial_num, serial_number, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
             }
             if (frame_rate_count == 0) {
@@ -682,26 +986,26 @@ static void *get_color_depth_image_func(void *arg)
 #if defined(ONLY_PRINT_OVER_DIFF)
                 if (gActualFps == 60) {                 
                     if (diff > (16666)) {
-                       // printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                       // CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                          //   (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                     }
 
                 } else  if (gActualFps == 30) {
                     if (diff > (33333)) {
-                        //printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                        //CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                           //  (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                     }
                 }
 
                 if (s_diff > 1) {
-                    printf("[%s][%03lu]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n",
+                    CT_DEBUG("[%s][%03lu]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n",
                             pre_str, frame_rate_count,
                             (int)cur_serial_num, s_diff,
                            (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                 }
 #else
 
-                printf("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
                        (int)cur_serial_num, serial_number, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
 #endif
             }
@@ -710,7 +1014,7 @@ static void *get_color_depth_image_func(void *arg)
                 float fltotal_time = 0.0;
                 fltotal_time = ((cur_tv_sec - first_tv_sec)*1000000+cur_tv_usec)-first_tv_usec;
 #if defined(ONLY_PRINT_OVER_DIFF)
-                printf("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
+                CT_DEBUG("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
                        (unsigned long)fltotal_time, max_calc_frame_count, (1000000 * max_calc_frame_count)/fltotal_time);
 #endif
                 frame_rate_count = 0;
@@ -735,13 +1039,13 @@ static void *get_color_depth_image_func(void *arg)
     }
     
     if(gColorImgBuf){
-        printf("free gColorImgBuf : %p\n",gColorImgBuf);
+        CT_DEBUG("free gColorImgBuf : %p\n",gColorImgBuf);
         free(gColorImgBuf);
         gColorImgBuf = NULL;
     }
     
     if(gDepthImgBuf){
-        printf("free gDepthImgBuf : %p\n",gDepthImgBuf);
+        CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
         free(gDepthImgBuf);
         gDepthImgBuf = NULL;
     }
@@ -794,12 +1098,12 @@ static void *point_cloud_func(void *arg)
 
     (void)arg;
 
-    printf("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
+    CT_DEBUG("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
     
     pPointCloudRGB = (uint8_t *)malloc(gDepthWidth * gDepthHeight * 3 * sizeof(uint8_t));
     pPointCloudXYZ = (float *)malloc(gDepthWidth * gDepthHeight * 3 * sizeof(float));
     if((pPointCloudRGB == NULL) || (pPointCloudXYZ == NULL)) {
-        printf("alloc for pPointCloudRGB or  pPointCloudXYZ fail..\n");
+        CT_DEBUG("alloc for pPointCloudRGB or  pPointCloudXYZ fail..\n");
         goto exit;
     }
     
@@ -808,25 +1112,25 @@ static void *point_cloud_func(void *arg)
         gDepthImgBuf = (uint8_t*)calloc(m_BufferSize, sizeof(uint8_t));
     }
     if(gDepthImgBuf == NULL) {
-        printf("alloc for gDepthImageBuf fail..\n");
-         goto exit;
+        CT_DEBUG("alloc for gDepthImageBuf fail..\n");
+        goto exit;
     }
 
-    printf("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
+    CT_DEBUG("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
     if(gColorImgBuf == NULL) {
         gColorImgBuf = (uint8_t*)calloc(2 * gColorWidth * gColorHeight , sizeof(uint8_t));
     }
     if(gColorImgBuf == NULL) {
-        printf("alloc ColorImgBuf fail..\n");
-         goto exit;
+        CT_DEBUG("alloc ColorImgBuf fail..\n");
+        goto exit;
     }
     
     if(gColorRGBImgBuf == NULL) {
         gColorRGBImgBuf = (uint8_t*)calloc(3 * gColorWidth * gColorHeight, sizeof(uint8_t));
     }
     if(gColorRGBImgBuf == NULL) {
-        printf("alloc gColorRGBImgBuf fail..\n");
-         goto exit;
+        CT_DEBUG("alloc gColorRGBImgBuf fail..\n");
+        goto exit;
     }
 
     while (count < max_count) {
@@ -849,6 +1153,7 @@ static void *point_cloud_func(void *arg)
     
 exit:
     if(gDepthImgBuf != NULL){
+        CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
         free(gDepthImgBuf);
         gDepthImgBuf = NULL;
      }

@@ -1611,7 +1611,35 @@ int APC_SetDepthDataType(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned sh
     \return success: APC_OK, others: see eSPDI_def.h
 */
 int APC_GetDepthDataType(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned short *pValue);
-// for depth data type selection -
+
+
+/*! \fn APC_SetInterleaveMode(
+        void *pHandleEYSD,
+        PDEVSELINFO pDevSelInfo,
+        bool enable)
+    \brief set depth data type, 11 bit for disparity data, 14 bit for Z data
+        notice: only PUMA type IC can support this setting
+    \param void *pHandleEYSD	handle
+    \param PDEVSELINFO pDevSelInfo	pointer of device select index
+    \param bool enable	enable/disable interleave mode
+        see APC_DEPTH_DATA_xxx in eSPDI_def.h
+    \return success: APC_OK, others: see eSPDI_def.h
+*/
+int APC_SetInterleaveMode(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, bool enable);
+
+/*! \fn int APC_GetInterleaveMode(
+        void *pHandleEYSD,
+        PDEVSELINFO pDevSelInfo,
+        bool *pValue)
+    \brief get current depth data type setting
+    \param void *pHandleEYSD	handle
+    \param PDEVSELINFO pDevSelInfo	pointer of device select index
+    \param bool *pValue	pointer of enable/disable status in device
+    \return success: APC_OK, others: see eSPDI_def.h
+*/
+int APC_GetInterleaveMode(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, bool *pValue);
+
+
 
 // IR support
 

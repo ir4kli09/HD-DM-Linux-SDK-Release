@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="eYs3D_logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">eYs3D Linux SDK
-   &#160;<span id="projectnumber">v5.0.0.6</span>
+   &#160;<span id="projectnumber">v5.0.0.7</span>
    </div>
   </td>
  </tr>
@@ -354,6 +354,12 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p
 <tr class="memitem:ab7ee66fc0511f4fe59679d388a2c1b14"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#ab7ee66fc0511f4fe59679d388a2c1b14">APC_GetDepthDataType</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, unsigned short *pValue)</td></tr>
 <tr class="memdesc:ab7ee66fc0511f4fe59679d388a2c1b14"><td class="mdescLeft">&#160;</td><td class="mdescRight">get current depth data type setting  <a href="#ab7ee66fc0511f4fe59679d388a2c1b14">More...</a><br /></td></tr>
 <tr class="separator:ab7ee66fc0511f4fe59679d388a2c1b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b88ea8dfa898444b2c60eaa5697c689"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#a3b88ea8dfa898444b2c60eaa5697c689">APC_SetInterleaveMode</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, bool enable)</td></tr>
+<tr class="memdesc:a3b88ea8dfa898444b2c60eaa5697c689"><td class="mdescLeft">&#160;</td><td class="mdescRight">set depth data type, 11 bit for disparity data, 14 bit for Z data notice: only PUMA type IC can support this setting  <a href="#a3b88ea8dfa898444b2c60eaa5697c689">More...</a><br /></td></tr>
+<tr class="separator:a3b88ea8dfa898444b2c60eaa5697c689"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31cc11fd3708b838a809bf80c607f601"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#a31cc11fd3708b838a809bf80c607f601">APC_GetInterleaveMode</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, bool *pValue)</td></tr>
+<tr class="memdesc:a31cc11fd3708b838a809bf80c607f601"><td class="mdescLeft">&#160;</td><td class="mdescRight">get current depth data type setting  <a href="#a31cc11fd3708b838a809bf80c607f601">More...</a><br /></td></tr>
+<tr class="separator:a31cc11fd3708b838a809bf80c607f601"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a258a90777a2680f52099937ffa85e8fd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="e_s_p_d_i_8h.html#a258a90777a2680f52099937ffa85e8fd">APC_SetCurrentIRValue</a> (void *pHandleEYSD, <a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a> pDevSelInfo, unsigned short nValue)</td></tr>
 <tr class="memdesc:a258a90777a2680f52099937ffa85e8fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">set infrared radiation(IR) value of PUMA type IC  <a href="#a258a90777a2680f52099937ffa85e8fd">More...</a><br /></td></tr>
 <tr class="separator:a258a90777a2680f52099937ffa85e8fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -4176,6 +4182,51 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>APC_ColorFormat_to_BGR
 
 </div>
 </div>
+<a id="a31cc11fd3708b838a809bf80c607f601"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31cc11fd3708b838a809bf80c607f601">&#9670;&nbsp;</a></span>APC_GetInterleaveMode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int APC_GetInterleaveMode </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>pHandleEYSD</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a>&#160;</td>
+          <td class="paramname"><em>pDevSelInfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>pValue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>get current depth data type setting </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">void</td><td>*pHandleEYSD handle </td></tr>
+    <tr><td class="paramname">PDEVSELINFO</td><td>pDevSelInfo pointer of device select index </td></tr>
+    <tr><td class="paramname">bool</td><td>*pValue pointer of enable/disable status in device </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>success: APC_OK, others: see <a class="el" href="e_s_p_d_i__def_8h.html" title="error/data type definitions ">eSPDI_def.h</a> </dd></dl>
+
+</div>
+</div>
 <a id="ac1ae0872f0ce6a85e3f99448934ab40f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac1ae0872f0ce6a85e3f99448934ab40f">&#9670;&nbsp;</a></span>APC_GetIRMaxValue()</h2>
 
@@ -7988,6 +8039,51 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>APC_ColorFormat_to_BGR
     <tr><td class="paramname">unsigned</td><td>short address register address </td></tr>
     <tr><td class="paramname">unsigned</td><td>short nValue register value to set </td></tr>
     <tr><td class="paramname">int</td><td>flag address and value data length(2 or 1 byte) ie FG_Address_1Byte | FG_Value_1Byte is 1 byte address and 1 byte value #define FG_Address_1Byte 0x01 #define FG_Address_2Byte 0x02 #define FG_Value_1Byte 0x10 #define FG_Value_2Byte 0x20 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>success: APC_OK, others: see <a class="el" href="e_s_p_d_i__def_8h.html" title="error/data type definitions ">eSPDI_def.h</a> </dd></dl>
+
+</div>
+</div>
+<a id="a3b88ea8dfa898444b2c60eaa5697c689"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b88ea8dfa898444b2c60eaa5697c689">&#9670;&nbsp;</a></span>APC_SetInterleaveMode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">APC_SetInterleaveMode </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>pHandleEYSD</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtag_d_e_v_s_e_l.html">PDEVSELINFO</a>&#160;</td>
+          <td class="paramname"><em>pDevSelInfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>set depth data type, 11 bit for disparity data, 14 bit for Z data notice: only PUMA type IC can support this setting </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">void</td><td>*pHandleEYSD handle </td></tr>
+    <tr><td class="paramname">PDEVSELINFO</td><td>pDevSelInfo pointer of device select index </td></tr>
+    <tr><td class="paramname">bool</td><td>enable enable/disable interleave mode see APC_DEPTH_DATA_xxx in <a class="el" href="e_s_p_d_i__def_8h.html" title="error/data type definitions ">eSPDI_def.h</a> </td></tr>
   </table>
   </dd>
 </dl>

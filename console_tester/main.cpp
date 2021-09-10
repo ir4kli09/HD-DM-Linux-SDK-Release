@@ -2332,13 +2332,17 @@ int getZDtable(DEVINFORMATION *pDevInfo, DEVSELINFO DevSelInfo, int depthHeight,
     g_maxNear = 0xfff;
     g_maxFar = 0;
 
+     printf("[%s][%d]Enter to calac mxaFar and maxNear...\n", __func__, __LINE__);
     for (int i = 0 ; i < APC_ZD_TABLE_FILE_SIZE_11_BITS ; ++i) {
+        if ((i * 2) == APC_ZD_TABLE_FILE_SIZE_11_BITS)
+            break;
         nZValue = (((unsigned short)g_pzdTable[i * 2]) << 8) +g_pzdTable[i * 2 + 1];
         if (nZValue) {
             g_maxNear = std::min<unsigned short>(g_maxNear, nZValue);
             g_maxFar = std::max<unsigned short>(g_maxFar, nZValue);
         }
     }
+    printf("[%s][%d]Leave to calac mxaFar and maxNear...\n", __func__, __LINE__);
     
     if (g_maxNear > g_maxFar)
         g_maxNear = g_maxFar;
