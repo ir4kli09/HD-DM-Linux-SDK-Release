@@ -120,6 +120,7 @@ HEADERS += \
     model/module/CVideoDeviceModel_8051.h \
     model/module/CVideoDeviceModel_8062.h \
     model/module/CVideoDeviceModel_Hypatia.h \
+    model/module/CVideoDeviceModel_Nora.h \
     model/module/CVideoDeviceModel_8052.h \
     model/module/CVideoDeviceModel_8036.h \
     manager/CIMUDeviceManager.h \
@@ -201,6 +202,7 @@ SOURCES += \
     model/module/CVideoDeviceModel_8051.cpp \
     model/module/CVideoDeviceModel_8062.cpp \
     model/module/CVideoDeviceModel_Hypatia.cpp \
+    model/module/CVideoDeviceModel_Nora.cpp \
     model/module/CVideoDeviceModel_8052.cpp \
     model/module/CVideoDeviceModel_8036.cpp \
     manager/CIMUDeviceManager.cpp \

@@ -353,6 +353,7 @@ static int getPointCloud(uint8_t *ImgColor,
 static int demo(void *(*func)(void *), void *arg);
 static void *get_color_depth_image_func(void *arg);
 static void *point_cloud_func(void *arg);
+static void *property_bar_test_func(void *arg);
 
 int main(void)
 {
@@ -363,6 +364,7 @@ int main(void)
         printf("Please choose fllowing steps:\n");       
         printf("0. Get Color and Depth Image\n");
         printf("1. Point cloud\n");
+        printf("2. Proptery bar test (AE/AWB)\n");
         printf("255. exit)\n");
         scanf("%d", &input);
         switch(input) {
@@ -371,6 +373,9 @@ int main(void)
             break;
         case 1:
             demo(point_cloud_func, NULL);
+            break;
+        case 2:
+            demo(property_bar_test_func, NULL);
             break;
         case 255:
             return 0;
@@ -1178,4 +1183,79 @@ exit:
     
 }
 
+static void *property_bar_test_func(void *arg)
+{
+    int ret = 0;
+
+    int id = 0;
+    int max = 0;
+    int min = 0;
+    int step = 0;
+    int def = 0;
+    int flag = 0;
+    long int cur_val = 0;
+    long int set_val = 0;
+
+    (void)arg;
+
+    id = CT_PROPERTY_ID_AUTO_EXPOSURE_MODE_CTRL;
+    ret = APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+    if (ret == APC_OK) {
+        CT_DEBUG("AE_MODE[cur_val] = [%ld]\n", cur_val);
+        //NOTE: The 0x01 means the 'EXPOSURE_MANUAL' 
+        if (cur_val != 0x01) {
+            set_val = 0x01;
+            ret = APC_SetCTPropVal(EYSD, &g_DevSelInfo, id, set_val);
+            if (ret != APC_OK) {
+                CT_DEBUG("Failed to call APC_SetCTPropVal() for (%d) !! (%d)\n", id, ret);
+            } else {
+                ret = APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+                if (ret == APC_OK) {
+                    CT_DEBUG("AE_MODE[cur_val] = [%ld] (after set %ld)\n", cur_val, set_val);
+                } else {
+                    CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
+                }
+            }
+            ret = APC_GetCTRangeAndStep(EYSD, &g_DevSelInfo, id, &max, &min, &step, &def, &flag);
+            if (ret == APC_OK) {
+                CT_DEBUG("AE_MODE[max, min, setp, def, flag] = [%d, %d, %d, %d, %d]\n", max, min, step, def, flag);
+            } else {
+                CT_DEBUG("Failed to call APC_GetCTRangeAndStep() for (%d) !! (%d)\n", id, ret);
+            }
+        }
+    } else {
+        CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
+    }
+
+    id = PU_PROPERTY_ID_BRIGHTNESS_CTRL;
+    ret = APC_GetPURangeAndStep(EYSD, &g_DevSelInfo, id, &max, &min, &step, &def, &flag);
+    if (ret == APC_OK) {
+        printf ("BR[max, min, setp, def, flag] = [%d, %d, %d, %d, %d]\n", max, min, step, def, flag);
+    } else {
+        CT_DEBUG("Failed to call APC_GetPURangeAndStep() for (%d) !! (%d)\n", id, ret);
+    }
+
+    ret = APC_GetPUPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+    if (ret == APC_OK) {
+        CT_DEBUG("BR[cur_val] = [%ld]\n", cur_val);
+    } else {
+        CT_DEBUG("Failed to call APC_GetPUPropVal() for (%d) !! (%d)\n", id, ret);
+    }
+
+    set_val = (max + min)/2;
+    ret = APC_SetPUPropVal(EYSD, &g_DevSelInfo, id, set_val);
+    if (ret == APC_OK) {
+        ret = APC_GetPUPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+        if (ret == APC_OK) {
+            CT_DEBUG("BR[cur_val] = [%ld] (after set %ld)\n", cur_val, set_val);
+        } else {
+            CT_DEBUG("Failed to call APC_GetPUPropVal() for (%d) !! (%d)\n", id, ret);
+        }
+    } else {
+        CT_DEBUG("Failed to call APC_SetPUPropVal() for (%d) !! (%d)\n", id, ret);
+    }
+
+    
+    return NULL;
+}
 

@@ -1326,7 +1326,8 @@ static void *pfunc_thread_color(void *arg) {
                                 printf("alloc gColorRGBImgBuf fail..\n");
                                 return NULL;
                         }
-                        convert_yuv_to_rgb_buffer(gColorImgBuf, gColorRGBImgBuf, gColorWidth, gColorHeight);
+                        APC_ColorFormat_to_RGB24(EYSD, &gsDevSelInfo, gColorRGBImgBuf, gColorImgBuf, gColorImgSize,
+                                                            gColorWidth, gColorHeight, APCImageType::Value::COLOR_YUY2);
                     } else {//MJPEG to RGB
                         int size=0, type;
                         ret = tjpeg2yuv(gColorImgBuf,2 * gColorWidth * gColorHeight,&gTempImgBuf, &size,&type);
@@ -2217,7 +2218,8 @@ int saveDepth2rgb(unsigned char *m_pDepthImgBuf, unsigned char *m_pRGBBuf, unsig
        if (gDepthDataType == APC_DEPTH_DATA_8_BITS) {
                 convert_yuv_to_rgb_buffer(m_pDepthImgBuf, m_pRGBBuf, m_nImageWidth, m_nImageHeight);
        } else {
-                convert_yuv_to_rgb_buffer(m_pDepthImgBuf, m_pRGBBuf, m_nImageWidth * 2, m_nImageHeight);
+                APC_ColorFormat_to_RGB24(EYSD, &gsDevSelInfo, m_pRGBBuf, m_pDepthImgBuf, gColorImgSize,
+                                                            gColorWidth, gColorHeight, APCImageType::Value::COLOR_YUY2);
        }
     }
 

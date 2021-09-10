@@ -14,6 +14,7 @@
 #include "CVideoDeviceModel_8052.h"
 #include "CVideoDeviceModel_8036_8052.h"
 #include "CVideoDeviceModel_Hypatia.h"
+#include "CVideoDeviceModel_Nora.h"
 #include "CVideoDeviceModel_8062.h"
 #include "CVideoDeviceModel_8036.h"
 #include "CVideoDeviceModel_Grap.h"
@@ -54,6 +55,8 @@ CVideoDeviceModel *CVideoDeviceModelFactory::CreateVideoDeviceModel(DEVSELINFO *
             pModel = new CVideoDeviceModel_Grap(pDeviceSelfInfo); break;
         case APC_PID_HYPATIA:
             pModel = new CVideoDeviceModel_Hypatia(pDeviceSelfInfo); break;
+        case APC_PID_NORA:
+            pModel = new CVideoDeviceModel_Nora(pDeviceSelfInfo); break;
         case APC_PID_8040S_K:
         case APC_PID_8054_K:
         case APC_PID_8060_K:
