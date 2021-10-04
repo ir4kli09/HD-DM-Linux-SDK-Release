@@ -22,3 +22,51 @@ sh run_arm64_px30.sh
 (3) _ENABLE_FILESAVING_DEMO_UI_ : Save rgb files of color stream and yuyv files of depth stream. By default, it is disabled.
 (4) _ENABLE_FILESAVING_DEMO_POINT_CLOUD_UI_: Run the point cloud demo. By default, it is disabled.
 
+4. For MIPI Camera SDK, please change the permission of the sysfs nodes if running the console_tester (eSPDI APIs) with the non-root:
+
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/asic_data
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/asic_id
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/erro_code
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/fs_data
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/fs_id
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/fw_version
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/mipi_out_en
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/read_asic_reg
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/read_ct_pu_value
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/read_fw_reg
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/read_i2_reg
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/stream_on
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/video_mode
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/video_modes
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/write_asic_reg
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/write_ct_pu_value
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/write_fw_reg
+chmod 777 /sys/bus/i2c/devices/[i2c_bus]-[i2c_slave_address]/write_i2_reg
+
+Could type the following command to get the value of '[i2c_bus]-[i2c_slave_address]':
+
+cat /proc/esp876_i2c_info ; echo
+
+For ubuntu 18.04 of TX2 platform, the '[i2c_bus]-[i2c_slave_address]' will be 30-0060:
+
+sudo su
+chmod 777 /sys/bus/i2c/devices/30-0060/asic_data
+chmod 777 /sys/bus/i2c/devices/30-0060/asic_id
+chmod 777 /sys/bus/i2c/devices/30-0060/erro_code
+chmod 777 /sys/bus/i2c/devices/30-0060/fs_data
+chmod 777 /sys/bus/i2c/devices/30-0060/fs_id
+chmod 777 /sys/bus/i2c/devices/30-0060/fw_version
+chmod 777 /sys/bus/i2c/devices/30-0060/mipi_out_en
+chmod 777 /sys/bus/i2c/devices/30-0060/read_asic_reg
+chmod 777 /sys/bus/i2c/devices/30-0060/read_ct_pu_value
+chmod 777 /sys/bus/i2c/devices/30-0060/read_fw_reg
+chmod 777 /sys/bus/i2c/devices/30-0060/read_i2_reg
+chmod 777 /sys/bus/i2c/devices/30-0060/stream_on
+chmod 777 /sys/bus/i2c/devices/30-0060/video_mode
+chmod 777 /sys/bus/i2c/devices/30-0060/video_modes
+chmod 777 /sys/bus/i2c/devices/30-0060/write_asic_reg
+chmod 777 /sys/bus/i2c/devices/30-0060/write_ct_pu_value
+chmod 777 /sys/bus/i2c/devices/30-0060/write_fw_reg
+chmod 777 /sys/bus/i2c/devices/30-0060/write_i2_reg
+
+

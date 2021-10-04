@@ -1088,7 +1088,7 @@ int CVideoDeviceModel::ConfigDepthFilter()
 
     DepthFilterOptions *pDepthFilterOptions = m_pVideoDeviceController->GetDepthFilterOptions();
 
-    pDepthFilterOptions->EnableDepthFilter(true);
+    pDepthFilterOptions->EnableDepthFilter(false);
     pDepthFilterOptions->SetState(DepthFilterOptions::MIN);
 
     return APC_OK;

@@ -282,6 +282,7 @@ typedef struct tagDEVINFORMATION {
 #define APC_PID_GRAP_SLAVE_K 0x0283
 #define APC_PID_SANDRA  0x0167
 #define APC_PID_NORA  0x0168 //NOTE: http://redmine.etron.com.tw/redmine/issues/6688#change-36410
+#define APC_PID_HELEN  0x0171 //NOTE: http://redmine.etron.com.tw/redmine/issues/6649#note-50
 //+[Thermal device]
 #define APC_PID_GRAP_THERMAL 0xf9f9
 #define APC_PID_GRAP_THERMAL2 0xf8f8
@@ -397,6 +398,7 @@ typedef enum {
     APC_SENSOR_TYPE_OV9282 = 10,
     APC_SENSOR_TYPE_H68 = 11,
     APC_SENSOR_TYPE_OV2740 = 12,
+    APC_SENSOR_TYPE_OC0SA10 = 13,
     APC_SENSOR_TYPE_UNKOWN = 0xffff
 } SENSOR_TYPE_NAME; 
 // for Sensor type name -

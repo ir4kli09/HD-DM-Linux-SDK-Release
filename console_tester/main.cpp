@@ -21,6 +21,17 @@
 #include "ColorPaletteGenerator.h"
 #include "RegisterSettings.h"
 
+#define CT_DEBUG_CT_DEBUG(format, ...) \
+    printf("[CT][%s][%d]" format, __func__, __LINE__, ##__VA_ARGS__)
+
+#define CT_DEBUG_ENABLE 1
+#ifdef CT_DEBUG_ENABLE
+#define CT_DEBUG CT_DEBUG_CT_DEBUG
+#else
+#define CT_DEBUG(fmt, args...) do {} while (0)
+#endif
+
+
 #define USE_PTHREAD_TO_GET_COLOR_AND_DEPTH_IMAGE 1
 
 #define DEFAULT_DEVICE_INDEX		        (0)
@@ -157,6 +168,8 @@ void UpdateD8bitsDisplayImage_DIB24(RGBQUAD *pColorPalette, unsigned char *pDept
 void UpdateD11DisplayImage_DIB24(const RGBQUAD* pColorPalette, const unsigned char *pDepth, unsigned char *pRGB, int width, int height);
 void UpdateZ14DisplayImage_DIB24(RGBQUAD *pColorPaletteZ14, unsigned char *pDepthZ14, unsigned char *pDepthDIB24, int cx, int cy);
 char* PidToModuleName(unsigned short pid);
+
+static void *property_bar_test_func(void *arg);
 
 static void init_device(void);
 static void *test_color_time_stamp(void *arg);
@@ -406,9 +419,9 @@ static void *test_color_depth_time_stamp(void *arg)
     pthread_create(&color_thread_id, &color_thread_attr, test_color_time_stamp, NULL);
     pthread_create(&depth_thread_id, &depth_thread_attr, test_depth_time_stamp, NULL);
     
-    printf("Wait for finish of depth thread..\n");
+    CT_DEBUG("Wait for finish of depth thread..\n");
     pthread_join(depth_thread_id, NULL);
-    printf("Wait for finish of color thread..\n");
+    CT_DEBUG("Wait for finish of color thread..\n");
    pthread_join(color_thread_id, NULL);
     
     return NULL;
@@ -436,13 +449,13 @@ static void *test_color_time_stamp(void *arg)
     int serial_number = 0;
     int i = 0;
     
-    printf("\ncolor image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
+    CT_DEBUG("\ncolor image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
     
     if(gColorImgBuf == NULL) {
         gColorImgBuf = (unsigned char*)calloc(2 * gColorWidth * gColorHeight , sizeof(unsigned char));
     }
     if(gColorImgBuf == NULL) {
-        printf("alloc ColorImgBuf fail..\n");
+        CT_DEBUG("alloc ColorImgBuf fail..\n");
         return NULL;
     }
 
@@ -472,7 +485,7 @@ static void *test_color_time_stamp(void *arg)
             }
             if (bFirstReceived) {
                 bFirstReceived = false;
-                printf("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
                        (int)cur_serial_num, serial_number, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
             }
             if (frame_rate_count == 0) {
@@ -485,26 +498,26 @@ static void *test_color_time_stamp(void *arg)
 #if defined(ONLY_PRINT_OVER_DIFF)
                 if (gActualFps == 60) {                 
                     if (diff > (16666)) {
-                       // printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                       // CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                          //   (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                     }
 
                 } else  if (gActualFps == 30) {
                     if (diff > (33333)) {
-                        //printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                        //CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                           //  (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                     }
                 }
 
                 if (s_diff > 1) {
-                    printf("[%s][%03lu]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n",
+                    CT_DEBUG("[%s][%03lu]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n",
                             pre_str, frame_rate_count,
                             (int)cur_serial_num, s_diff,
                            (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                 }
 #else
 
-                printf("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
                        (int)cur_serial_num, serial_number, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
 #endif
             }
@@ -513,7 +526,7 @@ static void *test_color_time_stamp(void *arg)
                 float fltotal_time = 0.0;
                 fltotal_time = ((cur_tv_sec - first_tv_sec)*1000000+cur_tv_usec)-first_tv_usec;
 #if defined(ONLY_PRINT_OVER_DIFF)
-                printf("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
+                CT_DEBUG("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
                        (unsigned long)fltotal_time, max_calc_frame_count, (1000000 * max_calc_frame_count)/fltotal_time);
 #endif
                 frame_rate_count = 0;
@@ -528,7 +541,7 @@ static void *test_color_time_stamp(void *arg)
     }
     if(gColorImgBuf != NULL){
         if(DEBUG_LOG) {
-            printf("free gColorImgBuf : %p\n",gColorImgBuf);
+            CT_DEBUG("free gColorImgBuf : %p\n",gColorImgBuf);
         }
         free(gColorImgBuf);
         gColorImgBuf = NULL;
@@ -562,7 +575,7 @@ static void *test_depth_time_stamp(void *arg)
 
     (void)arg;
 
-    printf("\ndepth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
+    CT_DEBUG("\ndepth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
     
     if(gDepthImgBuf == NULL) {
          if(gDepthDataType == APC_DEPTH_DATA_8_BITS || gDepthDataType == APC_DEPTH_DATA_8_BITS_RAW) {
@@ -575,7 +588,7 @@ static void *test_depth_time_stamp(void *arg)
     }
     
     if(gDepthImgBuf == NULL) {
-        printf("alloc for gDepthImageBuf fail..\n");
+        CT_DEBUG("alloc for gDepthImageBuf fail..\n");
         return NULL;
     }
 #if defined(ONLY_PRINT_OVER_DIFF)
@@ -586,7 +599,7 @@ static void *test_depth_time_stamp(void *arg)
         ret = APC_GetDepthImageWithTimestamp(EYSD, &gsDevSelInfo, (BYTE*)gDepthImgBuf, &gDepthImgSize, &cur_serial_num, gDepthDataType, &cur_tv_sec, &cur_tv_usec);
         
         if(gDepthImgSize > m_BufferSize) {
-            printf("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
+            CT_DEBUG("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
             break;
         }
         if (ret == APC_OK) {
@@ -605,18 +618,18 @@ static void *test_depth_time_stamp(void *arg)
                   serial_number  = *(((unsigned char*)gDepthImgBuf)+6)*256 + *(((unsigned char*)gDepthImgBuf)+7);
             }
             if (bAfterQCFG) {
-                //printf("[%s]After setting of Quality, s_num: [%d] (0x%08x)\n", __func__, (int)cur_serial_num, (unsigned int)cur_serial_num);
+                //CT_DEBUG("[%s]After setting of Quality, s_num: [%d] (0x%08x)\n", __func__, (int)cur_serial_num, (unsigned int)cur_serial_num);
                 bAfterQCFG = false;
             }
             
             if (bSecondReceived) {
                 bSecondReceived = false;
-                //printf("[%s]SN: [%d],   TS: [%lu]\n", pre_str, (int)cur_serial_num, (cur_tv_sec * 1000000 + cur_tv_usec));
+                //CT_DEBUG("[%s]SN: [%d],   TS: [%lu]\n", pre_str, (int)cur_serial_num, (cur_tv_sec * 1000000 + cur_tv_usec));
             }
             
             if (bFirstReceived){
                 bFirstReceived = false;
-                printf("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
                        (int)cur_serial_num, serial_number, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                 if (RegisterSettings::DM_Quality_Register_Setting(EYSD, &gsDevSelInfo, g_pDevInfo[gsDevSelInfo.index].wPID) == 0) {
                     bAfterQCFG = true;
@@ -636,21 +649,21 @@ static void *test_depth_time_stamp(void *arg)
 #if defined(ONLY_PRINT_OVER_DIFF)
                 if (gActualFps == 60) {
                     if (diff > (16666)) {
-                         //printf("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
+                         //CT_DEBUG("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
                     }
                 } else  if (gActualFps == 30) {
                     if (diff > (33333)) {
-                        //printf("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
+                        //CT_DEBUG("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
                     }
                 }
                 if (s_diff > 1) {
-                    printf("[%s][%03lu]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n",
+                    CT_DEBUG("[%s][%03lu]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n",
                             pre_str, frame_rate_count,
                             (int)cur_serial_num, s_diff,
                            (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                 }
 #else     
-                printf("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d/%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu]\n", pre_str,
                        (int)cur_serial_num, serial_number, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
 #endif
             }
@@ -659,7 +672,7 @@ static void *test_depth_time_stamp(void *arg)
                 float fltotal_time = 0.0;
                 fltotal_time = ((cur_tv_sec - first_tv_sec)*1000000+cur_tv_usec)-first_tv_usec;
 #if defined(ONLY_PRINT_OVER_DIFF)
-                printf("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
+                CT_DEBUG("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
                        (unsigned long)fltotal_time, max_calc_frame_count, (1000000 * max_calc_frame_count)/fltotal_time);
 #endif
                 frame_rate_count = 0;
@@ -677,7 +690,7 @@ static void *test_depth_time_stamp(void *arg)
         //s:[eys3D] 20200610 implement to save raw data to RGB format
     if(gDepthImgBuf != NULL){
             if(DEBUG_LOG) {
-                printf("free gDepthImgBuf : %p\n",gDepthImgBuf);
+                CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
             }
             free(gDepthImgBuf);
             gDepthImgBuf = NULL;
@@ -726,7 +739,7 @@ static void *pthread_saving_depth(void *param) {
     (void)param;
     std::string fileName = "";
 
-    printf("\ndepth image: [%d x %d @ %d], snapshot %u frames!!\n", gDepthWidth, gDepthHeight, gActualFps, max_calc_frame_count);
+    CT_DEBUG("\ndepth image: [%d x %d @ %d], snapshot %u frames!!\n", gDepthWidth, gDepthHeight, gActualFps, max_calc_frame_count);
     
     if(gDepthImgBuf == NULL) {
          if(gDepthDataType == APC_DEPTH_DATA_8_BITS || gDepthDataType == APC_DEPTH_DATA_8_BITS_RAW) {
@@ -739,7 +752,7 @@ static void *pthread_saving_depth(void *param) {
     }
     
     if(gDepthImgBuf == NULL) {
-        printf("alloc for gDepthImageBuf fail..\n");
+        CT_DEBUG("alloc for gDepthImageBuf fail..\n");
         return NULL;
     }
 
@@ -749,24 +762,24 @@ static void *pthread_saving_depth(void *param) {
                                                 gDepthDataType, &cur_tv_sec, &cur_tv_usec);
         
         if(gDepthImgSize > m_BufferSize) {
-            printf("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
+            CT_DEBUG("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
             break;
         }
         if (ret == APC_OK) {
             
             if (bAfterQCFG) {
-                //printf("[%s]After setting of Quality, s_num: [%d] (0x%08x)\n", __func__, (int)cur_serial_num, (unsigned int)cur_serial_num);
+                //CT_DEBUG("[%s]After setting of Quality, s_num: [%d] (0x%08x)\n", __func__, (int)cur_serial_num, (unsigned int)cur_serial_num);
                 bAfterQCFG = false;
             }
             
             if (bSecondReceived) {
                 bSecondReceived = false;
-                //printf("[%s]SN: [%d],   TS: [%lu]\n", pre_str, (int)cur_serial_num, (cur_tv_sec * 1000000 + cur_tv_usec));
+                //CT_DEBUG("[%s]SN: [%d],   TS: [%lu]\n", pre_str, (int)cur_serial_num, (cur_tv_sec * 1000000 + cur_tv_usec));
             }
             
             if (bFirstReceived){
                 bFirstReceived = false;
-                printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                        (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                 if (RegisterSettings::DM_Quality_Register_Setting(EYSD, &gsDevSelInfo, g_pDevInfo[gsDevSelInfo.index].wPID) == 0) {
                     bAfterQCFG = true;
@@ -792,20 +805,20 @@ static void *pthread_saving_depth(void *param) {
 #if defined(ONLY_PRINT_OVER_DIFF)
                 if (gActualFps == 60) {
                     if (diff > (16666)) {
-                         //printf("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
+                         //CT_DEBUG("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
                     }
                 } else  if (gActualFps == 30) {
                     if (diff > (33333)) {
-                        //printf("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
+                        //CT_DEBUG("[%s]t_diff: [%lu] usec (s_diff: [%d])\n", __func__, (unsigned long)diff, s_diff);
                     }
                 }
                 /*
                 if (s_diff > 1)
-                    printf("[%s][%d]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str, frame_rate_count,
+                    CT_DEBUG("[%s][%d]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str, frame_rate_count,
                         (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                         */
 #else     
-                //printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                //CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                   //      (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
 #endif
             }
@@ -813,7 +826,7 @@ static void *pthread_saving_depth(void *param) {
             if (frame_rate_count == (max_calc_frame_count -1)) {
                 float fltotal_time = 0.0;
                 fltotal_time = ((cur_tv_sec - first_tv_sec)*1000000+cur_tv_usec)-first_tv_usec;
-                printf("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
+                CT_DEBUG("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
                     (unsigned long)fltotal_time, max_calc_frame_count,(1000000*max_calc_frame_count)/fltotal_time);
                 frame_rate_count = 0;
                 mCount ++;
@@ -829,7 +842,7 @@ static void *pthread_saving_depth(void *param) {
         //s:[eys3D] 20200610 implement to save raw data to RGB format
     if(gDepthImgBuf != NULL){
             if(DEBUG_LOG) {
-                printf("free gDepthImgBuf : %p\n",gDepthImgBuf);
+                CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
             }
             free(gDepthImgBuf);
             gDepthImgBuf = NULL;
@@ -855,14 +868,14 @@ static void *pthread_saving_color(void *param) {
     int s_diff = 0;
     std::string fileName = "";
 
-    printf("\ncolor image: [%d x %d @ %d], snapshot %u frames!!\n", gColorWidth, gColorHeight, gActualFps, max_calc_frame_count);
+    CT_DEBUG("\ncolor image: [%d x %d @ %d], snapshot %u frames!!\n", gColorWidth, gColorHeight, gActualFps, max_calc_frame_count);
     
 
     if(gColorImgBuf == NULL) {
         gColorImgBuf = (unsigned char*)calloc(2 * gColorWidth * gColorHeight , sizeof(unsigned char));
     }
     if(gColorImgBuf == NULL) {
-        printf("alloc ColorImgBuf fail..\n");
+        CT_DEBUG("alloc ColorImgBuf fail..\n");
         return NULL;
     }
 
@@ -879,7 +892,7 @@ static void *pthread_saving_color(void *param) {
         if ((ret == APC_OK) /*&& (gColorSerial > 0)*/) {
             if (bFirstReceived) {
                 bFirstReceived = false;
-                printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                        (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
             }
             
@@ -907,24 +920,24 @@ static void *pthread_saving_color(void *param) {
 #if defined(ONLY_PRINT_OVER_DIFF)
                 if (gActualFps == 60) {                 
                     if (diff > (16666)) {
-                       // printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                       // CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                          //   (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                     }
 
                 } else  if (gActualFps == 30) {
                     if (diff > (33333)) {
-                        //printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+                        //CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                           //  (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                     }
                 }
                 /*
                 if (s_diff > 1)
-                    printf("[%s][%d]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str, frame_rate_count,
+                    CT_DEBUG("[%s][%d]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str, frame_rate_count,
                         (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
                         */
 #else
                 
-               // printf("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
+               // CT_DEBUG("[%s]SN: [%03d],  SN_DIFF: [%03d],  TS: [%lu],  TS_DIFF: [%lu] \n", pre_str,
                  //       (int)cur_serial_num, s_diff, (cur_tv_sec * 1000000 + cur_tv_usec), diff);
 #endif
             }
@@ -932,7 +945,7 @@ static void *pthread_saving_color(void *param) {
             if (frame_rate_count == (max_calc_frame_count -1)) {              
                 float fltotal_time = 0.0;
                 fltotal_time = ((cur_tv_sec - first_tv_sec)*1000000+cur_tv_usec)-first_tv_usec;
-                printf("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
+                CT_DEBUG("[%s] %lu usec per %ufs (fps = %6f)\n", pre_str,
                        (unsigned long)fltotal_time, max_calc_frame_count,(1000000*max_calc_frame_count)/fltotal_time);
                 frame_rate_count = 0;
                 mCount ++;
@@ -949,7 +962,7 @@ static void *pthread_saving_color(void *param) {
     
     if(gColorImgBuf != NULL){
         if(DEBUG_LOG) {
-            printf("free gColorImgBuf : %p\n",gColorImgBuf);
+            CT_DEBUG("free gColorImgBuf : %p\n",gColorImgBuf);
         }
         free(gColorImgBuf);
         gColorImgBuf = NULL;
@@ -996,29 +1009,29 @@ static void init_device(void)
 
     ret = APC_Init(&EYSD, true);
     if (ret == APC_OK) {
-        printf("APC_Init() success! (EYSD : %p)\n", EYSD);
+        CT_DEBUG("APC_Init() success! (EYSD : %p)\n", EYSD);
     } else {
-        printf("APC_Init() fail.. (ret : %d, EYSD : %p)\n", ret, EYSD);
+        CT_DEBUG("APC_Init() fail.. (ret : %d, EYSD : %p)\n", ret, EYSD);
         print_APC_error(ret);
     }
 
     int nDevCount = APC_GetDeviceNumber(EYSD);
-    printf("nDevCount = %d\n", nDevCount);
+    CT_DEBUG("nDevCount = %d\n", nDevCount);
     g_pDevInfo = (DEVINFORMATION*)malloc(sizeof(DEVINFORMATION)*nDevCount);
     
     for( i = 0 ; i < nDevCount ; i++) {
-        printf("select index = %d\n", i);
+        CT_DEBUG("select index = %d\n", i);
         g_DevSelInfo.index = i;
         APC_GetDeviceInfo(EYSD, &g_DevSelInfo ,g_pDevInfo+i);
-        printf("Device Name = %s\n", g_pDevInfo[i].strDevName);
-        printf("PID = 0x%04x\n", g_pDevInfo[i].wPID);
-        printf("VID = 0x%04x\n", g_pDevInfo[i].wVID);
-        printf("Chip ID = 0x%x\n", g_pDevInfo[i].nChipID);
-        printf("device type = %d\n", g_pDevInfo[i].nDevType);
+        CT_DEBUG("Device Name = %s\n", g_pDevInfo[i].strDevName);
+        CT_DEBUG("PID = 0x%04x\n", g_pDevInfo[i].wPID);
+        CT_DEBUG("VID = 0x%04x\n", g_pDevInfo[i].wVID);
+        CT_DEBUG("Chip ID = 0x%x\n", g_pDevInfo[i].nChipID);
+        CT_DEBUG("device type = %d\n", g_pDevInfo[i].nDevType);
 
         int nActualLength = 0;
         if( APC_OK == APC_GetFwVersion(EYSD, &g_DevSelInfo, FWVersion, 256, &nActualLength)) {
-            printf("FW Version = %s\n", FWVersion);
+            CT_DEBUG("FW Version = %s\n", FWVersion);
             strcpy(devBuf, &g_pDevInfo[i].strDevName[strlen("/dev/")]);
             sprintf(devBuf_v4l, "/sys/class/video4linux/%s/name", devBuf);
             get_product_name(devBuf_v4l, devBuf_name);
@@ -1034,14 +1047,14 @@ static void init_device(void)
             g_ColorPaletteZ14 = (RGBQUAD *)calloc(16384, sizeof(RGBQUAD));
     }
     if(g_ColorPaletteZ14 == NULL) {
-            printf("alloc g_ColorPaletteZ14 fail..\n");
+            CT_DEBUG("alloc g_ColorPaletteZ14 fail..\n");
     }
     
     if(g_GrayPaletteZ14 == NULL){
             g_GrayPaletteZ14 = (RGBQUAD *)calloc(16384, sizeof(RGBQUAD));
     }
     if(g_GrayPaletteZ14 == NULL) {
-        printf("alloc g_GrayPaletteZ14 fail..\n");
+        CT_DEBUG("alloc g_GrayPaletteZ14 fail..\n");
     }
     //e:[eys3D] 20200615 implement ZD table
 }
@@ -1065,7 +1078,7 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
             if (module == nullptr) {
                 module = g_pDevInfo[i].strDevName;
             }
-            printf("%d: %s\n", i, module);
+            CT_DEBUG("%d: %s\n", i, module);
         }
         scanf("%d", &gsDevSelInfo.index);
     }
@@ -1075,7 +1088,7 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
     {
 
         if (APC_SetupBlock(EYSD, &gsDevSelInfo, false) != 0) {
-                printf("setup Blocking Failed\n");
+                CT_DEBUG("setup Blocking Failed\n");
         }
         gColorFormat = bIsMJPEG;
         gColorWidth = 1280;
@@ -1090,12 +1103,12 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
         if (gDepthWidth != 0) {
 	        gDepthDataType = videoMode;
             TransformDepthDataType(&gDepthDataType, true);
-            printf("APC_SetDepthDataType(%d)\n", gDepthDataType);
+            CT_DEBUG("APC_SetDepthDataType(%d)\n", gDepthDataType);
             ret = APC_SetDepthDataType(EYSD, &gsDevSelInfo, gDepthDataType); //4 ==> 11 bits
             if (ret == APC_OK) {
-                printf("APC_SetDepthData() success!\n");
+                CT_DEBUG("APC_SetDepthData() success!\n");
             } else {
-                printf("APC_SetDepthData() fail.. (ret=%d)\n", ret);
+                CT_DEBUG("APC_SetDepthData() fail.. (ret=%d)\n", ret);
                 print_APC_error(ret);
             }
         }
@@ -1108,14 +1121,14 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
     //s:[eys3D] 20200615 implement ZD table
     ret =  getZDtable(g_pDevInfo, gsDevSelInfo, gDepthHeight, gColorHeight);
     if (APC_OK != ret) {
-        printf("update ZDtable failed (ret=%d)\n", ret);
+        CT_DEBUG("update ZDtable failed (ret=%d)\n", ret);
     }
     ColorPaletteGenerator::DmColorMode14(g_ColorPaletteZ14, (int) g_maxFar,(int)g_maxNear);
     ColorPaletteGenerator::DmGrayMode14(g_GrayPaletteZ14,  (int) g_maxFar,(int)g_maxNear);
 
 
     if (APC_OK != APC_Setup_v4l2_requestbuffers(EYSD, &gsDevSelInfo, g_v4l2_buffer_quque_size)) {
-        printf("APC_Setup_v4l2_requestbuffers failed\n");
+        CT_DEBUG("APC_Setup_v4l2_requestbuffers failed\n");
     }
 
     
@@ -1126,9 +1139,9 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
                                   gDepthWidth, gDepthHeight,
                                   gDepth_Transfer_ctrl, false, NULL, &gActualFps, IMAGE_SN_SYNC);
         if (ret == APC_OK) {
-            printf("APC_OpenDevice2() success! (FPS=%d)\n", gActualFps);
+            CT_DEBUG("APC_OpenDevice2() success! (FPS=%d)\n", gActualFps);
         } else {
-            printf("APC_OpenDevice2() fail.. (ret=%d)\n", ret);
+            CT_DEBUG("APC_OpenDevice2() fail.. (ret=%d)\n", ret);
             print_APC_error(ret);
         }
     } else {
@@ -1139,9 +1152,9 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
                           false, NULL,
                           &gActualFps, IMAGE_SN_SYNC/*IMAGE_SN_NONSYNC*/);
         if (ret == APC_OK) {
-            printf("APC_OpenDevice() success! (FPS=%d)\n", gActualFps);
+            CT_DEBUG("APC_OpenDevice() success! (FPS=%d)\n", gActualFps);
         } else {
-            printf("APC_OpenDevice() fail.. (ret=%d)\n", ret);
+            CT_DEBUG("APC_OpenDevice() fail.. (ret=%d)\n", ret);
             print_APC_error(ret);
         }
     }
@@ -1150,7 +1163,7 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
     //s:[eys3D] 20200623, implement IR mode
     ret = setupIR(0xff);//input 0xff, will use default value (min+max)/2. 
     if (APC_OK != ret) {
-        printf("set IR mode fail.. (ret=%d)\n", ret);
+        CT_DEBUG("set IR mode fail.. (ret=%d)\n", ret);
     }
     //e:[eys3D] 20200623, implement IR mode
 }
@@ -1172,7 +1185,7 @@ static void open_device(void)
             if (module == nullptr) {
                 module = g_pDevInfo[i].strDevName;
             }
-            printf("%d: %s\n", i, module);
+            CT_DEBUG("%d: %s\n", i, module);
         }
         scanf("%d", &gsDevSelInfo.index);
     }
@@ -1201,11 +1214,11 @@ static void open_device(void)
 
         if (input[0] == 'Y' || input[0] == 'y') {
             if (APC_SetupBlock(EYSD, &gsDevSelInfo, true) != 0) {
-                printf("setup Blocking Failed\n");
+                CT_DEBUG("setup Blocking Failed\n");
             }
         } else {
             if (APC_SetupBlock(EYSD, &gsDevSelInfo, false) != 0) {
-                printf("setup Blocking Failed\n");
+                CT_DEBUG("setup Blocking Failed\n");
             }
         }
 
@@ -1227,12 +1240,12 @@ static void open_device(void)
         if (gDepthWidth != 0) {
 	        setupDepth();
             TransformDepthDataType(&gDepthDataType, true);
-            printf("APC_SetDepthDataType(%d)\n", gDepthDataType);
+            CT_DEBUG("APC_SetDepthDataType(%d)\n", gDepthDataType);
             ret = APC_SetDepthDataType(EYSD, &gsDevSelInfo, gDepthDataType); //4 ==> 11 bits
             if (ret == APC_OK) {
-                printf("APC_SetDepthData() success!\n");
+                CT_DEBUG("APC_SetDepthData() success!\n");
             } else {
-                printf("APC_SetDepthData() fail.. (ret=%d)\n", ret);
+                CT_DEBUG("APC_SetDepthData() fail.. (ret=%d)\n", ret);
                 print_APC_error(ret);
             }
         }
@@ -1247,7 +1260,7 @@ static void open_device(void)
     //s:[eys3D] 20200615 implement ZD table
     ret =  getZDtable(g_pDevInfo, gsDevSelInfo, gDepthHeight, gColorHeight);
     if (APC_OK != ret) {
-        printf("update ZDtable failed (ret=%d)\n", ret);
+        CT_DEBUG("update ZDtable failed (ret=%d)\n", ret);
     }
     ColorPaletteGenerator::DmColorMode14(g_ColorPaletteZ14, (int) g_maxFar,(int)g_maxNear);
     ColorPaletteGenerator::DmGrayMode14(g_GrayPaletteZ14,  (int) g_maxFar,(int)g_maxNear);
@@ -1258,18 +1271,21 @@ static void open_device(void)
     /* APC_OpenDevice2 (Color + Depth) */
     ret = APC_OpenDevice2(EYSD, &gsDevSelInfo, gColorWidth, gColorHeight, (bool)gColorFormat, gDepthWidth, gDepthHeight, gDepth_Transfer_ctrl, false, NULL, &gActualFps, IMAGE_SN_SYNC);
     if (ret == APC_OK) {
-        printf("APC_OpenDevice2() success! (FPS=%d)\n", gActualFps);
+        CT_DEBUG("APC_OpenDevice2() success! (FPS=%d)\n", gActualFps);
     } else {
-        printf("APC_OpenDevice2() fail.. (ret=%d)\n", ret);
+        CT_DEBUG("APC_OpenDevice2() fail.. (ret=%d)\n", ret);
         print_APC_error(ret);
     }
 
     //s:[eys3D] 20200623, implement IR mode
     ret = setupIR(0xff);//input 0xff, will use default value (min+max)/2. 
     if (APC_OK != ret) {
-        printf("set IR mode fail.. (ret=%d)\n", ret);
+        CT_DEBUG("set IR mode fail.. (ret=%d)\n", ret);
     }
     //e:[eys3D] 20200623, implement IR mode
+    
+    
+    property_bar_test_func(NULL);
 }
 
 static void *pfunc_thread_color(void *arg) {
@@ -1280,25 +1296,25 @@ static void *pfunc_thread_color(void *arg) {
     float fps_tmp = 0;
     
     UNUSED(arg);
-    printf("\ngColorWidth = %d,  gColorHeight = %d\n", gColorWidth, gColorHeight);
+    CT_DEBUG("\ngColorWidth = %d,  gColorHeight = %d\n", gColorWidth, gColorHeight);
     if(gColorImgBuf == NULL) {
         gColorImgBuf = (unsigned char*)calloc(2 * gColorWidth * gColorHeight , sizeof(unsigned char));
     }
     if(gColorImgBuf == NULL) {
-        printf("alloc ColorImgBuf fail..\n");
+        CT_DEBUG("alloc ColorImgBuf fail..\n");
         return NULL;
     }
-    if(DEBUG_LOG) {printf("gColorImgBuf : %p\n",gColorImgBuf);}
+    if(DEBUG_LOG) {CT_DEBUG("gColorImgBuf : %p\n",gColorImgBuf);}
 
     while(bTesting_color == true && mCount < TEST_RUN_NUMBER) {
         bTestEnd_color = false;
         usleep(1000 * 5);
 
         /* APC_GetColorImage */
-       // printf("Enter calling APC_GetColorImage()...\n");
+       // CT_DEBUG("Enter calling APC_GetColorImage()...\n");
         ret = APC_GetColorImage(EYSD, &gsDevSelInfo, (BYTE*)gColorImgBuf, &gColorImgSize, &gColorSerial,0);
-       // printf("Leave calling APC_GetColorImage()...\n");
-        //printf("[%s][%d] ret = %d, errno = %d(%s)(%d)\n", __func__, __LINE__,ret, errno, strerror(errno), gColorSerial);
+       // CT_DEBUG("Leave calling APC_GetColorImage()...\n");
+        //CT_DEBUG("[%s][%d] ret = %d, errno = %d(%s)(%d)\n", __func__, __LINE__,ret, errno, strerror(errno), gColorSerial);
         if (ret == APC_OK && gColorSerial > 0) {
             
             cnt_frme++;
@@ -1307,12 +1323,12 @@ static void *pfunc_thread_color(void *arg) {
                 current_time = calcByGetTimeOfDay();
                 fps_tmp = (float)(100 * 1000 * 1000) / (float)((current_time - start_time));
                 cnt_frme = 0;
-                printf("\nColor: FPS = %f (size : %lu, serial : %d)\n", fps_tmp, gColorImgSize, gColorSerial);
+                CT_DEBUG("\nColor: FPS = %f (size : %lu, serial : %d)\n", fps_tmp, gColorImgSize, gColorSerial);
                 start_time = current_time;
                 mCount ++;
 
                 if (snapShot_color == true ) {
-                    printf("Doing Snapshot...\n");
+                    CT_DEBUG("Doing Snapshot...\n");
 
                     //pthread_mutex_lock(&save_file_mutex);
                     save_file(gColorImgBuf, gColorImgSize,gColorWidth,  gColorHeight, gColorFormat, true);
@@ -1323,7 +1339,7 @@ static void *pfunc_thread_color(void *arg) {
                                 gColorRGBImgBuf = (unsigned char*)calloc(3 * gColorWidth * gColorHeight, sizeof(unsigned char));
                         }
                         if(gColorRGBImgBuf == NULL) {
-                                printf("alloc gColorRGBImgBuf fail..\n");
+                                CT_DEBUG("alloc gColorRGBImgBuf fail..\n");
                                 return NULL;
                         }
                         APC_ColorFormat_to_RGB24(EYSD, &gsDevSelInfo, gColorRGBImgBuf, gColorImgBuf, gColorImgSize,
@@ -1335,11 +1351,11 @@ static void *pfunc_thread_color(void *arg) {
 
                         if(DEBUG_LOG) {
                             if(gTempImgBuf != NULL){
-                                printf("gTempImgBuf : %p\n",gTempImgBuf);
+                                CT_DEBUG("gTempImgBuf : %p\n",gTempImgBuf);
                             }
 
                             if(gColorRGBImgBuf != NULL){
-                                printf("gColorRGBImgBuf : %p\n",gColorRGBImgBuf);
+                                CT_DEBUG("gColorRGBImgBuf : %p\n",gColorRGBImgBuf);
                             }
                          }
                     }
@@ -1350,7 +1366,7 @@ static void *pfunc_thread_color(void *arg) {
 
                     if(gTempImgBuf != NULL){
                             if(DEBUG_LOG) {
-                                printf("free gTempImgBuf : %p\n",gTempImgBuf);
+                                CT_DEBUG("free gTempImgBuf : %p\n",gTempImgBuf);
                             }
                             free(gTempImgBuf);
                             gTempImgBuf = NULL;
@@ -1358,7 +1374,7 @@ static void *pfunc_thread_color(void *arg) {
                     
                     if(gColorRGBImgBuf != NULL){
                             if(DEBUG_LOG) {
-                                printf("free gColorRGBImgBuf : %p\n",gColorRGBImgBuf);
+                                CT_DEBUG("free gColorRGBImgBuf : %p\n",gColorRGBImgBuf);
                             }
                             free(gColorRGBImgBuf);
                             gColorRGBImgBuf = NULL;
@@ -1368,7 +1384,7 @@ static void *pfunc_thread_color(void *arg) {
                 }
             }
         } else {
-           // printf("Failed to APC_GetColorImage().[ret = %d]\n", ret);
+           // CT_DEBUG("Failed to APC_GetColorImage().[ret = %d]\n", ret);
             //print_APC_error(ret);
             //break;
         }
@@ -1378,7 +1394,7 @@ static void *pfunc_thread_color(void *arg) {
     //s:[eys3D] 20200610 implement to save raw data to RGB format
     if(gColorImgBuf != NULL){
             if(DEBUG_LOG) {
-                printf("free gColorImgBuf : %p\n",gColorImgBuf);
+                CT_DEBUG("free gColorImgBuf : %p\n",gColorImgBuf);
             }
             free(gColorImgBuf);
             gColorImgBuf = NULL;
@@ -1418,7 +1434,7 @@ static void *pfunc_thread_depth(void *arg) {
     
     UNUSED(arg);
 
-    printf("\ngDepthWidth = %d,  gDepthHeight = %d\n", gDepthWidth, gDepthHeight);
+    CT_DEBUG("\ngDepthWidth = %d,  gDepthHeight = %d\n", gDepthWidth, gDepthHeight);
 
     if(gDepthImgBuf == NULL) {
          if(gDepthDataType == APC_DEPTH_DATA_8_BITS || gDepthDataType == APC_DEPTH_DATA_8_BITS_RAW) {
@@ -1431,11 +1447,11 @@ static void *pfunc_thread_depth(void *arg) {
     }
     
     if(gDepthImgBuf == NULL) {
-        printf("alloc for gDepthImageBuf fail..\n");
+        CT_DEBUG("alloc for gDepthImageBuf fail..\n");
         return NULL;
     }
     if(DEBUG_LOG) {
-        printf("gDepthImgBuf : %p\n",gDepthImgBuf);
+        CT_DEBUG("gDepthImgBuf : %p\n",gDepthImgBuf);
     }
 
     //s:[eys3D] 20200610 implement to save raw data to RGB format
@@ -1448,11 +1464,11 @@ static void *pfunc_thread_depth(void *arg) {
     }
 
     if(gDepthRGBImgBuf == NULL) {
-        printf("alloc for gDepthRGBImgBuf fail..\n");
+        CT_DEBUG("alloc for gDepthRGBImgBuf fail..\n");
         return NULL;
     }
     if(DEBUG_LOG) {
-        printf("gDepthRGBImgBuf : %p\n",gDepthRGBImgBuf);
+        CT_DEBUG("gDepthRGBImgBuf : %p\n",gDepthRGBImgBuf);
      }
     //e:[eys3D] 20200610 implement to save raw data to RGB format
                      
@@ -1460,15 +1476,15 @@ static void *pfunc_thread_depth(void *arg) {
     while(bTesting_depth == true && mCount < TEST_RUN_NUMBER) {
         bTestEnd_depth = false;
         usleep(1000 * 5);
-        //printf("Enter calling APC_GetDepthImage()...\n");
+        //CT_DEBUG("Enter calling APC_GetDepthImage()...\n");
         ret = APC_GetDepthImage(EYSD, &gsDevSelInfo, (BYTE*)gDepthImgBuf, &gDepthImgSize, &gDepthSerial, gDepthDataType);
-        //printf("Leave calling APC_GetDepthImage()...\n");
+        //CT_DEBUG("Leave calling APC_GetDepthImage()...\n");
          if(gDepthImgSize > m_BufferSize)
           {
-                printf("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
+                CT_DEBUG("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
                 goto EXIT;
           }
-       // printf("[%s][%d] ret = %d, errno = %d(%s)(%d)\n", __func__, __LINE__,ret, errno, strerror(errno), gDepthSerial);
+       // CT_DEBUG("[%s][%d] ret = %d, errno = %d(%s)(%d)\n", __func__, __LINE__,ret, errno, strerror(errno), gDepthSerial);
         if(ret == APC_OK) {
             
             cnt_frme++;
@@ -1485,10 +1501,10 @@ static void *pfunc_thread_depth(void *arg) {
                 fps_tmp = (float)(100 * 1000 * 1000) / (float)((current_time - start_time));
                 cnt_frme = 0;
                 start_time = current_time;
-                printf("\nDepth: FPS = %f, (size : %lu, serial : %d, datatype : %d)\n", fps_tmp, gDepthImgSize, gDepthSerial, gDepthDataType);
+                CT_DEBUG("\nDepth: FPS = %f, (size : %lu, serial : %d, datatype : %d)\n", fps_tmp, gDepthImgSize, gDepthSerial, gDepthDataType);
                 mCount ++;
                 if (snapShot_depth == true) {
-                    printf("Doing Snapshot...\n");
+                    CT_DEBUG("Doing Snapshot...\n");
                     //pthread_mutex_lock(&save_file_mutex);
 
                     save_file(gDepthImgBuf, gDepthImgSize, gDepthWidth, gDepthHeight,2, true);
@@ -1500,7 +1516,7 @@ static void *pfunc_thread_depth(void *arg) {
                 }
             }
         } else {
-           // printf("Failed to APC_GetDepthImage().[ret = %d]\n", ret);
+           // CT_DEBUG("Failed to APC_GetDepthImage().[ret = %d]\n", ret);
            // print_APC_error(ret);
            // break;
         }
@@ -1511,7 +1527,7 @@ static void *pfunc_thread_depth(void *arg) {
     //s:[eys3D] 20200610 implement to save raw data to RGB format
     if(gDepthImgBuf != NULL){
             if(DEBUG_LOG) {
-                printf("free gDepthImgBuf : %p\n",gDepthImgBuf);
+                CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
             }
             free(gDepthImgBuf);
             gDepthImgBuf = NULL;
@@ -1519,7 +1535,7 @@ static void *pfunc_thread_depth(void *arg) {
     
     if(gDepthRGBImgBuf != NULL){
             if(DEBUG_LOG) {
-                printf("free gDepthRGBImgBuf : %p\n",gDepthRGBImgBuf);
+                CT_DEBUG("free gDepthRGBImgBuf : %p\n",gDepthRGBImgBuf);
             }
             free(gDepthRGBImgBuf);
              gDepthRGBImgBuf = NULL;
@@ -1597,12 +1613,12 @@ static void *pfunc_thread_point_cloud(void *arg) {
 
     (void)arg;
 
-    printf("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
+    CT_DEBUG("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
     
     pPointCloudRGB = (unsigned char *)malloc(gDepthWidth * gDepthHeight * 3 * sizeof(unsigned char));
     pPointCloudXYZ = (float *)malloc(gDepthWidth * gDepthHeight * 3 * sizeof(float));
     if((pPointCloudRGB == NULL) || (pPointCloudXYZ == NULL)) {
-        printf("alloc for pPointCloudRGB or  pPointCloudXYZ fail..\n");
+        CT_DEBUG("alloc for pPointCloudRGB or  pPointCloudXYZ fail..\n");
         goto exit;
     }
     
@@ -1616,16 +1632,16 @@ static void *pfunc_thread_point_cloud(void *arg) {
         }
     }
     if(gDepthImgBuf == NULL) {
-        printf("alloc for gDepthImageBuf fail..\n");
+        CT_DEBUG("alloc for gDepthImageBuf fail..\n");
          goto exit;
     }
 
-    printf("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
+    CT_DEBUG("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
     if(gColorImgBuf == NULL) {
         gColorImgBuf = (unsigned char*)calloc(2 * gColorWidth * gColorHeight , sizeof(unsigned char));
     }
     if(gColorImgBuf == NULL) {
-        printf("alloc ColorImgBuf fail..\n");
+        CT_DEBUG("alloc ColorImgBuf fail..\n");
          goto exit;
     }
     
@@ -1633,7 +1649,7 @@ static void *pfunc_thread_point_cloud(void *arg) {
         gColorRGBImgBuf = (unsigned char*)calloc(3 * gColorWidth * gColorHeight, sizeof(unsigned char));
     }
     if(gColorRGBImgBuf == NULL) {
-        printf("alloc gColorRGBImgBuf fail..\n");
+        CT_DEBUG("alloc gColorRGBImgBuf fail..\n");
          goto exit;
     }
 
@@ -1650,7 +1666,7 @@ static void *pfunc_thread_point_cloud(void *arg) {
                                              gDepthDataType, &cur_tv_sec_depth, &cur_tv_usec_depth);
         
         if(gDepthImgSize > m_BufferSize) {
-            printf("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
+            CT_DEBUG("Alloc size : %lu, but get depth size : %lu, check FW and close the application.\n",m_BufferSize, gDepthImgSize);
             break;
         }
         
@@ -1671,7 +1687,7 @@ static void *pfunc_thread_point_cloud(void *arg) {
 exit:
     if(gDepthImgBuf != NULL){
         if(DEBUG_LOG) {
-            printf("free gDepthImgBuf : %p\n",gDepthImgBuf);
+            CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
         }
         free(gDepthImgBuf);
         gDepthImgBuf = NULL;
@@ -1680,7 +1696,7 @@ exit:
      
     if (pPointCloudRGB != NULL) {
         if(DEBUG_LOG) {
-            printf("free pPointCloudRGB : %p\n",pPointCloudRGB);
+            CT_DEBUG("free pPointCloudRGB : %p\n",pPointCloudRGB);
         }
         free(pPointCloudRGB);
         pPointCloudRGB = NULL;
@@ -1688,7 +1704,7 @@ exit:
     
     if (pPointCloudXYZ != NULL) {
         if(DEBUG_LOG) {
-            printf("free pPointCloudXYZ : %p\n",pPointCloudXYZ);
+            CT_DEBUG("free pPointCloudXYZ : %p\n",pPointCloudXYZ);
         }
         free(pPointCloudXYZ);
         pPointCloudXYZ = NULL;
@@ -1696,7 +1712,7 @@ exit:
     
     if (gColorRGBImgBuf != NULL) {
         if(DEBUG_LOG) {
-            printf("free pPointCloudXYZ : %p\n",gColorRGBImgBuf);
+            CT_DEBUG("free pPointCloudXYZ : %p\n",gColorRGBImgBuf);
         }  
         free(gColorRGBImgBuf);
         gColorRGBImgBuf = NULL;
@@ -1855,7 +1871,7 @@ static void setupFWRegister_EX8038()
     flag |= FG_Value_1Byte;
 
     if (APC_OK != APC_SetFWRegister(EYSD, &gsDevSelInfo, 0xf0, 0x0d, flag)) {
-        printf("APC_SetFWRegister failed\n");
+        CT_DEBUG("APC_SetFWRegister failed\n");
     }
 }
 
@@ -1874,9 +1890,9 @@ static void setupFWRegister()
     printf("Please input one byte FW setup value: 0x");
     scanf("%02x", (int *)&value);
 
-    printf("Write address = 0x%02x, value = 0x%02x\n", addr, value);
+    CT_DEBUG("Write address = 0x%02x, value = 0x%02x\n", addr, value);
     if (APC_OK != APC_SetFWRegister(EYSD, &gsDevSelInfo, addr, value, flag)) {
-        printf("APC_SetFWRegister failed\n");
+        CT_DEBUG("APC_SetFWRegister failed\n");
     }
 }
 
@@ -1893,9 +1909,9 @@ static void readFWRegister(void)
     scanf("%02x", (int *)&addr);
 
     if (APC_OK != APC_GetFWRegister(EYSD, &gsDevSelInfo, addr, (unsigned short *)&value, flag)) {
-        printf("APC_GetFWRegister failed\n");
+        CT_DEBUG("APC_GetFWRegister failed\n");
     }else {
-        printf("FW addr 0x%02x = 0x%02x\n", addr, value);
+        CT_DEBUG("FW addr 0x%02x = 0x%02x\n", addr, value);
     }
 }
 
@@ -1907,10 +1923,10 @@ static void SetCounterMode()
     scanf("%02x", (int *)&nValue);
 
     if (APC_OK != APC_SetControlCounterMode(EYSD, &gsDevSelInfo, (unsigned char)nValue)) {
-        printf("APC_SetControlCounterMode Failed\n");
+        CT_DEBUG("APC_SetControlCounterMode Failed\n");
         return;
     }
-    printf("Setup Success\n");
+    CT_DEBUG("Setup Success\n");
 }
 
 static void GetCounterMode()
@@ -1918,14 +1934,14 @@ static void GetCounterMode()
     unsigned char nValue;
 
     if (APC_OK != APC_GetControlCounterMode(EYSD, &gsDevSelInfo, &nValue)) {
-        printf("APC_GetControlCounterMode Failed\n");
+        CT_DEBUG("APC_GetControlCounterMode Failed\n");
         return;
     } else {
-        printf("ControlCounterMode = %d\n", nValue);
+        CT_DEBUG("ControlCounterMode = %d\n", nValue);
         if (nValue == 1)
-            printf("ControlCounterMode: Serial Mode\n");
+            CT_DEBUG("ControlCounterMode: Serial Mode\n");
         else
-            printf("ControlCounterMode: Frame Mode\n");
+            CT_DEBUG("ControlCounterMode: Frame Mode\n");
     }
 }
 
@@ -1937,9 +1953,9 @@ static void setV4L2buffer()
     scanf("%d", (int *)&value);
 
     g_v4l2_buffer_quque_size = value;
-    printf("Set V4L2 buffer size = %d\n", g_v4l2_buffer_quque_size);
+    CT_DEBUG("Set V4L2 buffer size = %d\n", g_v4l2_buffer_quque_size);
     if (APC_OK != APC_Setup_v4l2_requestbuffers(EYSD, &gsDevSelInfo, g_v4l2_buffer_quque_size)) {
-        printf("APC_Setup_v4l2_requestbuffers failed\n");
+        CT_DEBUG("APC_Setup_v4l2_requestbuffers failed\n");
     }
 }
 
@@ -1953,14 +1969,14 @@ static void setIRValue()
     ret = APC_GetFWRegister(EYSD, &gsDevSelInfo,
                                 0xE2, &m_nIRMax,FG_Address_1Byte | FG_Value_1Byte);
     if (APC_OK != ret || m_nIRMax == 0xff) {
-        printf("get IR Max value failed\n");
+        CT_DEBUG("get IR Max value failed\n");
         return;
      }
 
     ret = APC_GetFWRegister(EYSD, &gsDevSelInfo,
                                 0xE1, &m_nIRMin,FG_Address_1Byte | FG_Value_1Byte);
     if (APC_OK != ret|| m_nIRMin == 0xff) {
-        printf("get IR Min value failed\n");
+        CT_DEBUG("get IR Min value failed\n");
         return;
      }
     printf("IR range: %d ~ %d\n",m_nIRMin,m_nIRMax);      
@@ -1968,7 +1984,7 @@ static void setIRValue()
     scanf("%hu", &value);
 
     if (APC_OK != setupIR(value)) {
-        printf("APC_SetFWRegister failed\n");
+        CT_DEBUG("APC_SetFWRegister failed\n");
     }
 }
 
@@ -2004,10 +2020,10 @@ int save_file(unsigned char *buf, int size, int width, int height,int type, bool
             }
             fd = open(fname, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
             if (fd < 0) {
-                    printf("file open error (fd=%d)\n", fd);
+                    CT_DEBUG("file open error (fd=%d)\n", fd);
                     ret = -1;
             } else if(write(fd, buf, size) != size) {
-                    printf("write(fd, buf, size) != size\n");
+                    CT_DEBUG("write(fd, buf, size) != size\n");
                     ret = -1;
             }
 
@@ -2029,7 +2045,7 @@ int save_file(unsigned char *buf, int size, int width, int height,int type, bool
             ret = tjSaveImage(fname,buf,width,0,height,TJPF_RGB,0);
      }
 
-    printf("FILE_NAME = \"%s\" \n", fname);
+    CT_DEBUG("FILE_NAME = \"%s\" \n", fname);
 
     return ret;
 }
@@ -2114,7 +2130,7 @@ int tjpeg2yuv(unsigned char* jpeg_buffer, int jpeg_size, unsigned char** yuv_buf
     handle = tjInitDecompress();
     tjDecompressHeader3(handle, jpeg_buffer, jpeg_size, &width, &height, &subsample, &colorspace);
 
-    //printf("w: %d h: %d subsample: %d color: %d\n", width, height, subsample, colorspace);
+    //CT_DEBUG("w: %d h: %d subsample: %d color: %d\n", width, height, subsample, colorspace);
     
     flags |= 0;
     
@@ -2123,7 +2139,7 @@ int tjpeg2yuv(unsigned char* jpeg_buffer, int jpeg_size, unsigned char** yuv_buf
     *yuv_buffer =(unsigned char *)malloc(*yuv_size);
     if (*yuv_buffer == NULL)
     {
-        printf("malloc buffer for rgb failed.\n");
+        CT_DEBUG("malloc buffer for rgb failed.\n");
         return -1;
     }
 
@@ -2131,7 +2147,7 @@ int tjpeg2yuv(unsigned char* jpeg_buffer, int jpeg_size, unsigned char** yuv_buf
 			padding, height, flags);
     if (ret < 0)
     {
-        printf("compress to jpeg failed: %s\n", tjGetErrorStr());
+        CT_DEBUG("compress to jpeg failed: %s\n", tjGetErrorStr());
     }
     tjDestroy(handle);
 
@@ -2154,7 +2170,7 @@ int tyuv2rgb(unsigned char* yuv_buffer, int yuv_size, int width, int height, int
     need_size = tjBufSizeYUV2(width, padding, height, subsample);
     if (need_size != yuv_size)
     {
-        printf("Conver to RGB failed! Expect yuv size: %d, but input size: %d, check again.\n", need_size, yuv_size);
+        CT_DEBUG("Conver to RGB failed! Expect yuv size: %d, but input size: %d, check again.\n", need_size, yuv_size);
         return -1;
     }
  
@@ -2163,13 +2179,13 @@ int tyuv2rgb(unsigned char* yuv_buffer, int yuv_size, int width, int height, int
     *rgb_buffer =(unsigned char *)malloc(*rgb_size);
     if (*rgb_buffer == NULL)
     {
-        printf("malloc buffer for rgb failed.\n");
+        CT_DEBUG("malloc buffer for rgb failed.\n");
         return -1;
     }
     ret = tjDecodeYUV(handle, yuv_buffer, padding, subsample, *rgb_buffer, width, 0, height, pixelfmt, flags);
     if (ret < 0)
     {
-        printf("decode to rgb failed: %s\n", tjGetErrorStr());
+        CT_DEBUG("decode to rgb failed: %s\n", tjGetErrorStr());
     }
 
     tjDestroy(handle);
@@ -2226,7 +2242,7 @@ int saveDepth2rgb(unsigned char *m_pDepthImgBuf, unsigned char *m_pRGBBuf, unsig
     snprintf(fname, sizeof(fname), SAVE_FILE_PATH"depth_yuv2rgb_%d_%s.bmp", yuv_index++, DateTime);
     ret = tjSaveImage(fname,m_pRGBBuf,m_tmp_width,0,m_nImageHeight,TJPF_RGB,0);
      
-    printf("FILE_NAME = \"%s\" \n", fname);
+    CT_DEBUG("FILE_NAME = \"%s\" \n", fname);
     return ret;
 }
 //e:[eys3D] 20200610 implement to save raw data to RGB format
@@ -2298,7 +2314,7 @@ int fillZDIndexByProductInfos(unsigned short  pid, int depthHeight,
         
     }
 	
-    printf("not define the PID, since return 0\n");
+    CT_DEBUG("not define the PID, since return 0\n");
     return 0;
 }
 
@@ -2319,7 +2335,7 @@ int getZDtable(DEVINFORMATION *pDevInfo, DEVSELINFO DevSelInfo, int depthHeight,
     }
 
     zdTableInfo.nIndex = fillZDIndexByProductInfos(pDevInfo[DevSelInfo.index].wPID, depthHeight, colorHeight, false);
-    printf("zdTableInfo nIndex : %d\n", zdTableInfo.nIndex);
+    CT_DEBUG("zdTableInfo nIndex : %d\n", zdTableInfo.nIndex);
     
     int actualLength = 0;
     if (zdTableInfo.nIndex < 0)
@@ -2327,14 +2343,14 @@ int getZDtable(DEVINFORMATION *pDevInfo, DEVSELINFO DevSelInfo, int depthHeight,
 
     nRet = APC_GetZDTable(EYSD, &DevSelInfo, g_pzdTable, bufSize, &actualLength, &zdTableInfo);
     if (nRet != APC_OK) {
-        printf("Get ZD Table fail......%d\n", nRet);
+        CT_DEBUG("Get ZD Table fail......%d\n", nRet);
         return nRet;
     }
     
     g_maxNear = 0xfff;
     g_maxFar = 0;
 
-     printf("[%s][%d]Enter to calac mxaFar and maxNear...\n", __func__, __LINE__);
+     CT_DEBUG("[%s][%d]Enter to calac mxaFar and maxNear...\n", __func__, __LINE__);
     for (int i = 0 ; i < APC_ZD_TABLE_FILE_SIZE_11_BITS ; ++i) {
         if ((i * 2) == APC_ZD_TABLE_FILE_SIZE_11_BITS)
             break;
@@ -2344,7 +2360,7 @@ int getZDtable(DEVINFORMATION *pDevInfo, DEVSELINFO DevSelInfo, int depthHeight,
             g_maxFar = std::max<unsigned short>(g_maxFar, nZValue);
         }
     }
-    printf("[%s][%d]Leave to calac mxaFar and maxNear...\n", __func__, __LINE__);
+    CT_DEBUG("[%s][%d]Leave to calac mxaFar and maxNear...\n", __func__, __LINE__);
     
     if (g_maxNear > g_maxFar)
         g_maxNear = g_maxFar;
@@ -2354,7 +2370,7 @@ int getZDtable(DEVINFORMATION *pDevInfo, DEVSELINFO DevSelInfo, int depthHeight,
     
     g_zdTableInfo_index = zdTableInfo.nIndex;
 
-    printf("Get ZD Table actualLength : %d, g_maxNear : %d, g_maxFar : %d\n", actualLength,g_maxNear ,g_maxFar);
+    CT_DEBUG("Get ZD Table actualLength : %d, g_maxNear : %d, g_maxFar : %d\n", actualLength,g_maxNear ,g_maxFar);
     return nRet;
 }
 
@@ -2381,7 +2397,7 @@ void UpdateD8bitsDisplayImage_DIB24(RGBQUAD *pColorPalette, unsigned char *pDept
                 zdIndex = depth * sizeof(unsigned short);
             z = (((unsigned short)g_pzdTable[zdIndex]) << 8) + g_pzdTable[zdIndex + 1];
             if ( z >= COLOR_PALETTE_MAX_COUNT) continue;
-           //printf("depth : %d, z value : %d\n",depth,z);
+           //CT_DEBUG("depth : %d, z value : %d\n",depth,z);
             pClr = &(pColorPalette[z]);
             pD[0] = pClr->rgbRed;
             pD[1] = pClr->rgbGreen;
@@ -2411,7 +2427,7 @@ void UpdateD11DisplayImage_DIB24(const RGBQUAD* pColorPalette, const unsigned ch
             unsigned short depth = pDepth[pixelIndex * sizeof(unsigned short) + 1] << 8 |  pDepth[pixelIndex * sizeof(unsigned short)];
             unsigned short zdIndex = depth * sizeof(unsigned short);
             z = (((unsigned short)g_pzdTable[zdIndex]) << 8) + g_pzdTable[zdIndex + 1];
-            //printf("depth : %d, z value : %d\n",depth,z);
+            //CT_DEBUG("depth : %d, z value : %d\n",depth,z);
             if ( z >= COLOR_PALETTE_MAX_COUNT) continue;
             pClr = &(pColorPalette[z]);
             pD[0] = pClr->rgbRed;
@@ -2480,7 +2496,7 @@ int get_product_name(char *path, char *out)
 
     f = fopen(path, "r" );
     if (!f) {
-        printf("Could not open %s\n", path);
+        CT_DEBUG("Could not open %s\n", path);
         return -1;
     }
 
@@ -2571,7 +2587,7 @@ static int TransformDepthDataType(int *nDepthDataType, bool bRectifyData)
 
     if (IsInterleaveMode()) *nDepthDataType += APC_DEPTH_DATA_INTERLEAVE_MODE_OFFSET;
 
-    printf("gCameraPID = 0x%08x\n", gCameraPID);
+    CT_DEBUG("gCameraPID = 0x%08x\n", gCameraPID);
     return APC_OK;
 }
 
@@ -2586,9 +2602,9 @@ static void *pfunc_thread_close(void *arg)
         //if (bTestEnd_color == true && bTestEnd_depth == true) {
             ret = APC_CloseDevice(EYSD, &gsDevSelInfo);
             if(ret == APC_OK) {
-                printf("APC_CloseDevice() success!\n");
+                CT_DEBUG("APC_CloseDevice() success!\n");
             } else {
-                printf("APC_CloseDevice() fail.. (ret=%d)\n", ret);
+                CT_DEBUG("APC_CloseDevice() fail.. (ret=%d)\n", ret);
                 error_msg(ret);
             }
             break;
@@ -2720,7 +2736,7 @@ void print_APC_error(int error)
 		errorstr = "UNKNOWN..";
 	}
 
-	printf("%s\n", errorstr);
+	CT_DEBUG("%s\n", errorstr);
 }
 
 static int error_msg(int error)
@@ -2894,7 +2910,7 @@ static int error_msg(int error)
                 errstrSensor = "ERROR_UNKNOWN";
 	}
 
-        printf("[ERROR] %s (0x%08x) -> %s (0x%08x)\n", errstrEYSD, error, errstrSensor, ret);
+        CT_DEBUG("[ERROR] %s (0x%08x) -> %s (0x%08x)\n", errstrEYSD, error, errstrSensor, ret);
 
 	return ret;
 }
@@ -2904,7 +2920,7 @@ void setHypatiaVideoMode(int mode) {
         int ret = 0;
 
         if (APC_SetupBlock(EYSD, &gsDevSelInfo, true) != 0) {
-            printf("setup Blocking Failed\n");
+            CT_DEBUG("setup Blocking Failed\n");
         }
 
         snapShot_color = true;
@@ -3004,9 +3020,9 @@ void setHypatiaVideoMode(int mode) {
 
         ret = APC_SetDepthDataType(EYSD, &gsDevSelInfo, gDepthDataType); //4 ==> 11 bits
         if (ret == APC_OK) {
-            printf("APC_SetDepthData() success!\n");
+            CT_DEBUG("APC_SetDepthData() success!\n");
         } else {
-            printf("APC_SetDepthData() fail.. (ret=%d)\n", ret);
+            CT_DEBUG("APC_SetDepthData() fail.. (ret=%d)\n", ret);
             print_APC_error(ret);
         }
 }
@@ -3030,24 +3046,93 @@ int setupIR(unsigned short IRvalue)
     } else {
         m_nIRValue = IRvalue;
     }
-    printf("IR range, IR Min : %d, IR Max : %d, set IR Value : %d\n", m_nIRMin, m_nIRMax, m_nIRValue);
+    CT_DEBUG("IR range, IR Min : %d, IR Max : %d, set IR Value : %d\n", m_nIRMin, m_nIRMax, m_nIRValue);
 
     if (m_nIRValue != 0) {
         ret = APC_SetIRMode(EYSD, &gsDevSelInfo, 0x63); // 6 bits on for opening both 6 ir
         if (APC_OK != ret) return ret;
-        printf("enable IR and set IR Value : %d\n",m_nIRValue);
+        CT_DEBUG("enable IR and set IR Value : %d\n",m_nIRValue);
         ret = APC_SetCurrentIRValue(EYSD, &gsDevSelInfo, m_nIRValue);
         if (APC_OK != ret) return ret;
         ret = APC_GetCurrentIRValue(EYSD, &gsDevSelInfo, &m_nIRValue);
         if (APC_OK != ret) return ret;
-        printf("get IR Value : %d\n",m_nIRValue);
+        CT_DEBUG("get IR Value : %d\n",m_nIRValue);
     } else {
         ret = APC_SetCurrentIRValue(EYSD, &gsDevSelInfo, m_nIRValue);
         if (APC_OK != ret) return ret;
         ret = APC_SetIRMode(EYSD,&gsDevSelInfo, 0x00); // turn off ir
         if (APC_OK != ret) return ret;
-        printf("disable IR\n");
+        CT_DEBUG("disable IR\n");
     }
     return APC_OK;
 }
 //e:[eys3D] 20200623, for IR mode
+
+static void *property_bar_test_func(void *arg)
+{
+    int ret = 0;
+
+    int id = 0;
+    int max = 0;
+    int min = 0;
+    int step = 0;
+    int def = 0;
+    int flag = 0;
+    long int cur_val = 0;
+    long int set_val = 0;
+
+    (void)arg;
+
+    id = CT_PROPERTY_ID_AUTO_EXPOSURE_MODE_CTRL;
+    ret = APC_GetCTPropVal(EYSD, &gsDevSelInfo, id, &cur_val);
+    if (ret == APC_OK) {
+        CT_DEBUG("AE[cur_val] = [0x%08x]\n", cur_val);
+        //NOTE: The 0x01 means the 'EXPOSURE_MANUAL' 
+        if (cur_val != 0x01) {
+            set_val = 0x01;
+            ret = APC_SetCTPropVal(EYSD, &gsDevSelInfo, id, set_val);
+            if (ret != APC_OK) {
+                CT_DEBUG("Failed to call APC_SetCTPropVal() for (%d) !! (%d)\n", id, ret);
+            } else {
+                ret = APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+                if (ret == APC_OK) {
+                    CT_DEBUG("AE[cur_val] = [%ld] (after set %ld)\n", cur_val, set_val);
+                } else {
+                    CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
+                }
+            }
+            ret = APC_GetCTRangeAndStep(EYSD, &gsDevSelInfo, id, &max, &min, &step, &def, &flag);
+            if (ret == APC_OK) {
+                CT_DEBUG("AE[max, min, setp, def, flag] = [%d, %d, %d, %d, %d]\n", max, min, step, def, flag);
+            } else {
+                CT_DEBUG("Failed to call APC_GetCTRangeAndStep() for (%d) !! (%d)\n", id, ret);
+            }
+        }
+    } else {
+        CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
+    }
+
+    
+    id = PU_PROPERTY_ID_WHITE_BALANCE_AUTO_CTRL;
+    ret = APC_GetPUPropVal(EYSD, &gsDevSelInfo, id, &cur_val);
+    if (ret == APC_OK) {
+        CT_DEBUG("AWB[cur_val] = [%ld]\n", cur_val);
+    } else {
+        CT_DEBUG("Failed to call APC_GetPUPropVal() for (%d) !! (%d)\n", id, ret);
+    }
+    
+    
+    id = PU_PROPERTY_ID_WHITE_BALANCE_CTRL;
+    ret = APC_GetPURangeAndStep(EYSD, &gsDevSelInfo, id, &max, &min, &step, &def, &flag);
+    if (ret == APC_OK) {
+        CT_DEBUG("WB[max, min, setp, def, flag] = [%d, %d, %d, %d, %d]\n", max, min, step, def, flag);
+    } else {
+        CT_DEBUG("Failed to call APC_GetPURangeAndStep() for (%d) !! (%d)\n", id, ret);
+    }
+
+
+
+    
+    return NULL;
+}
+

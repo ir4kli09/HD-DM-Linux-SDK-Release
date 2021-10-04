@@ -48,6 +48,7 @@ static DEVINFORMATION *g_pDevInfo = NULL;
 
 #define CAMERA_PID_SANDRA 0x0167
 #define CAMERA_PID_NORA  0x0168
+#define CAMERA_PID_EX8036 0x0120
 
 #define DEFAULT_VIDEO_MODE_SELECTED_INDEX 0
 struct video_mode {
@@ -304,6 +305,18 @@ struct video_mode v2_video_modes []  ={
     
 };
 
+struct video_mode v3_video_modes []  ={
+    {
+        .width = 2560,
+        .height = 720,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
+        .is_interleave_mode = false,
+        .pixelcode = 0,
+        .is_scale_down = false
+    }
+};
+
 static int gColorFormat = 0; // 0:YUYV (only support YUYV) 
 static int gColorWidth = 1280;
 static int gColorHeight = 720;
@@ -327,6 +340,7 @@ static uint8_t *gColorRGBImgBuf = NULL;
 static unsigned long int gColorImgSize = 0;
 static unsigned long int gDepthImgSize = 0;
 static bool bSnapshot = true;
+static bool gIsUYVYFormat = false;
 
 int GetDateTime(char *psDateTime);
 
@@ -468,6 +482,12 @@ static int init_device(void)
                 break;
            case CAMERA_PID_NORA:
                 mode = &v2_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
+                break;
+           case CAMERA_PID_EX8036:
+                /*TODO: The yuv422 from TX2 is UYVY. It should check it. */
+                gIsUYVYFormat = true;
+                mode = &v3_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
+                break;
            default:
                ret = APC_NoDevice;
                CT_DEBUG("Unkown PID (0x%04x) !!\n", g_pDevInfo->wPID);
@@ -565,7 +585,7 @@ static int open_device(uint32_t depthtype)
             CT_DEBUG("APC_OpenDevice() fail.. (ret=%d)\n", ret);
     }
 
-    if (gIsInterleaveMode == true) {
+    /*if (gIsInterleaveMode == true)*/ {
         setIRValue(0x00ff);
         if (getIRValue(&ir_min, &ir_max) == 0) {
             CT_DEBUG("(ir_min, ir_max) = [0x%04x, 0x%04x]\n", ir_min, ir_max);
@@ -860,11 +880,18 @@ int convert_yuv_to_rgb_buffer(uint8_t *yuv, uint8_t *rgb, uint32_t width, uint32
         yuv[in + 2] << 16 |
         yuv[in + 1] <<  8 |
         yuv[in + 0];
-
-        y0 = (pixel_16 & 0x000000ff);
-        u  = (pixel_16 & 0x0000ff00) >>  8;
-        y1 = (pixel_16 & 0x00ff0000) >> 16;
-        v  = (pixel_16 & 0xff000000) >> 24;
+        
+        if (gIsUYVYFormat == true) {
+            u = (pixel_16 & 0x000000ff);
+            y0  = (pixel_16 & 0x0000ff00) >>  8;
+            v = (pixel_16 & 0x00ff0000) >> 16;
+            y1  = (pixel_16 & 0xff000000) >> 24;
+        } else {
+            y0 = (pixel_16 & 0x000000ff);
+            u  = (pixel_16 & 0x0000ff00) >>  8;
+            y1 = (pixel_16 & 0x00ff0000) >> 16;
+            v  = (pixel_16 & 0xff000000) >> 24;
+        }
 
         pixel32 = convert_yuv_to_rgb_pixel(y0, u, v);
 
@@ -1147,7 +1174,7 @@ static void *point_cloud_func(void *arg)
                 bFirstReceived = false;
                 RegisterSettings::DM_Quality_Register_Setting(EYSD, &g_DevSelInfo, g_pDevInfo->wPID);
             }
-            
+
             convert_yuv_to_rgb_buffer(gColorImgBuf, gColorRGBImgBuf, gColorWidth, gColorHeight);
             ret = getPointCloud(gColorRGBImgBuf, gColorWidth, gColorHeight,
                                 gDepthImgBuf, gDepthWidth, gDepthHeight, gDepthType,
@@ -1192,69 +1219,103 @@ static void *property_bar_test_func(void *arg)
     int min = 0;
     int step = 0;
     int def = 0;
-    int flag = 0;
+    int flags = 0;
     long int cur_val = 0;
     long int set_val = 0;
+    bool is_enable_ae = false;
 
     (void)arg;
 
     id = CT_PROPERTY_ID_AUTO_EXPOSURE_MODE_CTRL;
     ret = APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
     if (ret == APC_OK) {
-        CT_DEBUG("AE_MODE[cur_val] = [%ld]\n", cur_val);
-        //NOTE: The 0x01 means the 'EXPOSURE_MANUAL' 
-        if (cur_val != 0x01) {
-            set_val = 0x01;
+        CT_DEBUG("AE[cur_val] = [0x%08x]\n", cur_val);
+        /* 
+         * 0x01: Manual Mode – manual
+         * 0x08: Aperture Priority Mode – auto Exposure Time, manual Iris
+         */
+        if ((cur_val != 0x01) && (is_enable_ae == false)) {
+            set_val = 0x01; //Manual Mode – manual
+        } else if ((cur_val != 0x08) && (is_enable_ae == true)) {
+            set_val = 0x08; //Aperture Priority Mode – auto Exposure Time, manual Iris
+        }
+        if (set_val != 0x00) {
             ret = APC_SetCTPropVal(EYSD, &g_DevSelInfo, id, set_val);
-            if (ret != APC_OK) {
-                CT_DEBUG("Failed to call APC_SetCTPropVal() for (%d) !! (%d)\n", id, ret);
-            } else {
-                ret = APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
-                if (ret == APC_OK) {
-                    CT_DEBUG("AE_MODE[cur_val] = [%ld] (after set %ld)\n", cur_val, set_val);
-                } else {
-                    CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
-                }
-            }
-            ret = APC_GetCTRangeAndStep(EYSD, &g_DevSelInfo, id, &max, &min, &step, &def, &flag);
             if (ret == APC_OK) {
-                CT_DEBUG("AE_MODE[max, min, setp, def, flag] = [%d, %d, %d, %d, %d]\n", max, min, step, def, flag);
-            } else {
-                CT_DEBUG("Failed to call APC_GetCTRangeAndStep() for (%d) !! (%d)\n", id, ret);
+                ret =  APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+                if (ret == APC_OK) {
+                    CT_DEBUG("AE[cur_val] = (%d) after setting (%d)\n", cur_val, set_val);
+                }
             }
         }
     } else {
         CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
+        goto exit;
     }
 
-    id = PU_PROPERTY_ID_BRIGHTNESS_CTRL;
-    ret = APC_GetPURangeAndStep(EYSD, &g_DevSelInfo, id, &max, &min, &step, &def, &flag);
+    id = CT_PROPERTY_ID_EXPOSURE_TIME_ABSOLUTE_CTRL;
+    ret =  APC_GetCTRangeAndStep(EYSD, &g_DevSelInfo, id, &max, &min, &step, &def, &flags);
     if (ret == APC_OK) {
-        printf ("BR[max, min, setp, def, flag] = [%d, %d, %d, %d, %d]\n", max, min, step, def, flag);
+        CT_DEBUG("ETA[max, min, step, def, flags] = [%d, %d, %d, %d, 0x%08x]\n", max, min, step, def, flags);
     } else {
-        CT_DEBUG("Failed to call APC_GetPURangeAndStep() for (%d) !! (%d)\n", id, ret);
+        CT_DEBUG("Failed to call APC_GetCTRangeAndStep() for (%d) !! (%d)\n", id, ret);
+        goto exit;
     }
 
+    id = CT_PROPERTY_ID_EXPOSURE_TIME_ABSOLUTE_CTRL;
+    ret =  APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+    if (ret == APC_OK) {
+         CT_DEBUG("ETA[cur_val] = (%d)\n", cur_val);
+    } else {
+        CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
+        goto exit;
+    }
+    
+    if (is_enable_ae == false) {
+        set_val = min + 1;
+        id = CT_PROPERTY_ID_EXPOSURE_TIME_ABSOLUTE_CTRL;
+        ret = APC_SetCTPropVal(EYSD, &g_DevSelInfo, id, set_val);
+        if (ret == APC_OK) {
+            ret =  APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+            if (ret == APC_OK) {
+                CT_DEBUG("ETA[cur_val] = (%d) after setting (%d)\n", cur_val, set_val);
+            }
+        } else {
+            CT_DEBUG("Failed to call APC_SetCTPropVal() for (%d) !! (%d)\n", id, ret);
+            goto exit;
+        }
+    }
+    
+
+    id = CT_PROPERTY_ID_AUTO_EXPOSURE_PRIORITY_CTRL;
+    ret =  APC_GetCTPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
+    if (ret == APC_OK) {
+         CT_DEBUG("AEP[cur_val] = [0x%08x]\n", cur_val);
+    } else {
+        CT_DEBUG("Failed to call APC_GetCTPropVal() for (%d) !! (%d)\n", id, ret);
+        goto exit;
+    }
+
+    id = PU_PROPERTY_ID_WHITE_BALANCE_AUTO_CTRL;
     ret = APC_GetPUPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
     if (ret == APC_OK) {
-        CT_DEBUG("BR[cur_val] = [%ld]\n", cur_val);
+        CT_DEBUG("WBA[cur_val] = [0x%08x]\n", cur_val);
     } else {
         CT_DEBUG("Failed to call APC_GetPUPropVal() for (%d) !! (%d)\n", id, ret);
+        goto exit;
     }
-
-    set_val = (max + min)/2;
-    ret = APC_SetPUPropVal(EYSD, &g_DevSelInfo, id, set_val);
+    
+    id = PU_PROPERTY_ID_WHITE_BALANCE_CTRL;
+    ret =  APC_GetPURangeAndStep(EYSD, &g_DevSelInfo, id, &max, &min, &step, &def, &flags);
     if (ret == APC_OK) {
-        ret = APC_GetPUPropVal(EYSD, &g_DevSelInfo, id, &cur_val);
-        if (ret == APC_OK) {
-            CT_DEBUG("BR[cur_val] = [%ld] (after set %ld)\n", cur_val, set_val);
-        } else {
-            CT_DEBUG("Failed to call APC_GetPUPropVal() for (%d) !! (%d)\n", id, ret);
-        }
+        CT_DEBUG("WB[max, min, step, def, flags] = [%d, %d, %d, %d, 0x%08x]\n", max, min, step, def, flags);
+        
     } else {
-        CT_DEBUG("Failed to call APC_SetPUPropVal() for (%d) !! (%d)\n", id, ret);
+        CT_DEBUG("Failed to call APC_GetPURangeAndStep() for (%d) !! (%d)\n", id, ret);
+        goto exit;
     }
-
+    
+exit:
     
     return NULL;
 }

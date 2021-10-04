@@ -78,6 +78,9 @@ int CCameraPropertyModel::InitCameraProperty()
         item.bValid = true;
 
         UpdateCameraProperty((CAMERA_PROPERTY)i);
+
+        printf("[%s][%d][%s][nID, max, min, nsetp, default, flags] = [%d, %d, %d, %d, %d, 0x%08x]\n", \
+            __func__, __LINE__, (bIsCTProperty)?"CT":"PU", nID, item.nMax, item.nMin, item.nStep, item.nDefault, item.nFlags);
     }
 
     for (int i = 0 ; i < CAMERA_PROPERTY_COUNT ; ++i){
@@ -164,6 +167,9 @@ int CCameraPropertyModel::SetCameraPropertyValue(CAMERA_PROPERTY type, int nValu
     }else{
         RETRY_APC_API(ret, APC_SetPUPropVal(pEYSDI, m_pDeviceSelfInfo, nID, nValue));
     }
+
+    printf("[%s][%d][%s][nID, nValue] = [%d, %d(0x%08x)]\n", __func__, __LINE__, \
+        (bIsCTProperty)?"CT":"PU", nID, nValue, (unsigned long)nValue);
 
     if (AUTO_EXPOSURE == type){
         SetCameraPropertyValue(EXPOSURE_TIME, m_cameraPropertyItems[EXPOSURE_TIME].nValue);
