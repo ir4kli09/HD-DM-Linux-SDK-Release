@@ -153,20 +153,33 @@ typedef enum
 #define SERIAL_2BIT_ADDR    0xf0fe
 // register address define -
 
+typedef enum {
+    YUV22_YUYV_PIXEL_FMT = 0,
+    YUV22_UYVY_PIXEL_FMT,
+    RAW10_GBRG_PIXEL_FMT,
+    RAW10_BGGR_PIXEL_FMT,
+    RAW10_RGGB_PIXEL_FMT,
+    RAW10_GRBG_PIXEL_FMT,
+    MJPEG_PIXEL_FMT,
+    UNKOWN_PIXEL_FMT = 0xffff
+} PIXEL_FMT;
+
+//Check the doc 'video_mode_setting_rul_0.4b.pdf' in http://redmine.etron.com.tw/redmine/issues/6408
 // For Depth Data Type
 #define APC_DEPTH_DATA_OFF_RAW			0 /* raw (depth off, only raw color) */
-#define APC_DEPTH_DATA_DEFAULT			0 /* raw (depth off, only raw color) */
+#define APC_DEPTH_DATA_DEFAULT			APC_DEPTH_DATA_OFF_RAW /* raw (depth off, only gray raw color) */
 #define APC_DEPTH_DATA_8_BITS				1 /* rectify, 1 byte per pixel */
 #define APC_DEPTH_DATA_14_BITS				2 /* rectify, 2 byte per pixel */
 #define APC_DEPTH_DATA_8_BITS_x80			3 /* rectify, 2 byte per pixel but using 1 byte only */
 #define APC_DEPTH_DATA_11_BITS				4 /* rectify, 2 byte per pixel but using 11 bit only */
-#define APC_DEPTH_DATA_OFF_RECTIFY		5 /* rectify (depth off, only rectify color) */
+#define APC_DEPTH_DATA_OFF_RECTIFY		5 /* rectify (depth off, only rectify raw color) */
 #define APC_DEPTH_DATA_8_BITS_RAW			6 /* raw */
 #define APC_DEPTH_DATA_14_BITS_RAW		7 /* raw */
 #define APC_DEPTH_DATA_8_BITS_x80_RAW	8 /* raw */
 #define APC_DEPTH_DATA_11_BITS_RAW		9 /* raw */
 #define APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY     11// 
 #define APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY     13// multi-baseline
+#define APC_DEPTH_DATA_OFF_BAYER_RAW     14
 // For Interleave mode depth data type
 #define APC_DEPTH_DATA_INTERLEAVE_MODE_OFFSET 16
 #define APC_DEPTH_DATA_ILM_OFF_RAW			APC_DEPTH_DATA_OFF_RAW + APC_DEPTH_DATA_INTERLEAVE_MODE_OFFSET /* raw (depth off, only raw color) */
@@ -667,6 +680,7 @@ struct APCImageType
         COLOR_YUY2 = 0,
         COLOR_RGB24,
         COLOR_MJPG,
+        COLOR_UYVY,
         DEPTH_8BITS = 100,
         DEPTH_8BITS_0x80,
         DEPTH_11BITS,
@@ -749,5 +763,6 @@ struct PointCloudInfo
     float focalLength_K;
     float baseline_K;
     float diff_K;
+    int depth_image_edian; //0: lillte-edian, 1: big-edia
 };
 #endif // LIB_ESPDI_DEF_H

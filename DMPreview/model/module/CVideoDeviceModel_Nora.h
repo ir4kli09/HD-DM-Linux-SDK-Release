@@ -5,7 +5,7 @@
 class CVideoDeviceModel_Nora : public CVideoDeviceModel
 {
 public:
-    // virtual void SetVideoDeviceController(CVideoDeviceController *pVideoDeviceController);
+    virtual void SetVideoDeviceController(CVideoDeviceController *pVideoDeviceController);
 
     virtual int UpdateIR();
     virtual bool IsIRExtended();

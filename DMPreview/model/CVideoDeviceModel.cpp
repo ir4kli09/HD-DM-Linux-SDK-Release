@@ -1069,13 +1069,12 @@ int CVideoDeviceModel::AdjustRegister()
 {
     if(GetState() != STREAMING) return APC_OK;
 
-    int ret =  RegisterSettings::DM_Quality_Register_Setting(CEYSDDeviceManager::GetInstance()->GetEYSD(),
-                                                             m_deviceSelInfo[0],
-                                                             m_deviceInfo[0].deviceInfomation.wPID);
-
     if (!IsHWPP()){
         SetHWPP(true);
     }
+    int ret =  RegisterSettings::DM_Quality_Register_Setting(CEYSDDeviceManager::GetInstance()->GetEYSD(),
+                                                             m_deviceSelInfo[0],
+                                                             m_deviceInfo[0].deviceInfomation.wPID);
 
     m_pVideoDeviceController->GetControlView()->UpdateUI();
 

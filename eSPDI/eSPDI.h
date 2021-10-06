@@ -174,6 +174,19 @@ PDEVSELINFO pDevSelInfo, bool enable
 */
 int APC_EnableInterleave(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, bool enable);
 
+
+/*! \fn int APC_SetPixelFormat(
+void *pHandleEYSD,
+PDEVSELINFO pDevSelInfo, YUV22_FMT fmt
+)
+\brief enable or disable interleave function
+\param pHandleEYSD	 the pointer to the initilized EYSD SDK instance
+\param pDevSelInfo	pointer of device select index
+\param fmt	set as pxiel format defined in PIXEL_FMT
+\return success: APC_OK, others: see eSPDI_def.h
+*/
+int APC_SetPixelFormat(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, PIXEL_FMT fmt);
+
 /*! \fn int APC_SetControlCounterMode(
 void *pHandleEYSD,
 PDEVSELINFO pDevSelInfo,

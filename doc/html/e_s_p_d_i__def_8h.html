@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="eYs3D_logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">eYs3D Linux SDK
-   &#160;<span id="projectnumber">v5.0.0.9</span>
+   &#160;<span id="projectnumber">v5.0.0.10</span>
    </div>
   </td>
  </tr>
@@ -366,7 +366,7 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_OFF_RAW</b>&#160;&#160;&#160;0 /* raw (depth off, only raw color) */</td></tr>
 <tr class="separator:ae7b7511b0dd516ed720bd5183a224ebb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ad860115f7aef5301fc5afbf8b07b99"><td class="memItemLeft" align="right" valign="top"><a id="a4ad860115f7aef5301fc5afbf8b07b99"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_DEFAULT</b>&#160;&#160;&#160;0 /* raw (depth off, only raw color) */</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_DEFAULT</b>&#160;&#160;&#160;APC_DEPTH_DATA_OFF_RAW /* raw (depth off, only gray raw color) */</td></tr>
 <tr class="separator:a4ad860115f7aef5301fc5afbf8b07b99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9050f5766cc513741f2b823ed0a0c86"><td class="memItemLeft" align="right" valign="top"><a id="ad9050f5766cc513741f2b823ed0a0c86"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_8_BITS</b>&#160;&#160;&#160;1 /* rectify, 1 byte per pixel */</td></tr>
@@ -381,7 +381,7 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_11_BITS</b>&#160;&#160;&#160;4 /* rectify, 2 byte per pixel but using 11 bit only */</td></tr>
 <tr class="separator:a5864e0e1fa39752a6d972b786dabd39b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4a666269e61028fa2e9b6597a0b3996"><td class="memItemLeft" align="right" valign="top"><a id="ae4a666269e61028fa2e9b6597a0b3996"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_OFF_RECTIFY</b>&#160;&#160;&#160;5 /* rectify (depth off, only rectify color) */</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_OFF_RECTIFY</b>&#160;&#160;&#160;5 /* rectify (depth off, only rectify raw color) */</td></tr>
 <tr class="separator:ae4a666269e61028fa2e9b6597a0b3996"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7903a51d1f5028848b2c5c3222ceb170"><td class="memItemLeft" align="right" valign="top"><a id="a7903a51d1f5028848b2c5c3222ceb170"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_8_BITS_RAW</b>&#160;&#160;&#160;6 /* raw */</td></tr>
@@ -401,6 +401,9 @@ Macros</h2></td></tr>
 <tr class="memitem:a63031ea0290867cb43d0943a80da151d"><td class="memItemLeft" align="right" valign="top"><a id="a63031ea0290867cb43d0943a80da151d"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY</b>&#160;&#160;&#160;13</td></tr>
 <tr class="separator:a63031ea0290867cb43d0943a80da151d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91976dc7cba6065e6947a4cabfbefe59"><td class="memItemLeft" align="right" valign="top"><a id="a91976dc7cba6065e6947a4cabfbefe59"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_OFF_BAYER_RAW</b>&#160;&#160;&#160;14</td></tr>
+<tr class="separator:a91976dc7cba6065e6947a4cabfbefe59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8477961bb5002d548d3792ee107b3231"><td class="memItemLeft" align="right" valign="top"><a id="a8477961bb5002d548d3792ee107b3231"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>APC_DEPTH_DATA_INTERLEAVE_MODE_OFFSET</b>&#160;&#160;&#160;16</td></tr>
 <tr class="separator:a8477961bb5002d548d3792ee107b3231"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -957,6 +960,19 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:a76812338d8b35d447f211a57d149c7b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4a460da3cc535879ff876bf457df2a2"><td class="memItemLeft" align="right" valign="top"><a id="ab4a460da3cc535879ff876bf457df2a2"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>PIXEL_FMT</b> { <br />
+&#160;&#160;<b>YUV22_YUYV_PIXEL_FMT</b> = 0, 
+<b>YUV22_UYVY_PIXEL_FMT</b>, 
+<b>RAW10_GBRG_PIXEL_FMT</b>, 
+<b>RAW10_BGGR_PIXEL_FMT</b>, 
+<br />
+&#160;&#160;<b>RAW10_RGGB_PIXEL_FMT</b>, 
+<b>RAW10_GRBG_PIXEL_FMT</b>, 
+<b>MJPEG_PIXEL_FMT</b>, 
+<b>UNKOWN_PIXEL_FMT</b> = 0xffff
+<br />
+ }</td></tr>
+<tr class="separator:ab4a460da3cc535879ff876bf457df2a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add57988c892c423bff906e04292510df"><td class="memItemLeft" align="right" valign="top"><a id="add57988c892c423bff906e04292510df"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>DEVICE_TYPE</b> { <br />
 &#160;&#160;<b>OTHERS</b> = 0, 
 <b>AXES1</b>, 

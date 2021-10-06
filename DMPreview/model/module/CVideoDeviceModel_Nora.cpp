@@ -59,10 +59,10 @@ int CVideoDeviceModel_Nora::ExtendIR(bool bEnable)
     return ret;
 }
 
-// void CVideoDeviceModel_Nora::SetVideoDeviceController(CVideoDeviceController *pVideoDeviceController)
-// {
-//     CVideoDeviceModel::SetVideoDeviceController(pVideoDeviceController);
-//     if(m_pVideoDeviceController){
-//         m_pVideoDeviceController->GetPreviewOptions()->SetIRLevel(60);
-//     }
-// }
+void CVideoDeviceModel_Nora::SetVideoDeviceController(CVideoDeviceController *pVideoDeviceController)
+{
+    CVideoDeviceModel::SetVideoDeviceController(pVideoDeviceController);
+    if(m_pVideoDeviceController){
+        m_pVideoDeviceController->GetPreviewOptions()->SetIRLevel(0);
+    }
+}

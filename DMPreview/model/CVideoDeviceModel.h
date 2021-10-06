@@ -186,7 +186,7 @@ public:
     virtual double GetCameraFocus(){ return 0.0; }
     virtual double GetCameraFOV(){ return 75.0f; }
 
-    virtual bool HWPPSupprot(){ return true; }
+    virtual bool HWPPSupprot(){ return false; }
     virtual bool IsHWPP();
     virtual int SetHWPP(bool bEnable);
 

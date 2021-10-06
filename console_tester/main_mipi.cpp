@@ -46,9 +46,6 @@ static void* EYSD = NULL;
 static DEVSELINFO g_DevSelInfo;
 static DEVINFORMATION *g_pDevInfo = NULL;
 
-#define CAMERA_PID_SANDRA 0x0167
-#define CAMERA_PID_NORA  0x0168
-#define CAMERA_PID_EX8036 0x0120
 
 #define DEFAULT_VIDEO_MODE_SELECTED_INDEX 0
 struct video_mode {
@@ -57,7 +54,7 @@ struct video_mode {
     uint32_t fps;
     uint32_t depth_type;
     bool is_interleave_mode;
-    uint32_t pixelcode;
+    PIXEL_FMT pixelfmt;
     bool is_scale_down;
 };
 struct video_mode v1_video_modes []  ={
@@ -67,7 +64,7 @@ struct video_mode v1_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -76,7 +73,7 @@ struct video_mode v1_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -86,7 +83,7 @@ struct video_mode v1_video_modes []  ={
         .fps = 60,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
         
     },
@@ -96,7 +93,7 @@ struct video_mode v1_video_modes []  ={
         .fps = 12,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -105,7 +102,7 @@ struct video_mode v1_video_modes []  ={
         .fps = 12,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -114,7 +111,7 @@ struct video_mode v1_video_modes []  ={
         .fps = 24,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     }
     
@@ -128,7 +125,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -137,7 +134,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -146,7 +143,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 15,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -155,7 +152,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 15,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -164,7 +161,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 10,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -173,7 +170,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 10,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -182,7 +179,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -191,7 +188,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -200,7 +197,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 20,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -209,7 +206,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 20,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
     },
     {
@@ -218,7 +215,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -227,7 +224,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -236,7 +233,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 15,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -245,7 +242,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 15,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -254,7 +251,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 10,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -263,7 +260,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 10,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -272,7 +269,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -281,7 +278,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -290,7 +287,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 20,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = true,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     {
@@ -299,7 +296,7 @@ struct video_mode v2_video_modes []  ={
         .fps = 20,
         .depth_type = APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = true
     },
     
@@ -312,11 +309,70 @@ struct video_mode v3_video_modes []  ={
         .fps = 30,
         .depth_type = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY,
         .is_interleave_mode = false,
-        .pixelcode = 0,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
         .is_scale_down = false
-    }
+    },
+    {
+        .width = 1280,
+        .height = 720,
+        .fps = 60,
+        .depth_type = APC_DEPTH_DATA_OFF_RAW,
+        .is_interleave_mode = false,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
+        .is_scale_down = false
+    },
+    {
+        .width = 2560,
+        .height = 720,
+        .fps = 30,
+        .depth_type = APC_DEPTH_DATA_OFF_RAW,
+        .is_interleave_mode = false,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
+        .is_scale_down = false
+    },
 };
 
+struct video_mode v4_video_modes []  ={
+    {
+        .width = 800,
+        .height = 800,
+        .fps = 60,
+        .depth_type = APC_DEPTH_DATA_OFF_RAW, 
+        .is_interleave_mode = false,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
+        .is_scale_down = false
+    },
+    {
+        .width = 800,
+        .height = 800,
+        .fps = 50,
+        .depth_type = APC_DEPTH_DATA_OFF_RAW,
+        .is_interleave_mode = false,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
+        .is_scale_down = false
+    },
+    {
+        .width = 1600,
+        .height = 800,
+        .fps = 50,
+        .depth_type = APC_DEPTH_DATA_OFF_RAW,
+        .is_interleave_mode = false,
+        .pixelfmt = YUV22_YUYV_PIXEL_FMT,
+        .is_scale_down = false
+    },
+    {
+        .width = 1600,
+        .height = 800,
+        .fps = 50,
+        .depth_type = APC_DEPTH_DATA_OFF_RAW,
+        .is_interleave_mode = false,
+        .pixelfmt = RAW10_BGGR_PIXEL_FMT,
+        .is_scale_down = false
+    },
+};
+
+
+static PIXEL_FMT gColorPixelFormat = YUV22_YUYV_PIXEL_FMT;
 static int gColorFormat = 0; // 0:YUYV (only support YUYV) 
 static int gColorWidth = 1280;
 static int gColorHeight = 720;
@@ -326,6 +382,7 @@ static int gActualFps = 30;
 static uint32_t gDepthType = APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY; //APC_DEPTH_DATA_14_BITS_COMBINED_RECTIFY
 static bool gIsScaleDown = false;
 static bool gIsInterleaveMode = false;
+static bool gIsHasDepthImage = true;
 
 static DEPTH_TRANSFER_CTRL gDepth_Transfer_ctrl = DEPTH_IMG_NON_TRANSFER;
 
@@ -340,7 +397,7 @@ static uint8_t *gColorRGBImgBuf = NULL;
 static unsigned long int gColorImgSize = 0;
 static unsigned long int gDepthImgSize = 0;
 static bool bSnapshot = true;
-static bool gIsUYVYFormat = false;
+
 
 int GetDateTime(char *psDateTime);
 
@@ -477,28 +534,44 @@ static int init_device(void)
         CT_DEBUG("Chip ID = 0x%x\n", g_pDevInfo->nChipID);
         CT_DEBUG("device type = %d\n", g_pDevInfo->nDevType);
         switch (g_pDevInfo->wPID) {
-           case CAMERA_PID_SANDRA:
+            case APC_PID_SANDRA:
                 mode = &v1_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
                 break;
-           case CAMERA_PID_NORA:
+            case APC_PID_NORA:
                 mode = &v2_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
                 break;
-           case CAMERA_PID_EX8036:
-                /*TODO: The yuv422 from TX2 is UYVY. It should check it. */
-                gIsUYVYFormat = true;
+            case APC_PID_8036:
                 mode = &v3_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
                 break;
-           default:
+            case APC_PID_HELEN:
+                mode = &v4_video_modes[DEFAULT_VIDEO_MODE_SELECTED_INDEX];
+                break; 
+            default:
                ret = APC_NoDevice;
                CT_DEBUG("Unkown PID (0x%04x) !!\n", g_pDevInfo->wPID);
                goto exit;
        }
        
-       gColorFormat = mode->pixelcode;
-       gColorWidth = mode->width / 2;
-       gColorHeight =  mode->height;
-       gDepthWidth = mode->width / 2;
-       gDepthHeight = mode->height;
+       if (mode->pixelfmt == MJPEG_PIXEL_FMT) {
+           gColorFormat = 1;
+       } else {
+           gColorFormat = 0;
+       }
+       gColorPixelFormat = mode->pixelfmt;
+       if ((mode->depth_type == APC_DEPTH_DATA_OFF_RAW) ||
+           (mode->depth_type == APC_DEPTH_DATA_OFF_RECTIFY) || (mode->depth_type == APC_DEPTH_DATA_OFF_BAYER_RAW)) {
+            gColorWidth = mode->width;
+            gColorHeight =  mode->height;
+            gDepthWidth = 0;
+            gDepthHeight = 0;
+            gIsHasDepthImage = false;
+       } else {
+            gColorWidth = mode->width / 2;
+            gColorHeight =  mode->height;
+            gDepthWidth = mode->width / 2;
+            gDepthHeight = mode->height;
+            gIsHasDepthImage = true;
+       }
        gActualFps = mode->fps;
        gDepthType = mode->depth_type;
        gIsScaleDown = mode->is_scale_down;
@@ -535,6 +608,12 @@ static int open_device(uint32_t depthtype)
 
     if (!EYSD) {
         init_device();
+    }
+    
+    ret = APC_SetPixelFormat(EYSD, &g_DevSelInfo, gColorPixelFormat);
+    if (ret != APC_OK) {
+        CT_DEBUG("APC_SetPixelFormat() fail.. (ret=%d)\n", ret);
+        goto exit;
     }
     
     ret = APC_SetDepthDataType(EYSD, &g_DevSelInfo, depthtype);
@@ -881,7 +960,7 @@ int convert_yuv_to_rgb_buffer(uint8_t *yuv, uint8_t *rgb, uint32_t width, uint32
         yuv[in + 1] <<  8 |
         yuv[in + 0];
         
-        if (gIsUYVYFormat == true) {
+        if (gColorPixelFormat == YUV22_UYVY_PIXEL_FMT) {
             u = (pixel_16 & 0x000000ff);
             y0  = (pixel_16 & 0x0000ff00) >>  8;
             v = (pixel_16 & 0x00ff0000) >> 16;
@@ -948,9 +1027,13 @@ static void *get_color_depth_image_func(void *arg)
     
     // snprintf(fname, sizeof(fname), SAVE_FILE_PATH"cloud_%d_%s.ply", yuv_index++, DateTime);
     
+    CT_DEBUG("gIsHasDepthImage: [%d]\n", gIsHasDepthImage);
     CT_DEBUG("color image: [%d x %d @ %d]\n", gColorWidth, gColorHeight, gActualFps);
-    CT_DEBUG("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
-
+    
+    if (gIsHasDepthImage) {
+        CT_DEBUG("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
+    }
+    
     if(gColorImgBuf == NULL) {
         gColorImgBuf = (uint8_t*)calloc(gColorWidth * gColorHeight * BytesPerPixel, sizeof(uint8_t));
     }
@@ -959,13 +1042,15 @@ static void *get_color_depth_image_func(void *arg)
         return NULL;
     }
     
-    if(gDepthImgBuf == NULL) {
-        gDepthImgBuf = (uint8_t*)calloc(gDepthWidth * gDepthHeight * BytesPerPixel, sizeof(uint8_t));
-    }
+    if (gIsHasDepthImage) {
+        if(gDepthImgBuf == NULL) {
+            gDepthImgBuf = (uint8_t*)calloc(gDepthWidth * gDepthHeight * BytesPerPixel, sizeof(uint8_t));
+        }
     
-    if(gDepthImgBuf == NULL) {
-        CT_DEBUG("alloc DepthImgBuf fail..\n");
-        return NULL;
+        if(gDepthImgBuf == NULL) {
+            CT_DEBUG("alloc DepthImgBuf fail..\n");
+            return NULL;
+        }
     }
     
 #if defined(ONLY_PRINT_OVER_DIFF)
@@ -978,10 +1063,12 @@ static void *get_color_depth_image_func(void *arg)
             color_fp = fopen(color_file_name, "wb");
             fseek(color_fp, 0, SEEK_SET);
         }
-        if (depth_file_name && gDepthImgBuf) {
-            snprintf(depth_file_name, MAX_FILE_PATH_LEN, SAVE_FILE_DIR"depth_%lux%lu.yuv", gDepthWidth, gDepthHeight);
-            depth_fp = fopen(depth_file_name, "wb");
-            fseek(depth_fp, 0, SEEK_SET);
+        if (gIsHasDepthImage) {
+            if (depth_file_name && gDepthImgBuf) {
+                snprintf(depth_file_name, MAX_FILE_PATH_LEN, SAVE_FILE_DIR"depth_%lux%lu.yuv", gDepthWidth, gDepthHeight);
+                depth_fp = fopen(depth_file_name, "wb");
+                fseek(depth_fp, 0, SEEK_SET);
+            }
         }
     }
     
@@ -1061,8 +1148,10 @@ static void *get_color_depth_image_func(void *arg)
             if (bSnapshot) {
                 if (color_fp && gColorImgBuf)
                     fwrite(gColorImgBuf, sizeof(uint8_t), gColorImgSize, color_fp);
-                if (depth_fp && gDepthImgBuf)
-                    fwrite(gDepthImgBuf, sizeof(uint8_t), gDepthImgSize, depth_fp);
+                if (gIsHasDepthImage)  {
+                    if (depth_fp && gDepthImgBuf)
+                        fwrite(gDepthImgBuf, sizeof(uint8_t), gDepthImgSize, depth_fp);
+                }
                 
             }
             index++;
@@ -1076,10 +1165,12 @@ static void *get_color_depth_image_func(void *arg)
         gColorImgBuf = NULL;
     }
     
-    if(gDepthImgBuf){
-        CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
-        free(gDepthImgBuf);
-        gDepthImgBuf = NULL;
+    if (gIsHasDepthImage) {
+        if(gDepthImgBuf){
+            CT_DEBUG("free gDepthImgBuf : %p\n",gDepthImgBuf);
+            free(gDepthImgBuf);
+            gDepthImgBuf = NULL;
+        }
     }
     
     if (color_file_name) {
@@ -1130,6 +1221,12 @@ static void *point_cloud_func(void *arg)
 
     (void)arg;
 
+    CT_DEBUG("gIsHasDepthImage: [%d]\n", gIsHasDepthImage);
+    
+    if (gIsHasDepthImage == false) {
+        return NULL;
+    }
+    
     CT_DEBUG("depth image: [%d x %d @ %d]\n", gDepthWidth, gDepthHeight, gActualFps);
     
     pPointCloudRGB = (uint8_t *)malloc(gDepthWidth * gDepthHeight * 3 * sizeof(uint8_t));
@@ -1164,6 +1261,8 @@ static void *point_cloud_func(void *arg)
         CT_DEBUG("alloc gColorRGBImgBuf fail..\n");
         goto exit;
     }
+
+    (void)convert_yuv_to_rgb_buffer;
 
     while (count < max_count) {
         ret = APC_Get2ImageWithTimestamp(EYSD, &g_DevSelInfo, (uint8_t*)gColorImgBuf,

@@ -191,6 +191,14 @@ static void SetCounterMode();
 static void GetCounterMode();
 static void setV4L2buffer();
 static void setIRValue();
+static void Read3X();
+static void Write3X();
+static void Read4X();
+static void Write4X();
+static void Read5X();
+static void Write5X();
+static void Read24X();
+static void Write24X();
 //e:[eys3D] 20200610 definition functions
 static void test_file_saving(APCImageType::Value type);
 static int TransformDepthDataType(int *nDepthDataType, bool bRectifyData);
@@ -222,6 +230,14 @@ int main(void)
         printf("9. FW Reg Write\n");
         printf("10. FW Reg Read\n");
         printf("11. set IR value\n");
+        printf("22. Read3X\n");
+        printf("23. Write3X\n");
+        printf("24. Read4X\n");
+        printf("25. Write4X\n");
+        printf("26. Read5X\n");
+        printf("27. Write5X\n");
+        printf("28. Read24X\n");
+        printf("29. Write24X\n");
 #endif
 #if defined(_ENABLE_PROFILE_UI_)
         printf("12. test color+depth (1280X720@60, APC_DEPTH_DATA_11_BITS)\n");
@@ -287,6 +303,30 @@ int main(void)
             break;
         case 11:
             setIRValue();
+            break;
+        case 22:
+            Read3X();
+            break;
+        case 23:
+            Write3X();
+            break;
+        case 24:
+            Read4X();
+            break;
+        case 25:
+            Write4X();
+            break;
+        case 26:
+            Read5X();
+            break;
+        case 27:
+            Write5X();
+            break;
+        case 28:
+            Read24X();
+            break;
+        case 29:
+            Write24X();
             break;
 #endif
 #if defined(_ENABLE_PROFILE_UI_)
@@ -1986,6 +2026,221 @@ static void setIRValue()
     if (APC_OK != setupIR(value)) {
         CT_DEBUG("APC_SetFWRegister failed\n");
     }
+}
+
+static void Read3X()
+{
+    int index;
+    int nbfferLength = APC_Y_OFFSET_FILE_SIZE;
+    int pActualLength = 0;
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+    for (index = 0; index <= 9; index++)
+    {
+        if (APC_OK == APC_GetYOffset(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index))
+        {
+            printf("\n Read3%d \n", index);
+            for (int i = 0; i < nbfferLength; i++)
+            {
+                printf("%02x ", data[i]);
+            }
+            printf("\n");
+        }
+        else
+        {
+            printf("\n Read3%d Failed\n", index);
+        }
+    }
+
+    delete[] data;
+}
+static void Write3X()
+{
+    int index;
+    int nbfferLength = APC_Y_OFFSET_FILE_SIZE;
+    int pActualLength = 0;
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+    for (index = 0; index <= 9; index++)
+    {
+        if (APC_OK == APC_GetYOffset(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index))
+        {
+            if (APC_OK == APC_SetYOffset(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index))
+            {
+                printf("Write3%d Success \n", index);
+            }
+            else
+            {
+                printf("Write3%d Failed \n", index);
+            }
+        }
+    }
+
+    delete[] data;
+}
+static void Read4X()
+{
+    int index;
+    int nbfferLength = APC_RECTIFY_FILE_SIZE;
+    int pActualLength = 0;
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+    for (index = 0; index <= 9; index++)
+    {
+        if (APC_OK == APC_GetRectifyTable(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index))
+        {
+            printf("\n Read4%d \n", index);
+            for (int i = 0; i < nbfferLength; i++)
+            {
+                printf("%02x ", data[i]);
+            }
+            printf("\n");
+        }
+        else
+        {
+            printf("\n Read4%d Failed\n", index);
+        }
+    }
+    delete[] data;
+}
+
+static void Write4X()
+{
+    int index;
+    int nbfferLength = APC_RECTIFY_FILE_SIZE;
+    int pActualLength = 0;
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+    for (index = 0; index <= 9; index++)
+    {
+        if (APC_OK == APC_GetRectifyTable(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index))
+        {
+            if (APC_OK == APC_SetRectifyTable(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index))
+            {
+                printf("Write4%d Success \n", index);
+            }
+            else
+            {
+                printf("Write4%d Failed \n", index);
+            }
+        }
+    }
+    delete[] data;
+}
+
+static void Read5X()
+{
+    int index;
+    int nbfferLength = APC_ZD_TABLE_FILE_SIZE_11_BITS;
+    int pActualLength = 0;
+
+    ZDTABLEINFO zdTableInfo;
+    zdTableInfo.nDataType = APC_DEPTH_DATA_11_BITS;
+
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+    for (index = 0; index <= 9; index++)
+    {
+        zdTableInfo.nIndex = index;
+        if (APC_OK == APC_GetZDTable(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, &zdTableInfo))
+        {
+            printf("\n Read5%d \n", index);
+            for (int i = 0; i < nbfferLength; i++)
+            {
+                printf("%02x ", data[i]);
+            }
+            printf("\n");
+        }
+        else
+        {
+            printf("\n Read5%d Failed\n", index);
+        }
+    }
+    delete[] data;
+}
+
+static void Write5X()
+{
+    int index;
+    int nbfferLength = APC_ZD_TABLE_FILE_SIZE_11_BITS;
+    int pActualLength = 0;
+
+    ZDTABLEINFO zdTableInfo;
+    zdTableInfo.nDataType = APC_DEPTH_DATA_11_BITS;
+
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+
+    for (index = 0; index <= 9; index++)
+    {
+        zdTableInfo.nIndex = index;
+        if (APC_OK == APC_GetZDTable(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, &zdTableInfo))
+        {
+            if (APC_OK == APC_SetZDTable(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, &zdTableInfo))
+            {
+                printf("Write5%d Success \n", index);
+            }
+            else
+            {
+                printf("Write5%d Failed \n", index);
+            }
+        }
+    }
+    delete[] data;
+}
+
+static void Read24X()
+{
+    int index;
+    int nbfferLength = APC_CALIB_LOG_FILE_SIZE;
+    int pActualLength = 0;
+
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+
+    for (index = 0; index <= 9; index++)
+    {
+        if (APC_OK == APC_GetLogData(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index, ALL_LOG))
+        {
+            printf("\n Read24%d ALL_LOG \n", index);
+            for (int i = 0; i < nbfferLength; i++)
+            {
+                printf("%02x ", data[i]);
+            }
+            printf("\n");
+        }
+        else
+        {
+            printf("\n Read24%d ALL_LOG Failed\n", index);
+        }
+    }
+    delete[] data;
+}
+
+static void Write24X()
+{
+    int index;
+    int nbfferLength = APC_CALIB_LOG_FILE_SIZE;
+    int pActualLength = 0;
+
+    BYTE *data = new BYTE[nbfferLength];
+    memset(data, 0x0, nbfferLength);
+
+    for (index = 0; index <= 9; index++)
+    {
+        if (APC_OK == APC_GetLogData(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index, ALL_LOG))
+        {
+            if (APC_OK == APC_SetLogData(EYSD, &gsDevSelInfo, data, nbfferLength, &pActualLength, index))
+            {
+                printf("Write24%d Success \n", index);
+            }
+            else
+            {
+                printf("Write24%d Failed \n", index);
+            }
+        }
+    }
+    delete[] data;
 }
 
 int save_file(unsigned char *buf, int size, int width, int height,int type, bool saveRawData)
