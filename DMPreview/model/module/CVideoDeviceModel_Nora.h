@@ -6,7 +6,7 @@ class CVideoDeviceModel_Nora : public CVideoDeviceModel
 {
 public:
     virtual void SetVideoDeviceController(CVideoDeviceController *pVideoDeviceController);
-
+    virtual bool InterleaveModeSupport(){ return true; }
     virtual int UpdateIR();
     virtual bool IsIRExtended();
     virtual int ExtendIR(bool bEnable);

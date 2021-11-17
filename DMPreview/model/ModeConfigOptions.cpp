@@ -10,7 +10,7 @@ m_nCurrentIndex(EOF)
     }
 
     if(!m_modeConfigs.empty()){
-        if(nPID == APC_PID_SANDRA && usbType == USB_PORT_TYPE_3_0){
+        if(nPID == APC_PID_SANDRA && usbType == USB_PORT_TYPE_3_0 || nPID == APC_PID_HYPATIA2 && usbType == USB_PORT_TYPE_2_0){
             int specifyDefaultMode = 5;
             for (int loop = 0 ; loop < allConfigs.size(); loop ++)
             {

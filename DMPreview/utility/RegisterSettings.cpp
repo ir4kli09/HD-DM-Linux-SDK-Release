@@ -780,11 +780,17 @@ int RegisterSettings::DM_Quality_Register_Setting(void* hEYSD, PDEVSELINFO pDevS
     case APC_PID_HYPATIA:
         modelName = "HYPATIA";
         break;
+    case APC_PID_HYPATIA2:
+        modelName = "HYPATIA2";
+        break;
     case APC_PID_8062:
         modelName = "YX8062";
         break;
     case APC_PID_SANDRA:
         modelName = "SANDRA";
+        break;
+    case APC_PID_NORA:
+        modelName = "NORA";
         break;
     default:
         modelName = NULL;

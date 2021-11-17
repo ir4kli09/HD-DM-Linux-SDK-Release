@@ -8,7 +8,7 @@ public:
 
     virtual int Init();
 
-    virtual bool InterleaveModeSupport(){ return m_bIsInterleaveSupport; }
+    virtual bool InterleaveModeSupport(){ return true; }
 
     virtual int TransformDepthDataType(int nDepthDataType, bool bRectifyData);
 
