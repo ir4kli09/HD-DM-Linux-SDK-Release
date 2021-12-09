@@ -22,7 +22,6 @@ case $project in
 		export LD_LIBRARY_PATH=../eSPDI:$LD_LIBRARY_PATH 
         export LD_LIBRARY_PATH=../eSPDI/opencv/ARMHF_32/lib/:$LD_LIBRARY_PATH
         export LD_LIBRARY_PATH=../eSPDI/turbojpeg/armhf_32/lib/:$LD_LIBRARY_PATH 
-        export LD_LIBRARY_PATH=../eSPDI/opencl/armhf_32/lib/:$LD_LIBRARY_PATH
         sync
         ./DMPreview_ARM
 		break;;
@@ -32,7 +31,6 @@ case $project in
 		export LD_LIBRARY_PATH=../eSPDI:$LD_LIBRARY_PATH 
         export LD_LIBRARY_PATH=../eSPDI/opencv/armhf_ti_32/lib/:$LD_LIBRARY_PATH
         export LD_LIBRARY_PATH=../eSPDI/turbojpeg/armhf_ti_32/lib/:$LD_LIBRARY_PATH 
-        export LD_LIBRARY_PATH=../eSPDI/opencl/armhf_ti_32/lib/:$LD_LIBRARY_PATH
         sync
         ./DMPreview_TI
 		break;;
@@ -42,7 +40,6 @@ case $project in
 		export LD_LIBRARY_PATH=../eSPDI:$LD_LIBRARY_PATH 
         export LD_LIBRARY_PATH=../eSPDI/opencv/TX2/lib/:$LD_LIBRARY_PATH
         export LD_LIBRARY_PATH=../eSPDI/turbojpeg/TX2/lib/:$LD_LIBRARY_PATH 
-        export LD_LIBRARY_PATH=../eSPDI/opencl/TX2/lib/:$LD_LIBRARY_PATH
         sync
         ./DMPreview_TX2
 		break;;

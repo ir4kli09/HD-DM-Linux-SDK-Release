@@ -3,8 +3,6 @@ SUCCESS=0
 export LD_LIBRARY_PATH=./../eSPDI:$LD_LIBRARY_PATH 
 export LD_LIBRARY_PATH=./../eSPDI/turbojpeg/PX30/lib/:$LD_LIBRARY_PATH
 #export LD_LIBRARY_PATH=./../eSPDI/opencv/TX2/lib/:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=./../eSPDI/opencl/TX2/lib/:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=./../eSPDI/OpenCL/aarch64/lib/:$LD_LIBRARY_PATH
 
 cd out_img
 if [ "$?" -ne $SUCCESS ]

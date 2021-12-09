@@ -16,8 +16,6 @@
 #include "PlyWriter.h"
 #include "eSPDI.h"
 
-#include "jpeglib.h"
-#include <turbojpeg.h>
 #include "ColorPaletteGenerator.h"
 #include "RegisterSettings.h"
 
@@ -54,6 +52,12 @@
 #define APC_DEPTH_DATA_8_BITS_x80_RAW	8 /* raw */
 #define APC_DEPTH_DATA_11_BITS_RAW		9 /* raw */
 #define APC_DEPTH_DATA_11_BITS_COMBINED_RECTIFY     13// multi-baseline
+
+/* Common usage. Other reference eSPDI_def.h and PIF document.*/
+#define APC_DEPTH_DATA_SCALE_DOWN_MODE_OFFSET 32
+#define APC_DEPTH_DATA_SCALE_DOWN_8_BITS				(APC_DEPTH_DATA_8_BITS + APC_DEPTH_DATA_SCALE_DOWN_MODE_OFFSET)/* rectify, 1 byte per pixel */\
+#define APC_DEPTH_DATA_SCALE_DOWN_11_BITS				(APC_DEPTH_DATA_11_BITS + APC_DEPTH_DATA_SCALE_DOWN_MODE_OFFSET)/* rectify, 2 byte per pixel but using 11 bit only */
+#define APC_DEPTH_DATA_SCALE_DOWN_14_BITS				(APC_DEPTH_DATA_14_BITS + APC_DEPTH_DATA_SCALE_DOWN_MODE_OFFSET) /* rectify, 2 byte per pixel */
 
 #define TEST_RUN_NUMBER  10
 
@@ -141,7 +145,7 @@ static int gDepthSerial = 0;
 //s:[eys3D] 20200610 definition functions
 int convert_yuv_to_rgb_pixel(int y, int u, int v);
 int convert_yuv_to_rgb_buffer(unsigned char *yuv, unsigned char *rgb, unsigned int width, unsigned int height);
-int save_file(unsigned char *buf, int size, int width, int height,int type, bool saveRawData);
+int save_file(unsigned char *buf, int size, int width, int height,int type, bool isRGBNamed);
 int get_product_name(char *path, char *out);
 void print_APC_error(int error);
 static int error_msg(int error);
@@ -1351,9 +1355,9 @@ static void *pfunc_thread_color(void *arg) {
         usleep(1000 * 5);
 
         /* APC_GetColorImage */
-       // CT_DEBUG("Enter calling APC_GetColorImage()...\n");
-        ret = APC_GetColorImage(EYSD, &gsDevSelInfo, (BYTE*)gColorImgBuf, &gColorImgSize, &gColorSerial,0);
-       // CT_DEBUG("Leave calling APC_GetColorImage()...\n");
+        // CT_DEBUG("Enter calling APC_GetColorImage()...\n");
+        ret = APC_GetColorImage(EYSD, &gsDevSelInfo, (BYTE*)gColorImgBuf, &gColorImgSize, &gColorSerial);
+        //CT_DEBUG("Leave calling APC_GetColorImage()...\n");
         //CT_DEBUG("[%s][%d] ret = %d, errno = %d(%s)(%d)\n", __func__, __LINE__,ret, errno, strerror(errno), gColorSerial);
         if (ret == APC_OK && gColorSerial > 0) {
             
@@ -1374,35 +1378,22 @@ static void *pfunc_thread_color(void *arg) {
                     save_file(gColorImgBuf, gColorImgSize,gColorWidth,  gColorHeight, gColorFormat, true);
 
                     //s:[eys3D] 20200610 implement to save raw data to RGB format
-                    if (gColorFormat == 0){ //YUV to RGB
-                        if(gColorRGBImgBuf == NULL) {
-                                gColorRGBImgBuf = (unsigned char*)calloc(3 * gColorWidth * gColorHeight, sizeof(unsigned char));
-                        }
-                        if(gColorRGBImgBuf == NULL) {
-                                CT_DEBUG("alloc gColorRGBImgBuf fail..\n");
-                                return NULL;
-                        }
-                        APC_ColorFormat_to_RGB24(EYSD, &gsDevSelInfo, gColorRGBImgBuf, gColorImgBuf, gColorImgSize,
-                                                            gColorWidth, gColorHeight, APCImageType::Value::COLOR_YUY2);
-                    } else {//MJPEG to RGB
-                        int size=0, type;
-                        ret = tjpeg2yuv(gColorImgBuf,2 * gColorWidth * gColorHeight,&gTempImgBuf, &size,&type);
-                        ret = tyuv2rgb(gTempImgBuf,size, gColorWidth, gColorHeight, type,&gColorRGBImgBuf,&size);
-
-                        if(DEBUG_LOG) {
-                            if(gTempImgBuf != NULL){
-                                CT_DEBUG("gTempImgBuf : %p\n",gTempImgBuf);
-                            }
-
-                            if(gColorRGBImgBuf != NULL){
-                                CT_DEBUG("gColorRGBImgBuf : %p\n",gColorRGBImgBuf);
-                            }
-                         }
+                    if(gColorRGBImgBuf == NULL) {
+                        gColorRGBImgBuf = (unsigned char*)calloc(3 * gColorWidth * gColorHeight, sizeof(unsigned char));
                     }
 
+                    if(gColorRGBImgBuf == NULL) {
+                        CT_DEBUG("alloc gColorRGBImgBuf fail..\n");
+                        return NULL;
+                    }
+
+                    ret = APC_ColorFormat_to_RGB24(EYSD, &gsDevSelInfo, gColorRGBImgBuf, gColorImgBuf, gColorImgSize,
+                                             gColorWidth, gColorHeight,
+                                             gColorFormat ? APCImageType::Value::COLOR_MJPG : APCImageType::Value::COLOR_YUY2);
+
                     if(ret == APC_OK) {
-                        save_file(gColorRGBImgBuf, 0,gColorWidth,  gColorHeight, gColorFormat, false);
-                     }
+                        save_file(gColorRGBImgBuf, gColorWidth*gColorHeight*3, gColorWidth, gColorHeight, gColorFormat, false);
+                    }
 
                     if(gTempImgBuf != NULL){
                             if(DEBUG_LOG) {
@@ -1546,9 +1537,7 @@ static void *pfunc_thread_depth(void *arg) {
                 if (snapShot_depth == true) {
                     CT_DEBUG("Doing Snapshot...\n");
                     //pthread_mutex_lock(&save_file_mutex);
-
                     save_file(gDepthImgBuf, gDepthImgSize, gDepthWidth, gDepthHeight,2, true);
-
                     //s:[eys3D] 20200615 implement to save raw data to RGB format
                     saveDepth2rgb(gDepthImgBuf, gDepthRGBImgBuf, gDepthWidth, gDepthHeight);
                     //e:[eys3D] 20200615 implement to save raw data to RGB format
@@ -2243,7 +2232,7 @@ static void Write24X()
     delete[] data;
 }
 
-int save_file(unsigned char *buf, int size, int width, int height,int type, bool saveRawData)
+int save_file(unsigned char *buf, int size, int width, int height,int type, bool isRGBNamed)
 {
     int ret = 0;
     int fd = -1;
@@ -2254,13 +2243,13 @@ int save_file(unsigned char *buf, int size, int width, int height,int type, bool
     static unsigned int depth_index = 0;
     static unsigned int yuv_rgb_index = 0;
     static unsigned int  mjpeg_rgb_index = 0;
-
+    static unsigned int  depth_rgb_index = 0;
     char DateTime[32] = {0};
      memset(DateTime, 0, sizeof(DateTime));
     
      ret = GetDateTime(DateTime);
 
-    if(saveRawData) {
+    if(isRGBNamed) {
             switch(type) {
                 case 0: // Color stream (YUYV)
                     snprintf(fname, sizeof(fname), SAVE_FILE_PATH"color_img_%d_%s.yuv", yuv_index++, DateTime);
@@ -2273,32 +2262,36 @@ int save_file(unsigned char *buf, int size, int width, int height,int type, bool
                 default:
                     break;
             }
-            fd = open(fname, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-            if (fd < 0) {
-                    CT_DEBUG("file open error (fd=%d)\n", fd);
-                    ret = -1;
-            } else if(write(fd, buf, size) != size) {
-                    CT_DEBUG("write(fd, buf, size) != size\n");
-                    ret = -1;
-            }
-
-            if (fd >= 0) {
-                    close(fd);
-                    sync();
-            }
     } else {
             switch(type) {
                 case 0: // YUV
-                    snprintf(fname, sizeof(fname), SAVE_FILE_PATH"color_yuv2rgb_%d_%s.bmp", yuv_rgb_index++,DateTime);
+                    snprintf(fname, sizeof(fname), SAVE_FILE_PATH"color_yuv2rgb_%d_%s.raw", yuv_rgb_index++,DateTime);
                     break;
                 case 1: // MJPEG
-                    snprintf(fname, sizeof(fname), SAVE_FILE_PATH"color_mjpeg2rgb_%d_%s.bmp", mjpeg_rgb_index++,DateTime);
+                    snprintf(fname, sizeof(fname), SAVE_FILE_PATH"color_mjpeg2rgb_%d_%s.raw", mjpeg_rgb_index++,DateTime);
+                    break;
+                case 2: // Depth stream
+                    snprintf(fname, sizeof(fname), SAVE_FILE_PATH"depth_imgrgb_%d_%s.raw", depth_rgb_index++, DateTime);
                     break;
                 default:
                     break;
              }
-            ret = tjSaveImage(fname,buf,width,0,height,TJPF_RGB,0);
-     }
+    }
+
+    fd = open(fname, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
+    if (fd < 0) {
+        CT_DEBUG("file open error (fd=%d)\n", fd);
+        ret = -1;
+    } else if(write(fd, buf, size) != size) {
+        CT_DEBUG("write(fd, buf, size) != size\n");
+        ret = -1;
+    }
+
+    if (fd >= 0) {
+        close(fd);
+        sync();
+    }
 
     CT_DEBUG("FILE_NAME = \"%s\" \n", fname);
 
@@ -2373,81 +2366,6 @@ int convert_yuv_to_rgb_buffer(unsigned char *yuv, unsigned char *rgb, unsigned i
     return 0;
 }
 
-// YUYV to RGB -
-int tjpeg2yuv(unsigned char* jpeg_buffer, int jpeg_size, unsigned char** yuv_buffer, int* yuv_size, int* yuv_type)
-{
-    tjhandle handle = NULL;
-    int width, height, subsample, colorspace;
-    int flags = 0;
-    int padding = 1;
-    int ret = 0;
-
-    handle = tjInitDecompress();
-    tjDecompressHeader3(handle, jpeg_buffer, jpeg_size, &width, &height, &subsample, &colorspace);
-
-    //CT_DEBUG("w: %d h: %d subsample: %d color: %d\n", width, height, subsample, colorspace);
-    
-    flags |= 0;
-    
-    *yuv_type = subsample;
-    *yuv_size = tjBufSizeYUV2(width, padding, height, subsample);
-    *yuv_buffer =(unsigned char *)malloc(*yuv_size);
-    if (*yuv_buffer == NULL)
-    {
-        CT_DEBUG("malloc buffer for rgb failed.\n");
-        return -1;
-    }
-
-    ret = tjDecompressToYUV2(handle, jpeg_buffer, jpeg_size, *yuv_buffer, width,
-			padding, height, flags);
-    if (ret < 0)
-    {
-        CT_DEBUG("compress to jpeg failed: %s\n", tjGetErrorStr());
-    }
-    tjDestroy(handle);
-
-    return ret;
-}
-
-int tyuv2rgb(unsigned char* yuv_buffer, int yuv_size, int width, int height, int subsample, unsigned char** rgb_buffer, int* rgb_size)
-{
-    tjhandle handle = NULL;
-    int flags = 0;
-    int padding = 1;
-    int pixelfmt = TJPF_RGB;
-    int need_size = 0;
-    int ret = 0;
- 
-    handle = tjInitDecompress();
-   
-    flags |= 0;
- 
-    need_size = tjBufSizeYUV2(width, padding, height, subsample);
-    if (need_size != yuv_size)
-    {
-        CT_DEBUG("Conver to RGB failed! Expect yuv size: %d, but input size: %d, check again.\n", need_size, yuv_size);
-        return -1;
-    }
- 
-    *rgb_size = width*height*tjPixelSize[pixelfmt];
- 
-    *rgb_buffer =(unsigned char *)malloc(*rgb_size);
-    if (*rgb_buffer == NULL)
-    {
-        CT_DEBUG("malloc buffer for rgb failed.\n");
-        return -1;
-    }
-    ret = tjDecodeYUV(handle, yuv_buffer, padding, subsample, *rgb_buffer, width, 0, height, pixelfmt, flags);
-    if (ret < 0)
-    {
-        CT_DEBUG("decode to rgb failed: %s\n", tjGetErrorStr());
-    }
-
-    tjDestroy(handle);
- 
-    return ret;
-}
-
 int saveDepth2rgb(unsigned char *m_pDepthImgBuf, unsigned char *m_pRGBBuf, unsigned int m_nImageWidth, unsigned int m_nImageHeight)
 {
      char fname[256] = {0};
@@ -2466,38 +2384,17 @@ int saveDepth2rgb(unsigned char *m_pDepthImgBuf, unsigned char *m_pRGBBuf, unsig
         m_tmp_width = m_nImageWidth;
     }
 
-     if(g_depth_output == DEPTH_IMG_COLORFUL_TRANSFER) {
-        if (gDepthDataType == APC_DEPTH_DATA_8_BITS || gDepthDataType == APC_DEPTH_DATA_8_BITS_RAW) {
-                UpdateD8bitsDisplayImage_DIB24(g_ColorPaletteZ14, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_tmp_width, m_nImageHeight);
-        } else if (gDepthDataType == APC_DEPTH_DATA_11_BITS || gDepthDataType == APC_DEPTH_DATA_11_BITS_RAW) {
-                UpdateD11DisplayImage_DIB24(g_ColorPaletteZ14, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_tmp_width, m_nImageHeight);
-        } else if (gDepthDataType == APC_DEPTH_DATA_14_BITS || gDepthDataType == APC_DEPTH_DATA_14_BITS_RAW) {
-                UpdateZ14DisplayImage_DIB24(g_ColorPaletteZ14, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_tmp_width, m_nImageHeight);
-        }
-    } else if(g_depth_output == DEPTH_IMG_GRAY_TRANSFER) {
-        if (gDepthDataType == APC_DEPTH_DATA_8_BITS || gDepthDataType == APC_DEPTH_DATA_8_BITS_RAW) {
-                UpdateD8bitsDisplayImage_DIB24(g_GrayPaletteZ14, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_nImageWidth, m_nImageHeight);
- 
-        } else if (gDepthDataType == APC_DEPTH_DATA_11_BITS || gDepthDataType == APC_DEPTH_DATA_11_BITS_RAW) {
-                UpdateD11DisplayImage_DIB24(g_GrayPaletteZ14, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_nImageWidth, m_nImageHeight);
-
-        } else if (gDepthDataType == APC_DEPTH_DATA_14_BITS || gDepthDataType == APC_DEPTH_DATA_14_BITS_RAW) {
-                UpdateZ14DisplayImage_DIB24(g_GrayPaletteZ14, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_nImageWidth, m_nImageHeight);
-        }
-
-    } else {
-       if (gDepthDataType == APC_DEPTH_DATA_8_BITS) {
-                convert_yuv_to_rgb_buffer(m_pDepthImgBuf, m_pRGBBuf, m_nImageWidth, m_nImageHeight);
-       } else {
-                APC_ColorFormat_to_RGB24(EYSD, &gsDevSelInfo, m_pRGBBuf, m_pDepthImgBuf, gColorImgSize,
-                                                            gColorWidth, gColorHeight, APCImageType::Value::COLOR_YUY2);
-       }
+    RGBQUAD *palette = g_depth_output == DEPTH_IMG_GRAY_TRANSFER ? g_GrayPaletteZ14 : g_ColorPaletteZ14;
+    if (gDepthDataType == APC_DEPTH_DATA_8_BITS || gDepthDataType == APC_DEPTH_DATA_8_BITS_RAW) {
+        UpdateD8bitsDisplayImage_DIB24(palette, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_tmp_width, m_nImageHeight);
+    } else if (gDepthDataType == APC_DEPTH_DATA_11_BITS || gDepthDataType == APC_DEPTH_DATA_11_BITS_RAW) {
+        UpdateD11DisplayImage_DIB24(palette, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_tmp_width, m_nImageHeight);
+    } else if (gDepthDataType == APC_DEPTH_DATA_14_BITS || gDepthDataType == APC_DEPTH_DATA_14_BITS_RAW || gDepthDataType == 34) {
+        UpdateZ14DisplayImage_DIB24(palette, &m_pDepthImgBuf[0], &m_pRGBBuf[0], m_tmp_width, m_nImageHeight);
     }
 
     snprintf(fname, sizeof(fname), SAVE_FILE_PATH"depth_yuv2rgb_%d_%s.bmp", yuv_index++, DateTime);
-    ret = tjSaveImage(fname,m_pRGBBuf,m_tmp_width,0,m_nImageHeight,TJPF_RGB,0);
-     
-    CT_DEBUG("FILE_NAME = \"%s\" \n", fname);
+    ret = save_file(m_pRGBBuf, m_tmp_width * m_nImageHeight * 3, m_tmp_width, m_nImageHeight, 2, false);
     return ret;
 }
 //e:[eys3D] 20200610 implement to save raw data to RGB format

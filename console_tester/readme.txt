@@ -13,6 +13,9 @@ sh run_arm64_tx2.sh
 (3) For Rockchip PX30:
 sh run_arm64_px30.sh
 
+(4) For MTK:
+
+sh run_arm64_mtk.sh
 
 3. There are the macros in main.cpp to enable/disable the demo:
 
@@ -69,4 +72,6 @@ chmod 777 /sys/bus/i2c/devices/30-0060/write_ct_pu_value
 chmod 777 /sys/bus/i2c/devices/30-0060/write_fw_reg
 chmod 777 /sys/bus/i2c/devices/30-0060/write_i2_reg
 
+5. Decoding the saving files website after you doing 'Snapshot'
 
+https://rawpixels.net/
