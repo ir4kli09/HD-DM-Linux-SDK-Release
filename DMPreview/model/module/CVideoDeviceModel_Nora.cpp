@@ -8,6 +8,24 @@ CVideoDeviceModel_Nora::CVideoDeviceModel_Nora(DEVSELINFO *pDeviceSelfInfo) : CV
 {
 }
 
+int CVideoDeviceModel_Nora::AdjustZDTableIndex(int &nIndex)
+{
+    if (!m_pVideoDeviceController->GetPreviewOptions()->IsStreamEnable(STREAM_DEPTH)){
+        return APC_OK;
+    }
+
+    std::vector<APC_STREAM_INFO> streamInfo = GetStreamInfoList(STREAM_DEPTH);
+    int nDepthIndex = m_pVideoDeviceController->GetPreviewOptions()->GetStreamIndex(STREAM_DEPTH);
+
+    if (768 == streamInfo[nDepthIndex].nHeight){
+        nIndex = 0;
+    }else if (384 <= streamInfo[nDepthIndex].nHeight){
+        nIndex = 1;
+    }
+
+    return APC_OK;
+}
+
 bool CVideoDeviceModel_Nora::IsIRExtended()
 {
     return EXTEND_IR_MAX == m_nIRMax;

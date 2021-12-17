@@ -8,6 +8,7 @@ public:
     virtual void SetVideoDeviceController(CVideoDeviceController *pVideoDeviceController);
     virtual bool InterleaveModeSupport(){ return true; }
     virtual int UpdateIR();
+    virtual int AdjustZDTableIndex(int &nIndex);
     virtual bool IsIRExtended();
     virtual int ExtendIR(bool bEnable);
 

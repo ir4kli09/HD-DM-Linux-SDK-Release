@@ -15,6 +15,11 @@ ifeq ($(CPU), PX30)
 	LIBS = -L../eSPDI -leSPDI_$(CPU)_64 \
 	       -lrt -lOpenCL
 endif
+ifeq ($(CPU), MTK)
+	TARGET = test_arm64_mtk
+	LIBS = -L../eSPDI -leSPDI_$(CPU)_64 \
+	       -lrt -lOpenCL
+endif
 
 CFLAGS = -Wall -W -std=c++11
 LFLAGS = -Wall -W 

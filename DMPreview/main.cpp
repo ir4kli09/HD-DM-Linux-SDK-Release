@@ -4,15 +4,8 @@
 #include "eSPDI_version.h"
 #include "CPointCloudViewerWidget.h"
 
-#include <csignal>
-void signalHandler(int signum)
-{
-    exit(signum);
-}
-
 int main(int argc, char *argv[])
 {
-    signal(SIGINT, signalHandler);
 
     QApplication app(argc, argv);
 

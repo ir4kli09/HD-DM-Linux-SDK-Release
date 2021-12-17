@@ -1,8 +1,6 @@
 #!/bin/sh
 SUCCESS=0
 export LD_LIBRARY_PATH=./../eSPDI:$LD_LIBRARY_PATH 
-export LD_LIBRARY_PATH=./../eSPDI/opencv/x86_64/lib:$LD_LIBRARY_PATH 
-export LD_LIBRARY_PATH=./../eSPDI/turbojpeg/x86_64/lib/:$LD_LIBRARY_PATH
 
 cd out_img
 if [ "$?" -ne $SUCCESS ]
