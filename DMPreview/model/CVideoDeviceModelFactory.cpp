@@ -27,6 +27,8 @@ CVideoDeviceModel *CVideoDeviceModelFactory::CreateVideoDeviceModel(DEVSELINFO *
                                            pDeviceSelfInfo, &deviceInfomation);
 
     CVideoDeviceModel *pModel = nullptr;
+    if (deviceInfomation.nDevType == OTHERS || deviceInfomation.nDevType == UNKNOWN_DEVICE_TYPE)
+        return pModel;
     switch (deviceInfomation.wPID){
         case APC_PID_8029:
             pModel = new CVideoDeviceModel_8029(pDeviceSelfInfo); break;

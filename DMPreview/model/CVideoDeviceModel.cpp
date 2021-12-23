@@ -207,6 +207,8 @@ CVideoDeviceModel::DeviceInfo CVideoDeviceModel::GetDeviceInformation(DEVSELINFO
     int  nSerialNumberLength;
     RETRY_APC_API(ret, APC_GetSerialNumber(pEYSDI, pDeviceSelfInfo, pSerialNumber, 256, &nSerialNumberLength));
     if (APC_OK == ret){
+        if(nSerialNumberLength<0)
+            nSerialNumberLength = 0;
         deviceInfo.sSerialNumber.resize( nSerialNumberLength / 2 );
         for (int i = 0 ; i < nSerialNumberLength / 2 ; ++i)
             deviceInfo.sSerialNumber[i] = pSerialNumber[i * 2 + 1] * 256 + pSerialNumber[i * 2];

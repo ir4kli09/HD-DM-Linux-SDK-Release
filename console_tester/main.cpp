@@ -1223,15 +1223,19 @@ static void open_device(void)
     int m_output_dtc = 0;
 
     if (g_DevSelInfo.index > 0) {
-        printf("Please select device index: \n");
+        // printf("Please select device index: \n");
         for (int i = 0 ; i < g_DevSelInfo.index + 1 ; i++) {
             char* module = PidToModuleName(g_pDevInfo[i].wPID);
             if (module == nullptr) {
                 module = g_pDevInfo[i].strDevName;
             }
-            CT_DEBUG("%d: %s\n", i, module);
+            // CT_DEBUG("%d: %s\n", i, module);
+            if(g_pDevInfo[i].nDevType != OTHERS && g_pDevInfo[i].nDevType != UNKNOWN_DEVICE_TYPE){
+                gsDevSelInfo.index = i;
+                CT_DEBUG("%d: nDevType = %d module = %s\n", i, g_pDevInfo[i].nDevType, module);
+            }
         }
-        scanf("%d", &gsDevSelInfo.index);
+        // scanf("%d", &gsDevSelInfo.index);
     }
     //s:[eys3D] 20200610 implement hypatia config
     int m_VideoMode = 1;
