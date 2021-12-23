@@ -18,7 +18,7 @@ endif
 ifeq ($(CPU), MTK)
 	TARGET = test_arm64_mtk
 	LIBS = -L../eSPDI -leSPDI_$(CPU)_64 \
-	       -lrt -lOpenCL
+	       -lrt
 endif
 
 CFLAGS = -Wall -W -std=c++11
