@@ -397,6 +397,40 @@ int APC_GetMultiBytesHWRegister(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsi
 int APC_SetMultiBytesHWRegister(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, unsigned short address, unsigned char *Data, int size, int flag);
 
 
+/*! \fn int APC_SetAETarget(
+        void *pHandleEYSD,
+        PDEVSELINFO pDevSelInfo,
+        int index,
+        float *EV)
+    \brief set hardware register
+    \param void *pHandleEYSD	handle
+    \param PDEVSELINFO pDevSelInfo	pointer of device select index
+    \param int index	range from -6 to 9, 0 is default AE
+    \param float *EV	-2.0EV - +3.0EV in 1/3EV step intervals, \n
+        ie [index, EV] => \n
+                         [-6, -2.00EV] \n
+                         [-5, -1.67EV] \n
+                         [-4, -1.33EV] \n
+                         [-3, -1.00EV] \n
+                         [-2, -0.67EV] \n
+                         [-1, -0.33EV] \n
+                         [0, 0.00EV] \n
+                         [1, 0.33EV] \n
+                         [2, 0.67EV] \n
+                         [3, 1.00EV] \n
+                         [4, 1.33EV] \n
+                         [5, 1.67EV] \n
+                         [6, 2.00EV] \n
+                         [7, 2.33EV] \n
+                         [8, 2.67EV] \n
+                         [9, 3.00EV] \n
+    \return success: APC_OK, others: see eSPDI_def.h
+*/
+int APC_SetAETarget(
+    void *pHandleEYSD,
+    PDEVSELINFO pDevSelInfo,
+    int index,
+    float *EV);
 // register APIs -
 
 // File ID +

@@ -175,12 +175,12 @@ char* PidToModuleName(unsigned short pid);
 
 static void *property_bar_test_func(void *arg);
 
-static void init_device(void);
+static int init_device(void);
 static void *test_color_time_stamp(void *arg);
 static void *test_depth_time_stamp(void *arg);
 static void *test_color_depth_time_stamp(void *arg);
-static void open_device_default(bool two_open, int fps, WORD videoMode);
-static void open_device(void);
+static int open_device_default(bool two_open, int fps, WORD videoMode);
+static int open_device(void);
 static void get_color_image(void);
 static void get_depth_image(void);
 static void get_point_cloud(void);
@@ -1043,7 +1043,7 @@ static void test_file_saving(APCImageType::Value arg)
     return;
 }
 
-static void init_device(void)
+static int init_device(void)
 {
     int ret, i;
     char FWVersion[128];
@@ -1101,10 +1101,11 @@ static void init_device(void)
         CT_DEBUG("alloc g_GrayPaletteZ14 fail..\n");
     }
     //e:[eys3D] 20200615 implement ZD table
+    return ret;
 }
 
 
-static void open_device_default(bool two_open, int fps, WORD videoMode)
+static int open_device_default(bool two_open, int fps, WORD videoMode)
 {
     int dtc = 0, ret;
     char input[64];
@@ -1112,7 +1113,8 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
     bool bIsMJPEG = false; //true: V4L2_PIX_FMT_MJPEG, false: V4L2_PIX_FMT_YUYV
     
     if (!EYSD) {
-        init_device();
+        ret = init_device();
+        if (APC_OK != ret) return ret;
     }
     
     if (g_DevSelInfo.index > 0) {
@@ -1210,17 +1212,20 @@ static void open_device_default(bool two_open, int fps, WORD videoMode)
         CT_DEBUG("set IR mode fail.. (ret=%d)\n", ret);
     }
     //e:[eys3D] 20200623, implement IR mode
+    return ret;
 }
 
 
-static void open_device(void)
+static int open_device(void)
 {
-    if (!EYSD) {
-	init_device();
-    }
     int dtc = 0, ret;
     char input[64];
     int m_output_dtc = 0;
+
+    if (!EYSD) {
+        ret = init_device();
+        if (APC_OK != ret) return ret;
+    }
 
     if (g_DevSelInfo.index > 0) {
         // printf("Please select device index: \n");
@@ -1334,6 +1339,7 @@ static void open_device(void)
     
     
     property_bar_test_func(NULL);
+    return ret;
 }
 
 static void *pfunc_thread_color(void *arg) {

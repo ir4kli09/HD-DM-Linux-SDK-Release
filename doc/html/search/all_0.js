@@ -129,6 +129,7 @@ var searchData=
   ['apc_5frotateimg90',['APC_RotateImg90',['../e_s_p_d_i_8h.html#ab04e723e2072a515dad69f84d89fd62b',1,'APC_RotateImg90(APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dst, int len, bool clockwise):&#160;eSPDI.h'],['../e_s_p_d_i_8h.html#ad4e88d85b52cdb768df5e221d9a17735',1,'APC_RotateImg90(void *pHandleEYSD, PDEVSELINFO pDevSelInfo, APCImageType::Value imgType, int width, int height, unsigned char *src, unsigned char *dstBuf, int len, bool clockwise):&#160;eSPDI.h']]],
   ['apc_5fsavelutdata',['APC_SaveLutData',['../e_s_p_d_i_8h.html#a10e40f864e3f458b5d62482fb6b4dfdc',1,'eSPDI.h']]],
   ['apc_5fselectdevice',['APC_SelectDevice',['../e_s_p_d_i_8h.html#a1b94f15b46e4aaa159e422875eb9158b',1,'eSPDI.h']]],
+  ['apc_5fsetaetarget',['APC_SetAETarget',['../e_s_p_d_i_8h.html#a6a48610f9699bbe6094f1515f50c44bc',1,'eSPDI.h']]],
   ['apc_5fsetautoexposuremode',['APC_SetAutoExposureMode',['../e_s_p_d_i_8h.html#a0fc1d506aba4066b81cba8c7e8d540fb',1,'eSPDI.h']]],
   ['apc_5fsetcolorgain',['APC_SetColorGain',['../e_s_p_d_i_8h.html#a0e5a51b0f995839e0e24adb4e16556ea',1,'eSPDI.h']]],
   ['apc_5fsetcontrolcountermode',['APC_SetControlCounterMode',['../e_s_p_d_i_8h.html#ab73e91ef96a1f7fa4414d0719b62d0e0',1,'eSPDI.h']]],

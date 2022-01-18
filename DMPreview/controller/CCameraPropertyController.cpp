@@ -98,3 +98,8 @@ void CCameraPropertyController::SetManuelGlobalGain(float fGlobalGain)
 
     m_pVideoDeviceModel->GetCameraproperty()[m_nCurrentIndex]->SetManuelGlobalGain(fGlobalGain);
 }
+
+float CCameraPropertyController::SetAETarget(int index)
+{
+    return m_pVideoDeviceModel->GetCameraproperty()[m_nCurrentIndex]->SetAETargetIndex(index);
+}

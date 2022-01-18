@@ -292,3 +292,15 @@ void CCameraPropertyModel::SetManuelGlobalGain(float fGlobalGain)
                                                SENSOR_BOTH,
                                                fGlobalGain));
 }
+
+float CCameraPropertyModel::SetAETargetIndex(int index)
+{
+    float EV = 0.0f;
+    int ret;
+    RETRY_APC_API(ret, APC_SetAETarget(CEYSDDeviceManager::GetInstance()->GetEYSD(),
+                                               m_pDeviceSelfInfo,
+                                               index,
+                                               &EV));
+
+    return EV;
+}

@@ -57,6 +57,7 @@ public:
     void SetManuelExposureTimeMs(float fMs);
     float GetManuelGlobalGain();
     void SetManuelGlobalGain(float fGlobalGain);
+    float SetAETargetIndex(int index);
 
     QString GetDeviceName(){ return m_sDeviceName; }
     CameraPropertyItem GetCameraProperty(CAMERA_PROPERTY type){ return m_cameraPropertyItems[type]; }

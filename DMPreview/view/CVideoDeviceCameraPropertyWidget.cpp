@@ -24,6 +24,7 @@ void CVideoDeviceCameraPropertyWidget::UpdateSelf()
     UpdateLightSource();
     UpdateLowLightCompensation();
     UpdateManuelExposureTime();
+    UpdateAETarget();
 }
 
 void CVideoDeviceCameraPropertyWidget::showEvent(QShowEvent *event)
@@ -186,12 +187,38 @@ void CVideoDeviceCameraPropertyWidget::UpdateManuelExposureTime()
     ui->pushButton_write_manuel_global_gain_value->setEnabled(bValid);
 }
 
+void CVideoDeviceCameraPropertyWidget::UpdateAETarget()
+{
+    bool bIsAutoExposureSupport = m_pCameraPropertyController->IsCameraPropertySupport(CCameraPropertyModel::AUTO_EXPOSURE);
+    bool bIsAutoExposureValid = m_pCameraPropertyController->IsCameraPropertyValid(CCameraPropertyModel::AUTO_EXPOSURE);
+
+    int nValue = 0;
+    if (bIsAutoExposureValid){
+        m_pCameraPropertyController->GetValue(CCameraPropertyModel::AUTO_EXPOSURE, nValue);
+    }
+    bool IsAutoExposure = ((1 == nValue) && bIsAutoExposureSupport);
+    ui->checkBox_auto_exposure->blockSignals(true);
+    ui->checkBox_auto_exposure->setChecked(IsAutoExposure);
+    ui->checkBox_auto_exposure->blockSignals(false);
+
+    ui->widget_ae_target->setVisible(IsAutoExposure);
+    ui->widget_ae_target->setEnabled(IsAutoExposure);
+
+    if(ui->widget_ae_target->isVisible()){
+        //AE target index range from -6 to 9
+        ui->horizontalSlider_ae_target->setMinimum(-6);
+        ui->horizontalSlider_ae_target->setMaximum(9);
+        ui->label_ae_value->setText(QString::number(EV_value));
+    }
+}
+
 void CVideoDeviceCameraPropertyWidget::on_checkBox_auto_exposure_stateChanged(int state)
 {
     bool bIsChecked = Qt::Checked == state ? true : false;
     m_pCameraPropertyController->SetValue(CCameraPropertyModel::AUTO_EXPOSURE, bIsChecked ? 1 : 0);
     UpdateExposureTime();
     UpdateManuelExposureTime();
+    UpdateAETarget();
 }
 
 void CVideoDeviceCameraPropertyWidget::on_horizontalSlider_exposure_time_value_valueChanged(int nValue)
@@ -199,6 +226,14 @@ void CVideoDeviceCameraPropertyWidget::on_horizontalSlider_exposure_time_value_v
     m_pCameraPropertyController->SetValue(CCameraPropertyModel::EXPOSURE_TIME, nValue);
     UpdateExposureTime();
 }
+
+void CVideoDeviceCameraPropertyWidget::on_horizontalSlider_ae_target_valueChanged(int nValue)
+{
+    EV_value = m_pCameraPropertyController->SetAETarget(nValue);
+    ui->label_ae_value->setText(QString::number(EV_value));
+    UpdateAETarget();
+}
+
 
 void CVideoDeviceCameraPropertyWidget::on_checkBox_auto_white_balance_stateChanged(int state)
 {

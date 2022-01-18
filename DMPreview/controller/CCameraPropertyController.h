@@ -28,6 +28,7 @@ public:
     void SetManuelExposureTimeMs(float fMs);
     float GetManuelGlobalGain();
     void SetManuelGlobalGain(float fGlobalGain);
+    float SetAETarget(int index);
 
 private:
     CVideoDeviceModel *m_pVideoDeviceModel;

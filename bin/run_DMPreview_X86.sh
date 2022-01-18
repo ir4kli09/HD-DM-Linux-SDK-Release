@@ -10,7 +10,7 @@ kernel_log_file=eysdbg_kernel.txt
 gdb_log_file=eysdbg_gdb_bt.txt
 
 strace_dm_preview() {
-    strace -t -e trace=signal -p $(pgrep DMPreview_X86) 2>&1 | tee $strace_log_file
+        strace -t -e trace=signal -p $(pgrep DMPreview_X86) 2>&1 | tee $strace_log_file
 }
 
 watch_termination() {
@@ -34,4 +34,6 @@ watch_termination() {
 }
 
 ulimit -c unlimited
-strace_dm_preview & watch_termination & ./DMPreview_X86
+./DMPreview_X86 &
+strace_dm_preview
+watch_termination

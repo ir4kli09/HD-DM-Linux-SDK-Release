@@ -26,6 +26,8 @@ private slots:
 
     void on_horizontalSlider_exposure_time_value_valueChanged(int nValue);
 
+    void on_horizontalSlider_ae_target_valueChanged(int nValue);
+
     void on_checkBox_auto_white_balance_stateChanged(int state);
 
     void on_horizontalSlider_white_balance_temperature_value_valueChanged(int nValue);
@@ -57,7 +59,8 @@ private:
     void UpdateLightSource();
     void UpdateLowLightCompensation();
     void UpdateManuelExposureTime();
-
+    void UpdateAETarget();
+    float EV_value = 0;
 private:
     CCameraPropertyController *m_pCameraPropertyController;
     Ui::CVideoDeviceCameraPropertyWidget *ui;
