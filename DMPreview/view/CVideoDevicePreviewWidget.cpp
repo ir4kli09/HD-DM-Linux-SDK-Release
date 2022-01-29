@@ -712,7 +712,8 @@ void CVideoDevicePreviewWidget::on_pushButton_z_value_set_clicked()
 
 void CVideoDevicePreviewWidget::on_pushButton_snapshot_clicked()
 {
-    m_pVideoDeviceController->DoSnapShot();
+    for(int i=0; i < 400; i++)
+        m_pVideoDeviceController->DoSnapShot();
 }
 
 void CVideoDevicePreviewWidget::on_checkBox_ply_filter_stateChanged(int state)
